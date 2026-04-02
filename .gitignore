@@ -1,1 +1,13 @@
+# Ignore all node modules
+node_modules/
 
+# Ignore backend specifically
+final_project/backend/node_modules/
+
+# Ignore frontend too (if exists)
+final_project/client/node_modules/
+
+# Other common files
+.env
+dist/
+build/
