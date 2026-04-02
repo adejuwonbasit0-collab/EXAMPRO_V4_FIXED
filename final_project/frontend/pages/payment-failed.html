@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment Failed - ExamPro</title>
+<link rel="stylesheet" href="/css/main.css">
+<style>
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%,60% { transform: translateX(-8px); }
+  40%,80% { transform: translateX(8px); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fail-icon { animation: shake 0.5s ease 0.2s both; display: inline-block; }
+.fail-card  { animation: fadeUp 0.5s ease 0.1s both; }
+
+.reason-list {
+  text-align: left;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin: 20px 0;
+  font-size: 0.85rem;
+}
+.reason-list li {
+  padding: 6px 0;
+  color: var(--text-muted);
+  list-style: none;
+  border-bottom: 1px solid var(--border);
+}
+.reason-list li:last-child { border-bottom: none; }
+.reason-list li::before { content: '• '; color: var(--danger); font-weight: 700; }
+</style>
+</head>
+<body>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(ellipse 70% 70% at 50% 30%,rgba(239,68,68,0.1),transparent);">
+  <div style="text-align:center;max-width:440px;width:100%;">
+
+    <div class="fail-icon" style="font-size:5rem;margin-bottom:20px;line-height:1;">❌</div>
+
+    <div class="fail-card">
+      <h1 style="color:var(--danger);margin-bottom:8px;font-size:1.8rem;">Payment Failed</h1>
+      <p style="color:var(--text-muted);margin-bottom:6px;">Your payment could not be processed.</p>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:20px;"><strong>No money has been charged</strong> from your account.</p>
+
+      <ul class="reason-list">
+        <li>Insufficient funds in your account</li>
+        <li>Card declined by your bank</li>
+        <li>Network or connection timeout</li>
+        <li>Transaction cancelled by you</li>
+      </ul>
+
+      <div id="retrySection"></div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;">
+        <button onclick="retryPayment()" class="btn btn-primary btn-lg">🔄 Try Again</button>
+        <div style="display:flex;gap:10px;justify-content:center;">
+          <a href="/dashboard" class="btn btn-outline btn-sm">My Dashboard</a>
+          <a href="/" class="btn btn-outline btn-sm">Back to Home</a>
+        </div>
+      </div>
+
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-top:20px;">
+        Need help? <a href="mailto:support@exampro.ng" style="color:var(--primary-light);">Contact Support</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+function retryPayment() {
+  // Go back to the previous page (course or PQ detail page)
+  if (document.referrer && document.referrer !== window.location.href) {
+    window.location.href = document.referrer;
+  } else {
+    history.back();
+  }
+}
+
+// If user came from a specific item, show a "Return to item" button
+const params = new URLSearchParams(window.location.search);
+const itemType = params.get('type');
+const itemId = params.get('id');
+const schoolCtx = params.get('school') || sessionStorage.getItem('school_context');
+
+if (itemType && itemId) {
+  const retryEl = document.getElementById('retrySection');
+  const label = itemType === 'course' ? 'Return to Course' : 'Return to Past Question';
+  // Use school-site URL if available
+  let url;
+  if (schoolCtx) {
+    url = itemType === 'course'
+      ? `/site/${schoolCtx}/course/${itemId}`
+      : `/site/${schoolCtx}/past-question/${itemId}`;
+  } else {
+    url = itemType === 'course' ? `/courses/${itemId}` : `/past-questions/${itemId}`;
+  }
+  retryEl.innerHTML = `
+    <a href="${url}" class="btn btn-outline" style="width:100%;margin-bottom:10px;display:block;">
+      ← ${label}
+    </a>
+  `;
+}
+
+// Update home/dashboard links for school context
+if (schoolCtx) {
+  const homeBtn = document.querySelector('a[href="/"]');
+  if (homeBtn) homeBtn.href = '/site/' + schoolCtx;
+}
+</script>
+
+<script>
+// Fix dashboard links to use correct URL for each role
+(function() {
+  function fixDashLinks() {
+    if (typeof Auth === 'undefined') { setTimeout(fixDashLinks, 100); return; }
+    const url = Auth.getDashboardUrl ? Auth.getDashboardUrl() : '/dashboard';
+    document.querySelectorAll('a[href="/dashboard"]').forEach(function(a) { a.href = url; });
+  }
+  fixDashLinks();
+})();
+</script>
+</body>
+</html>

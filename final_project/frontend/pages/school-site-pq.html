@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Past Question</title>
+<link rel="stylesheet" href="/css/main.css"/>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<style>
+body{margin:0;}
+.site-nav{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.1);}
+.pq-body{max-width:800px;margin:0 auto;padding:40px;}
+.buy-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:24px;margin-top:24px;}
+.gw-btn{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);border-radius:10px;padding:12px 16px;cursor:pointer;font-size:.88rem;color:#fff;text-align:left;display:flex;align-items:center;gap:8px;width:100%;margin-bottom:8px;transition:border-color .15s;}
+.gw-btn.selected,.gw-btn:hover{border-color:var(--gw-accent,#2563eb);}
+.pay-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;align-items:center;justify-content:center;padding:20px;}
+.pay-modal-overlay.open{display:flex;}
+.pay-modal-box{background:#1a1f2e;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:28px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;}
+</style>
+</head>
+<body>
+<div id="page-root">
+  <div style="text-align:center;padding:80px;opacity:.5;">Loading...</div>
+</div>
+
+<!-- Payment Modal -->
+<div class="pay-modal-overlay" id="payModal">
+  <div class="pay-modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h3 style="margin:0;font-size:1.05rem;">Complete Purchase</h3>
+      <button onclick="closePayModal()" style="background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;">✕</button>
+    </div>
+    <div id="pay-modal-item" style="background:rgba(255,255,255,.05);border-radius:10px;padding:14px;margin-bottom:18px;font-size:.88rem;opacity:.8;"></div>
+    <div id="pay-alert" style="margin-bottom:10px;"></div>
+    <div id="gw-list" style="margin-bottom:16px;">
+      <div style="text-align:center;padding:20px;opacity:.5;">Loading payment options…</div>
+    </div>
+    <div id="bank-block" style="display:none;background:rgba(255,165,0,.08);border:1px solid rgba(255,165,0,.3);border-radius:8px;padding:14px;margin-bottom:14px;font-size:.82rem;color:#e6a817;">
+      <div id="bank-info"></div>
+      <div style="margin-top:12px;">
+        <label style="display:block;font-size:.78rem;margin-bottom:4px;color:#fff;">Upload payment proof *</label>
+        <input type="file" id="bank-proof-pq" accept="image/*,.pdf" style="width:100%;font-size:.78rem;color:#fff;">
+      </div>
+    </div>
+    <button id="pay-btn" onclick="doPay()" style="width:100%;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;padding:14px;border-radius:10px;font-weight:700;border:none;cursor:pointer;font-size:1rem;">Pay Now →</button>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+const parts = window.location.pathname.split('/');
+const subdomain = parts[2];
+const pqId = parts[4];
+
+let siteInfo = null, pqData = null, allGws = [], selGw = null;
+let primaryColor = '#2563eb', accentColor = '#10b981';
+
+async function loadPage() {
+  const site = await http.get('/institutions/public/site-by-id-subdomain/' + subdomain);
+  siteInfo = site;
+  const p = site?.primary_color || '#2563eb';
+  const a = site?.accent_color || '#10b981';
+  const bg = site?.bg_color || '#0f172a';
+  const schoolName = site?.school_name || 'School';
+  primaryColor = p; accentColor = a;
+
+  document.body.style.background = bg;
+  document.body.style.color = '#fff';
+  document.documentElement.style.setProperty('--gw-accent', p);
+
+  const currentUser = Auth.getUser();
+  const isLoggedIn = Auth.isLoggedIn();
+  const belongsHere = isLoggedIn && currentUser && (
+    currentUser.site_id === site?.id ||
+    (currentUser.role_id === 2 && site?.user_id === currentUser.id)
+  );
+
+  const navRight = belongsHere
+    ? `<a href="${getDashUrl()}" style="background:${p};color:#fff;padding:7px 18px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.88rem;">My Dashboard</a>`
+    : `<a href="/login?school=${subdomain}" style="background:${p};color:#fff;padding:7px 18px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.88rem;">Login</a>
+       <a href="/register?school=${subdomain}" style="border:1px solid ${p};color:#fff;padding:7px 18px;border-radius:8px;text-decoration:none;font-size:.88rem;margin-left:6px;">Register</a>`;
+
+  const pq = await http.get('/past-questions/' + pqId);
+  if (!pq || pq.message) {
+    document.getElementById('page-root').innerHTML = `<div style="text-align:center;padding:80px;"><h2>Not found</h2><a href="/site/${subdomain}" style="color:${p};">← Back to ${schoolName}</a></div>`;
+    return;
+  }
+  pqData = pq;
+  document.title = pq.title + ' — ' + schoolName;
+
+  const isPurchased = isLoggedIn
+    ? (await http.get('/payments/check-purchase?type=past_question&id=' + pqId))?.purchased
+    : false;
+
+  // Load gateways for this school
+  if (isLoggedIn && !isPurchased && pq.price > 0 && site?.id) {
+    const gwsResult = await http.get('/payments/gateways?site_id=' + site.id);
+    allGws = gwsResult || [];
+  }
+
+  let buyHtml = '';
+  if (isPurchased || pq.price <= 0) {
+    buyHtml = `
+      <div style="background:rgba(39,174,96,.15);color:#27ae60;padding:10px 16px;border-radius:8px;font-weight:600;text-align:center;margin-bottom:16px;">✅ ${pq.price <= 0 ? 'Free Access' : 'Purchased'}</div>
+      ${pq.file_path
+        ? `<a href="${pq.file_path}" target="_blank" style="display:block;background:${p};color:#fff;padding:13px;border-radius:10px;font-weight:700;text-decoration:none;text-align:center;">📥 Download PDF</a>`
+        : `<a href="/past-questions/${pqId}" style="display:block;background:${p};color:#fff;padding:13px;border-radius:10px;font-weight:700;text-decoration:none;text-align:center;">📝 Start Practice</a>
+      ${pq.total_questions > 0
+        ? `<a href="/cbt-test?pq_id=${pqId}&site=${subdomain}" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;background:linear-gradient(135deg,#1d4ed8,#7c3aed);color:#fff;padding:13px;border-radius:10px;font-weight:700;text-decoration:none;">📝 Take CBT Test (${pq.total_questions} Questions)</a>`
+        : `<div style="margin-top:10px;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.15);border-radius:10px;padding:12px;text-align:center;font-size:.82rem;color:rgba(255,255,255,.4);">📝 No CBT questions yet</div>`}
+    \`\`};
+  } else if (!isLoggedIn) {
+    buyHtml = `
+      <a href="/login?school=${subdomain}" style="display:block;background:linear-gradient(135deg,${p},${a});color:#fff;padding:13px;border-radius:10px;font-weight:700;text-decoration:none;text-align:center;">Login to Purchase</a>
+      <a href="/register?school=${subdomain}" style="display:block;border:1px solid ${p};color:#fff;padding:11px;border-radius:10px;font-weight:600;text-decoration:none;text-align:center;margin-top:10px;">Create Account</a>`;
+  } else {
+    buyHtml = `
+      <div id="pay-alert-inline" style="margin-bottom:10px;"></div>
+      <button onclick="openPayModal()" style="width:100%;background:linear-gradient(135deg,${p},${a});color:#fff;padding:13px;border-radius:10px;font-weight:700;border:none;cursor:pointer;font-size:1rem;">
+        Buy Now — ₦${Number(pq.price).toLocaleString()}
+      </button>`;
+  }
+
+  document.getElementById('page-root').innerHTML = `
+    <nav class="site-nav" style="background:${bg}cc;">
+      <a href="/site/${subdomain}" style="font-weight:800;font-size:1.1rem;background:linear-gradient(135deg,${p},${a});-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none;">← ${schoolName}</a>
+      <div style="display:flex;gap:12px;align-items:center;">${navRight}</div>
+    </nav>
+    <div class="pq-body">
+      ${pq.cover_image ? `<img src="${pq.cover_image}" style="width:100%;max-height:280px;object-fit:cover;border-radius:14px;margin-bottom:24px;">` : ''}
+      <div style="font-size:.78rem;opacity:.6;margin-bottom:10px;">
+        <a href="/site/${subdomain}" style="color:inherit;text-decoration:none;">${schoolName}</a> › Past Questions
+      </div>
+      <h1 style="font-size:clamp(1.4rem,3vw,2rem);font-weight:800;margin:0 0 12px;">${pq.title}</h1>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;opacity:.7;margin-bottom:20px;">
+        ${pq.year ? `<span>📅 ${pq.year}</span>` : ''}
+        ${pq.subject ? `<span>📖 ${pq.subject}</span>` : ''}
+        ${pq.total_questions ? `<span>❓ ${pq.total_questions} questions</span>` : ''}
+        ${pq.exam_type ? `<span>🎓 ${pq.exam_type}</span>` : ''}
+      </div>
+      ${pq.description ? `<p style="opacity:.7;line-height:1.7;margin-bottom:24px;">${pq.description}</p>` : ''}
+      <div class="buy-card">
+        <div style="font-size:2rem;font-weight:800;color:${a};margin-bottom:16px;">
+          ${pq.price > 0 ? '₦' + Number(pq.price).toLocaleString() : 'Free'}
+        </div>
+        ${buyHtml}
+      </div>
+    </div>`;
+}
+
+// ── Payment Modal ─────────────────────────────────────────────────────────────
+function openPayModal() {
+  document.getElementById('pay-modal-item').innerHTML =
+    `<strong>${pqData.title}</strong><br><span style="opacity:.6;">${pqData.year || ''} ${pqData.subject || ''}</span>`;
+  document.getElementById('pay-alert').innerHTML = '';
+  document.getElementById('payModal').classList.add('open');
+  renderGateways();
+}
+
+function closePayModal() {
+  document.getElementById('payModal').classList.remove('open');
+}
+
+function renderGateways() {
+  const list = document.getElementById('gw-list');
+  if (!allGws.length) {
+    list.innerHTML = '<div style="text-align:center;padding:12px;opacity:.5;">No payment methods configured. Contact school admin.</div>';
+    document.getElementById('pay-btn').disabled = true;
+    return;
+  }
+  const labels = { paystack: '💳 Paystack', flutterwave: '🦋 Flutterwave', stripe: '🌐 Stripe', bank_transfer: '🏦 Bank Transfer' };
+  selGw = allGws[0].gateway;
+  list.innerHTML = allGws.map((g, i) =>
+    `<button class="gw-btn${i === 0 ? ' selected' : ''}" onclick="selectGw('${g.gateway}', this)">
+       ${labels[g.gateway] || g.gateway}
+     </button>`).join('');
+  handleGwChange();
+}
+
+function selectGw(gw, btn) {
+  selGw = gw;
+  document.querySelectorAll('.gw-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  handleGwChange();
+}
+
+function handleGwChange() {
+  const isBank = selGw === 'bank_transfer';
+  document.getElementById('bank-block').style.display = isBank ? 'block' : 'none';
+  if (isBank) {
+    const gw = allGws.find(g => g.gateway === 'bank_transfer');
+    document.getElementById('bank-info').innerHTML = gw?.bank_account_number
+      ? `<div><strong>Bank:</strong> ${gw.bank_name || '—'}</div>
+         <div><strong>Account Name:</strong> ${gw.bank_account_name || '—'}</div>
+         <div><strong>Account No:</strong> <span style="font-size:1rem;font-weight:700;letter-spacing:2px;">${gw.bank_account_number}</span></div>
+         <div><strong>Amount:</strong> ₦${Number(pqData.price).toLocaleString()}</div>`
+      : '<div>Bank details not configured. Contact admin.</div>';
+  }
+  document.getElementById('pay-btn').textContent = isBank ? '📤 Submit Payment Proof →' : 'Pay Now →';
+}
+
+async function doPay() {
+  const btn = document.getElementById('pay-btn');
+  const alertEl = document.getElementById('pay-alert');
+  alertEl.innerHTML = '';
+  if (!selGw) return;
+  setLoading(btn, true);
+
+  const user = Auth.getUser();
+  const siteId = siteInfo?.id || null;
+
+  // Bank transfer
+  if (selGw === 'bank_transfer') {
+    const file = document.getElementById('bank-proof-pq')?.files[0];
+    if (!file) {
+      alertEl.innerHTML = '<div style="color:#e74c3c;font-size:.82rem;">Please upload your payment proof.</div>';
+      setLoading(btn, false); return;
+    }
+    const fd = new FormData();
+    fd.append('proof', file);
+    fd.append('item_type', 'past_question');
+    fd.append('item_id', pqId);
+    fd.append('amount', pqData.price);
+    if (siteId) fd.append('site_id', siteId);
+    const res = await fetch(window.location.origin + '/api/payments/bank-proof', {
+      method: 'POST', headers: { Authorization: 'Bearer ' + Auth.getToken() }, body: fd
+    });
+    const data = await res.json();
+    setLoading(btn, false);
+    if (res.ok) {
+      alertEl.innerHTML = '<div style="color:#27ae60;font-size:.82rem;">✅ Proof submitted! Access will be granted after admin approval (up to 24hrs).</div>';
+      btn.style.display = 'none';
+    } else {
+      alertEl.innerHTML = `<div style="color:#e74c3c;font-size:.82rem;">${data.message || 'Upload failed'}</div>`;
+    }
+    return;
+  }
+
+  // Paystack inline
+  if (selGw === 'paystack') {
+    const gw = allGws.find(g => g.gateway === 'paystack');
+    if (!gw?.public_key) {
+      alertEl.innerHTML = '<div style="color:#e74c3c;font-size:.82rem;">Paystack not configured for this school.</div>';
+      setLoading(btn, false); return;
+    }
+    const initData = await http.post('/payments/initiate', { item_type: 'past_question', item_id: pqId, gateway: 'paystack', site_id: siteId });
+    if (initData?.authorization_url || initData?.link) {
+      window.location.href = initData.authorization_url || initData.session_url || initData.link;
+      return;
+    }
+    // Fallback: inline popup
+    PaystackPop.setup({
+      key: gw.public_key, email: user.email,
+      amount: pqData.price * 100, currency: 'NGN',
+      ref: initData?.order_ref || ('pq_' + pqId + '_' + Date.now()),
+      callback: async function(response) {
+        const r = await http.post('/payments/verify', { reference: response.reference, item_type: 'past_question', item_id: pqId, school: subdomain });
+        if (r?.ok) { Toast.success('Payment successful! ✅'); setTimeout(() => window.location.reload(), 1500); }
+        else { alertEl.innerHTML = '<div style="color:#e74c3c;font-size:.82rem;">Verification failed. Contact support.</div>'; setLoading(btn, false); }
+      },
+      onClose: function() { setLoading(btn, false); }
+    }).openIframe();
+    return;
+  }
+
+  // Flutterwave, Stripe — redirect flow
+  if (selGw === 'flutterwave' || selGw === 'stripe') {
+    const initData = await http.post('/payments/initiate', { item_type: 'past_question', item_id: pqId, gateway: selGw, site_id: siteId });
+    const url = initData?.authorization_url || initData?.session_url || initData?.link;
+    if (url) { window.location.href = url; return; }
+    alertEl.innerHTML = `<div style="color:#e74c3c;font-size:.82rem;">${initData?.message || 'Payment initiation failed'}</div>`;
+    setLoading(btn, false);
+    return;
+  }
+
+  setLoading(btn, false);
+}
+
+function getDashUrl() {
+  const u = Auth.getUser ? Auth.getUser() : null;
+  if (!u) return '/login';
+  if (u.role_id === 4) return '/super-admin';
+  if (u.role_id === 2) return '/admin';
+  if (u.role_id === 3) return '/instructor';
+  return '/dashboard';
+}
+
+loadPage();
+</script>
+</body>
+</html>

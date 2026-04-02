@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Document Viewer - ExamPro</title>
+<link rel="stylesheet" href="/css/main.css">
+<style>
+body { user-select: none; -webkit-user-select: none; }
+.viewer-wrap { display:flex; flex-direction:column; height:100vh; }
+.viewer-header { padding:12px 20px; background:var(--bg-card); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:16px; }
+.viewer-header h3 { margin:0; font-size:1rem; }
+#pdfCanvas { max-width:100%; display:block; margin:0 auto; }
+.viewer-body { flex:1; overflow:auto; background:#525659; padding:20px; position:relative; }
+.watermark-overlay { position:fixed; top:0; left:0; right:0; bottom:0; pointer-events:none; z-index:1000; display:flex; align-items:center; justify-content:center; transform:rotate(-30deg); opacity:0.12; font-size:1.5rem; font-weight:700; color:#fff; white-space:nowrap; }
+.page-controls { display:flex; gap:10px; align-items:center; }
+</style>
+</head>
+<body oncontextmenu="return false;">
+<div class="viewer-wrap">
+  <div class="viewer-header">
+    <a href="javascript:history.back()" class="btn btn-outline btn-sm">← Back</a>
+    <h3 id="docTitle">Document Viewer</h3>
+    <div class="page-controls" style="margin-left:auto;">
+      <button class="btn btn-outline btn-sm" onclick="changePage(-1)">◀ Prev</button>
+      <span id="pageInfo" style="font-size:.85rem;">Page 1</span>
+      <button class="btn btn-outline btn-sm" onclick="changePage(1)">Next ▶</button>
+    </div>
+  </div>
+  <div class="viewer-body">
+    <div class="watermark-overlay" id="watermark"></div>
+    <canvas id="pdfCanvas"></canvas>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const token = localStorage.getItem('token');
+const user = JSON.parse(localStorage.getItem('user') || '{}');
+const params = new URLSearchParams(location.search);
+const pqId = params.get('id');
+const title = params.get('title') || 'Document';
+
+document.getElementById('docTitle').textContent = title;
+document.getElementById('watermark').textContent = `${user.email || ''} • ExamPro • ${new Date().toLocaleDateString()}`;
+
+let pdfDoc = null, pageNum = 1, pageCount = 0;
+
+async function loadPDF() {
+  const url = `/api/past-questions/view/${pqId}`;
+  try {
+    const loadingTask = pdfjsLib.getDocument({ url, httpHeaders: { 'Authorization': 'Bearer ' + token } });
+    pdfDoc = await loadingTask.promise;
+    pageCount = pdfDoc.numPages;
+    renderPage(pageNum);
+  } catch (e) {
+    document.getElementById('pdfCanvas').parentElement.innerHTML = '<div style="color:#fff;text-align:center;padding:40px;"><h3>⚠️ Unable to load document</h3><p>You may not have access to this document.</p></div>';
+  }
+}
+
+async function renderPage(num) {
+  const page = await pdfDoc.getPage(num);
+  const scale = Math.min(window.innerWidth * 0.85, 900) / page.getViewport({ scale: 1 }).width;
+  const viewport = page.getViewport({ scale });
+  const canvas = document.getElementById('pdfCanvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+  document.getElementById('pageInfo').textContent = `Page ${num} / ${pageCount}`;
+}
+
+function changePage(dir) {
+  const next = pageNum + dir;
+  if (next >= 1 && next <= pageCount) { pageNum = next; renderPage(pageNum); }
+}
+
+if (!token) location.href = '/login';
+else loadPDF();
+
+// Disable keyboard shortcuts for save/print
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && ['s','p','a'].includes(e.key.toLowerCase())) e.preventDefault();
+});
+</script>
+</body>
+</html>

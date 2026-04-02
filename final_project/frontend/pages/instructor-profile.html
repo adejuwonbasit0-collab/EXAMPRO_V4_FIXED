@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Instructor Profile — ExamPro</title>
+<link rel="stylesheet" href="/css/main.css"/>
+<style>
+  .ip-hero { background:linear-gradient(135deg,var(--primary,#5B7DFF),#7c3aed); padding:48px 24px 80px; }
+  .ip-hero-inner { max-width:900px; margin:0 auto; display:flex; align-items:center; gap:28px; flex-wrap:wrap; }
+  .ip-avatar { width:100px; height:100px; border-radius:50%; object-fit:cover; border:4px solid rgba(255,255,255,.3); background:rgba(255,255,255,.2); display:flex; align-items:center; justify-content:center; font-size:2.5rem; flex-shrink:0; }
+  .ip-avatar img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
+  .ip-hero-name { font-size:1.8rem; font-weight:800; color:#fff; margin:0 0 4px; }
+  .ip-hero-title { color:rgba(255,255,255,.75); font-size:.95rem; margin:0 0 16px; }
+  .ip-stats { display:flex; gap:24px; flex-wrap:wrap; }
+  .ip-stat { text-align:center; }
+  .ip-stat-val { font-size:1.4rem; font-weight:800; color:#fff; }
+  .ip-stat-lbl { font-size:.72rem; color:rgba(255,255,255,.65); text-transform:uppercase; letter-spacing:.5px; }
+  .ip-body { max-width:900px; margin:-40px auto 60px; padding:0 24px; position:relative; z-index:2; }
+  .ip-card { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:28px; margin-bottom:24px; }
+  .ip-section-title { font-size:1.05rem; font-weight:700; margin:0 0 18px; }
+  .ip-courses { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
+  .ip-course-card { background:var(--bg); border:1px solid var(--border); border-radius:12px; overflow:hidden; cursor:pointer; transition:transform .15s; text-decoration:none; color:inherit; display:block; }
+  .ip-course-card:hover { transform:translateY(-3px); }
+  .ip-course-thumb { width:100%; height:130px; object-fit:cover; background:var(--border); }
+  .ip-course-body { padding:12px; }
+  .ip-course-title { font-size:.88rem; font-weight:700; margin:0 0 6px; line-height:1.4; }
+  .ip-course-meta { display:flex; justify-content:space-between; align-items:center; font-size:.75rem; color:var(--text-muted); }
+  .ip-empty { text-align:center; padding:40px; color:var(--text-muted); }
+  .ip-back { display:inline-flex; align-items:center; gap:6px; color:rgba(255,255,255,.8); text-decoration:none; font-size:.85rem; margin-bottom:20px; }
+  .ip-back:hover { color:#fff; }
+  .stars { color:#f59e0b; }
+</style>
+</head>
+<body>
+<!-- Hero -->
+<div class="ip-hero">
+  <div style="max-width:900px;margin:0 auto;">
+    <a href="javascript:history.back()" class="ip-back">← Back</a>
+  </div>
+  <div class="ip-hero-inner">
+    <div class="ip-avatar" id="ip-avatar-wrap">👤</div>
+    <div>
+      <h1 class="ip-hero-name" id="ip-name">Loading…</h1>
+      <p class="ip-hero-title" id="ip-title"></p>
+      <div class="ip-stats">
+        <div class="ip-stat"><div class="ip-stat-val" id="ip-courses-count">—</div><div class="ip-stat-lbl">Courses</div></div>
+        <div class="ip-stat"><div class="ip-stat-val" id="ip-students-count">—</div><div class="ip-stat-lbl">Students</div></div>
+        <div class="ip-stat"><div class="ip-stat-val" id="ip-rating">—</div><div class="ip-stat-lbl">Avg Rating</div></div>
+        <div class="ip-stat"><div class="ip-stat-val" id="ip-reviews">—</div><div class="ip-stat-lbl">Reviews</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Body -->
+<div class="ip-body">
+  <div id="ip-bio-card" class="ip-card" style="display:none;">
+    <h2 class="ip-section-title">👤 About</h2>
+    <p id="ip-bio" style="color:var(--text-muted);line-height:1.8;margin:0;"></p>
+  </div>
+
+  <div class="ip-card">
+    <h2 class="ip-section-title">📚 Courses</h2>
+    <div class="ip-courses" id="ip-courses-grid">
+      <div class="ip-empty">Loading courses…</div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+const API = window.location.origin + '/api';
+const pathParts = window.location.pathname.split('/').filter(Boolean);
+// URL is /instructor/profile/:id
+const instructorId = pathParts[pathParts.length - 1];
+
+async function loadProfile() {
+  const data = await http.get('/student/instructor/' + instructorId + '/profile').catch(() => null);
+  if (!data) {
+    document.getElementById('ip-name').textContent = 'Instructor not found';
+    document.getElementById('ip-courses-grid').innerHTML = '<div class="ip-empty">Could not load profile.</div>';
+    return;
+  }
+
+  // Avatar
+  const avatarWrap = document.getElementById('ip-avatar-wrap');
+  if (data.avatar) {
+    avatarWrap.innerHTML = `<img src="${data.avatar}" alt="${data.name}" onerror="this.parentElement.textContent='👤'">`;
+  }
+
+  document.getElementById('ip-name').textContent = data.name || 'Instructor';
+  document.getElementById('ip-title').textContent = data.title || '';
+  document.getElementById('ip-courses-count').textContent = data.total_courses || 0;
+  document.getElementById('ip-students-count').textContent = Number(data.total_students || 0).toLocaleString();
+  document.getElementById('ip-rating').textContent = data.average_rating ? '⭐ ' + data.average_rating : '—';
+  document.getElementById('ip-reviews').textContent = data.total_reviews || 0;
+  document.title = (data.name || 'Instructor') + ' — ExamPro';
+
+  // Bio
+  if (data.bio) {
+    document.getElementById('ip-bio').textContent = data.bio;
+    document.getElementById('ip-bio-card').style.display = 'block';
+  }
+
+  // Courses
+  const grid = document.getElementById('ip-courses-grid');
+  if (!data.courses || !data.courses.length) {
+    grid.innerHTML = '<div class="ip-empty">No published courses yet.</div>';
+    return;
+  }
+  grid.innerHTML = data.courses.map(c => `
+    <a class="ip-course-card" href="/courses/${c.id}">
+      <img class="ip-course-thumb" src="${c.thumbnail || ''}" alt="${c.title}" onerror="this.style.display='none'">
+      <div class="ip-course-body">
+        <div class="ip-course-title">${c.title}</div>
+        <div class="ip-course-meta">
+          <span>${c.level || 'All levels'}</span>
+          <span style="font-weight:700;color:var(--primary);">${c.price > 0 ? '₦' + Number(c.price).toLocaleString() : 'Free'}</span>
+        </div>
+        <div style="font-size:.72rem;color:var(--text-muted);margin-top:4px;">
+          ${c.enrolled_count || 0} students
+          ${c.rating ? ' · ⭐ ' + Number(c.rating).toFixed(1) : ''}
+        </div>
+      </div>
+    </a>`).join('');
+}
+
+loadProfile();
+</script>
+</body>
+</html>

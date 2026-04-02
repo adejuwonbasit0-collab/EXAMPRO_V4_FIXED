@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExamPro — Nigeria's #1 Exam Prep & LMS Platform</title>
+<link rel="stylesheet" href="/css/main.css">
+<style>
+/* ── HERO SPECIFIC ── */
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+.hero-mockup{position:relative;}
+.hero-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow-lg);}
+.hero-card-header{display:flex;gap:6px;margin-bottom:16px;}
+.hero-card-dot{width:10px;height:10px;border-radius:50%;}
+.mockup-question{background:var(--bg-card2);border-radius:var(--radius-sm);padding:18px;margin-bottom:14px;}
+.mockup-label{font-size:.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.mockup-text{font-size:.88rem;font-weight:600;color:var(--text);line-height:1.5;}
+.mockup-option{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);margin-bottom:7px;font-size:.83rem;font-weight:500;transition:all .2s;}
+.mockup-option.selected{background:var(--primary-light);border-color:var(--primary);color:var(--primary);}
+.mockup-option-key{width:24px;height:24px;border-radius:6px;background:var(--bg-card2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.75rem;flex-shrink:0;}
+.mockup-option.selected .mockup-option-key{background:var(--primary);color:#fff;}
+.hero-float{position:absolute;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:700;}
+.hero-float-1{top:-20px;right:-20px;}
+.hero-float-2{bottom:-20px;left:-20px;}
+.float-icon{font-size:1.3rem;}
+
+/* ── HOW IT WORKS ── */
+.how-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:28px;}
+.step-card{text-align:center;padding:28px 20px;}
+.step-num{width:56px;height:56px;border-radius:16px;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:800;font-size:1.3rem;color:#fff;margin:0 auto 18px;box-shadow:0 8px 20px rgba(92,110,248,.3);}
+.step-title{font-family:var(--font-head);font-weight:700;margin-bottom:8px;font-size:.95rem;}
+.step-desc{font-size:.82rem;color:var(--text-muted);line-height:1.6;}
+
+/* ── PRICING ── */
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:900px;margin:0 auto;}
+.pricing-card{background:var(--bg-card);border:2px solid var(--border);border-radius:var(--radius-lg);padding:32px;text-align:center;transition:all .25s;}
+.pricing-card.popular{border-color:var(--primary);box-shadow:var(--shadow-lg);transform:scale(1.03);}
+.pricing-label{font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:12px;}
+.pricing-price{font-family:var(--font-head);font-size:2.8rem;font-weight:800;color:var(--text);line-height:1;}
+.pricing-price span{font-size:1rem;color:var(--text-muted);font-weight:500;}
+.pricing-features{list-style:none;margin:24px 0;text-align:left;display:flex;flex-direction:column;gap:10px;}
+.pricing-features li{display:flex;align-items:center;gap:10px;font-size:.875rem;}
+.pricing-features li::before{content:'✓';color:var(--accent);font-weight:800;flex-shrink:0;}
+
+/* ── TESTIMONIALS ── */
+.testimonials-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;}
+.testimonial-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-sm);}
+.testimonial-stars{color:#F5A623;font-size:1rem;margin-bottom:12px;}
+.testimonial-text{font-size:.88rem;line-height:1.7;color:var(--text-muted);margin-bottom:16px;font-style:italic;}
+.testimonial-author{display:flex;align-items:center;gap:10px;}
+.testimonial-avatar{width:40px;height:40px;border-radius:50%;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem;}
+.testimonial-name{font-weight:700;font-size:.875rem;color:var(--text);}
+.testimonial-role{font-size:.75rem;color:var(--text-muted);}
+
+/* ── CTA BAND ── */
+.cta-band{background:var(--gradient);padding:72px 0;text-align:center;position:relative;overflow:hidden;}
+.cta-band::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");}
+.cta-band h2{color:#fff;font-size:clamp(1.6rem,3.5vw,2.4rem);margin-bottom:12px;position:relative;}
+.cta-band p{color:rgba(255,255,255,.8);font-size:1rem;margin-bottom:32px;position:relative;}
+.cta-band .hero-buttons{justify-content:center;position:relative;}
+.cta-band .btn-outline{border-color:rgba(255,255,255,.6);color:#fff;}
+.cta-band .btn-outline:hover{background:rgba(255,255,255,.15);}
+
+@media(max-width:768px){
+  .hero-grid{grid-template-columns:1fr;gap:40px;}
+  .hero-mockup{display:none;}
+  .pricing-card.popular{transform:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar" id="mainNav">
+  <div class="nav-inner">
+    <div class="nav-logo">EXAMPRO</div>
+    <div class="nav-links">
+      <a href="/" class="active">Home</a>
+      <a href="/home">Templates</a>
+      <a href="/past-questions">Past Questions</a>
+      <a href="/courses">Courses</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+    </div>
+    <div class="nav-cta" id="navCta">
+      <a href="/login" class="btn btn-ghost btn-sm">Login</a>
+      <a href="/register" class="btn btn-primary btn-sm">Get Started Free</a>
+    </div>
+    <button class="theme-switch" id="themeToggle" title="Toggle theme">🌙</button>
+    <div class="hamburger" onclick="toggleMobileMenu()">☰</div>
+  </div>
+</nav>
+
+<!-- ── MOBILE MENU ── -->
+<div class="mobile-menu" id="mobileMenu" onclick="toggleMobileMenu()">
+  <div class="mobile-panel" onclick="event.stopPropagation()">
+    <div class="nav-logo">EXAMPRO</div>
+    <div class="nav-links" style="flex-direction:column;gap:4px;margin-bottom:24px;">
+      <a href="/">Home</a>
+      <a href="/home">Templates</a>
+      <a href="/past-questions">Past Questions</a>
+      <a href="/courses">Courses</a>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <a href="/login" class="btn btn-outline">Login</a>
+      <a href="/register" class="btn btn-primary">Get Started Free</a>
+    </div>
+  </div>
+</div>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-bg-dots"></div>
+  <div class="hero-blob hero-blob-1"></div>
+  <div class="hero-blob hero-blob-2"></div>
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-content animate-fadeInUp">
+        <div class="hero-badge">🇳🇬 Built for Nigerian Students & Schools</div>
+        <h1 class="hero-title">
+          Pass Every Exam with <span class="highlight">Confidence</span>
+        </h1>
+        <p class="hero-desc">
+          Access thousands of past questions, take CBT practice tests, and learn from expert instructors — all in one powerful platform.
+        </p>
+        <div class="hero-buttons">
+          <a href="/register" class="btn btn-primary btn-lg">Start Free Today →</a>
+          <a href="/past-questions" class="btn btn-outline btn-lg">Browse Past Questions</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <strong id="statUsers">10,000+</strong>
+            <span>Students</span>
+          </div>
+          <div class="hero-stat">
+            <strong id="statQuestions">50,000+</strong>
+            <span>Questions</span>
+          </div>
+          <div class="hero-stat">
+            <strong id="statInstitutions">200+</strong>
+            <span>Institutions</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Mockup Card -->
+      <div class="hero-mockup animate-fadeInUp" style="animation-delay:.2s;">
+        <div class="hero-card">
+          <div class="hero-card-header">
+            <div class="hero-card-dot" style="background:#F04438;"></div>
+            <div class="hero-card-dot" style="background:#F5A623;"></div>
+            <div class="hero-card-dot" style="background:#10C48A;"></div>
+          </div>
+          <div class="mockup-question">
+            <div class="mockup-label">Question 12 of 40 · WAEC Mathematics</div>
+            <div class="mockup-text">If 3x + 2 = 14, find the value of x.</div>
+          </div>
+          <div>
+            <div class="mockup-option"><div class="mockup-option-key">A</div> x = 2</div>
+            <div class="mockup-option selected"><div class="mockup-option-key">B</div> x = 4 <span style="margin-left:auto;color:var(--accent);">✓</span></div>
+            <div class="mockup-option"><div class="mockup-option-key">C</div> x = 6</div>
+            <div class="mockup-option"><div class="mockup-option-key">D</div> x = 8</div>
+          </div>
+          <div style="margin-top:16px;">
+            <div style="display:flex;justify-content:space-between;font-size:.75rem;font-weight:600;color:var(--text-muted);margin-bottom:6px;">
+              <span>Progress</span><span>12 / 40</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:30%;"></div></div>
+          </div>
+        </div>
+        <div class="hero-float hero-float-1">
+          <div class="float-icon">🎯</div>
+          <div>
+            <div style="font-size:.85rem;font-weight:800;color:var(--text);">Score: 85%</div>
+            <div style="font-size:.7rem;color:var(--text-muted);">Top 10%</div>
+          </div>
+        </div>
+        <div class="hero-float hero-float-2">
+          <div class="float-icon">🏆</div>
+          <div>
+            <div style="font-size:.85rem;font-weight:800;color:var(--text);">Certificate Earned</div>
+            <div style="font-size:.7rem;color:var(--text-muted);">Course Completed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── STATS BAND ── -->
+<section style="background:var(--bg-card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:32px 0;">
+  <div class="container">
+    <div class="stat-cards" style="margin:0;">
+      <div class="stat-card primary">
+        <div class="stat-icon primary">🎓</div>
+        <div class="stat-info">
+          <div class="stat-label">Active Students</div>
+          <div class="stat-value">10,000+</div>
+        </div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-icon accent">📄</div>
+        <div class="stat-info">
+          <div class="stat-label">Past Questions</div>
+          <div class="stat-value">50,000+</div>
+        </div>
+      </div>
+      <div class="stat-card warning">
+        <div class="stat-icon warning">🏫</div>
+        <div class="stat-info">
+          <div class="stat-label">Institutions</div>
+          <div class="stat-value">200+</div>
+        </div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-icon purple">📚</div>
+        <div class="stat-info">
+          <div class="stat-label">Courses</div>
+          <div class="stat-value">500+</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ── -->
+<section class="section" id="features">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label">What We Offer</div>
+      <h2 class="section-title">Everything You Need to Succeed</h2>
+      <p class="section-sub">From past questions to live classes — a complete exam prep and learning ecosystem.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon" style="background:var(--primary-light);">📄</div>
+        <div class="feat-title">Past Questions</div>
+        <div class="feat-desc">Access WAEC, NECO, JAMB, and NABTEB past questions from hundreds of institutions with detailed answers.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:var(--accent-light);">🎯</div>
+        <div class="feat-title">CBT Practice Mode</div>
+        <div class="feat-desc">Simulate real exam conditions with timed CBT tests, instant scoring, and detailed performance analytics.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:var(--warning-light);">🎓</div>
+        <div class="feat-title">Video Courses</div>
+        <div class="feat-desc">Learn from expert instructors with video lessons, quizzes, downloadable resources, and completion certificates.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:var(--purple-light);">🏫</div>
+        <div class="feat-title">School Site Builder</div>
+        <div class="feat-desc">Create your own branded school website with a visual page builder, custom templates, and subdomain.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:#FFF0F5;">💬</div>
+        <div class="feat-title">Live Classes</div>
+        <div class="feat-desc">Join scheduled Google Meet, Zoom, or YouTube Live sessions hosted directly from the platform.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:var(--accent-light);">🏆</div>
+        <div class="feat-title">Certificates</div>
+        <div class="feat-desc">Earn verifiable digital certificates upon course completion that you can download and share.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:var(--primary-light);">📊</div>
+        <div class="feat-title">Progress Tracking</div>
+        <div class="feat-desc">Track your learning journey with detailed dashboards showing lessons completed, quiz scores, and streaks.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:var(--warning-light);">💳</div>
+        <div class="feat-title">Flexible Payments</div>
+        <div class="feat-desc">Pay with Paystack, bank transfer, or card. Admins set up their own payment gateways for their schools.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── POPULAR COURSES ── -->
+<section class="section" style="background:var(--bg-card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="flex-between mb-24">
+      <div>
+        <div class="section-label">Learn Online</div>
+        <h2 class="section-title">Popular Courses</h2>
+      </div>
+      <a href="/courses" class="btn btn-outline">View All Courses →</a>
+    </div>
+    <div class="courses-grid" id="homeCourses">
+      <div class="spinner"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section class="section" id="how">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label">Simple Process</div>
+      <h2 class="section-title">Get Started in 3 Easy Steps</h2>
+    </div>
+    <div class="how-grid">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <div class="step-title">Create Your Account</div>
+        <div class="step-desc">Register for free in under 60 seconds. No credit card required to get started.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <div class="step-title">Choose Your Content</div>
+        <div class="step-desc">Browse past questions by subject or enroll in expert-led video courses that match your goals.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <div class="step-title">Practice & Achieve</div>
+        <div class="step-desc">Take timed CBT tests, track your progress, and earn certificates as you master each subject.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <div class="step-title">Launch Your School</div>
+        <div class="step-desc">Admins can build their own branded school platform with custom templates and payment settings.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIALS ── -->
+<section class="section" style="background:linear-gradient(135deg,var(--primary-light),var(--accent-light));border-top:1px solid var(--border);">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label">Student Stories</div>
+      <h2 class="section-title">What Our Students Say</h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"ExamPro helped me score 290 in JAMB! The CBT practice mode is incredibly realistic and the explanations are very detailed."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">AO</div>
+          <div>
+            <div class="testimonial-name">Adebayo Oluwaseun</div>
+            <div class="testimonial-role">JAMB Candidate, Lagos</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"As a school owner, building my branded site on ExamPro was effortless. My students love the dashboard and course system."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">FN</div>
+          <div>
+            <div class="testimonial-name">Fatima Nwosu</div>
+            <div class="testimonial-role">School Admin, Abuja</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"I passed my WAEC with flying colours after just 3 months of daily practice on ExamPro. Highly recommend to every student!"</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">CU</div>
+          <div>
+            <div class="testimonial-name">Chidinma Ugochukwu</div>
+            <div class="testimonial-role">SS3 Student, Enugu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PRICING ── -->
+<section class="section" id="pricing">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label">Pricing</div>
+      <h2 class="section-title">Simple, Transparent Pricing</h2>
+      <p class="section-sub">Choose the plan that fits your needs. Upgrade or downgrade anytime.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-label">Student</div>
+        <div class="pricing-price">Free<span> / always</span></div>
+        <ul class="pricing-features">
+          <li>Access public past questions</li>
+          <li>5 free CBT practice tests/month</li>
+          <li>Basic progress tracking</li>
+          <li>Community support</li>
+        </ul>
+        <a href="/register" class="btn btn-outline" style="width:100%;">Get Started Free</a>
+      </div>
+      <div class="pricing-card popular">
+        <div class="badge badge-primary" style="margin-bottom:12px;">Most Popular</div>
+        <div class="pricing-label">Student Pro</div>
+        <div class="pricing-price">₦2,500<span> / month</span></div>
+        <ul class="pricing-features">
+          <li>Unlimited past questions</li>
+          <li>Unlimited CBT practice</li>
+          <li>Video course access</li>
+          <li>Certificates of completion</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="/register" class="btn btn-primary" style="width:100%;">Start Pro Trial</a>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-label">School Admin</div>
+        <div class="pricing-price">₦15,000<span> / month</span></div>
+        <ul class="pricing-features">
+          <li>Custom branded school site</li>
+          <li>Unlimited students</li>
+          <li>Your own payment settings</li>
+          <li>Page builder + templates</li>
+          <li>Instructor management</li>
+          <li>Advanced analytics</li>
+        </ul>
+        <a href="/register" class="btn btn-outline" style="width:100%;">Launch Your School</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA BAND ── -->
+<div class="cta-band">
+  <div class="container">
+    <h2>Ready to Start Learning?</h2>
+    <p>Join 10,000+ students and schools already using ExamPro</p>
+    <div class="hero-buttons">
+      <a href="/register" class="btn btn-lg" style="background:#fff;color:var(--primary);">Create Free Account →</a>
+      <a href="/home" class="btn btn-outline btn-lg">Browse School Templates</a>
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <!-- Brand Column -->
+      <div>
+        <div class="footer-brand">EXAMPRO</div>
+        <p class="footer-desc">Nigeria's leading multi-tenant LMS and exam prep platform. Built for students, schools, and instructors across Africa.</p>
+        <div style="display:flex;gap:10px;margin-top:18px;">
+          <a href="#" style="width:34px;height:34px;border-radius:8px;background:var(--bg-card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.88rem;color:var(--text-muted);transition:all .2s;" onmouseover="this.style.background='var(--primary)';this.style.color='#fff';this.style.borderColor='var(--primary)';" onmouseout="this.style.background='var(--bg-card2)';this.style.color='var(--text-muted)';this.style.borderColor='var(--border)';">𝕏</a>
+          <a href="#" style="width:34px;height:34px;border-radius:8px;background:var(--bg-card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.88rem;color:var(--text-muted);transition:all .2s;" onmouseover="this.style.background='#1877F2';this.style.color='#fff';this.style.borderColor='#1877F2';" onmouseout="this.style.background='var(--bg-card2)';this.style.color='var(--text-muted)';this.style.borderColor='var(--border)';">f</a>
+          <a href="#" style="width:34px;height:34px;border-radius:8px;background:var(--bg-card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.88rem;color:var(--text-muted);transition:all .2s;" onmouseover="this.style.background='#E4405F';this.style.color='#fff';this.style.borderColor='#E4405F';" onmouseout="this.style.background='var(--bg-card2)';this.style.color='var(--text-muted)';this.style.borderColor='var(--border)';">📸</a>
+          <a href="#" style="width:34px;height:34px;border-radius:8px;background:var(--bg-card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.88rem;color:var(--text-muted);transition:all .2s;" onmouseover="this.style.background='#25D366';this.style.color='#fff';this.style.borderColor='#25D366';" onmouseout="this.style.background='var(--bg-card2)';this.style.color='var(--text-muted)';this.style.borderColor='var(--border)';">💬</a>
+        </div>
+      </div>
+
+      <!-- Platform -->
+      <div>
+        <div class="footer-col-title">Platform</div>
+        <div class="footer-links">
+          <a href="/courses">🎓 Courses</a>
+          <a href="/past-questions">📄 Past Questions</a>
+          <a href="/home">🎨 Templates</a>
+          <a href="/register">🚀 Get Started Free</a>
+        </div>
+      </div>
+
+      <!-- Account -->
+      <div>
+        <div class="footer-col-title">Account</div>
+        <div class="footer-links">
+          <a href="/login">Login</a>
+          <a href="/register">Register</a>
+          <a href="/dashboard">Student Dashboard</a>
+          <a href="/admin">Admin Panel</a>
+          <a href="/instructor">Instructor Panel</a>
+        </div>
+      </div>
+
+      <!-- Support -->
+      <div>
+        <div class="footer-col-title">Company</div>
+        <div class="footer-links">
+          <a href="mailto:support@exampro.ng">📧 Contact Us</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Help Centre</a>
+          <a href="/home#how">How It Works</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+      <span>© 2025 ExamPro · Nigeria's #1 Exam Prep &amp; LMS SaaS Platform</span>
+      <div style="display:flex;gap:16px;">
+        <a href="#" style="color:var(--text-muted);font-size:.78rem;text-decoration:none;">Privacy</a>
+        <a href="#" style="color:var(--text-muted);font-size:.78rem;text-decoration:none;">Terms</a>
+        <a href="#" style="color:var(--text-muted);font-size:.78rem;text-decoration:none;">Cookies</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="/js/app.js"></script>
+<script>
+// Navbar scroll effect
+window.addEventListener('scroll', () => {
+  document.getElementById('mainNav').classList.toggle('scrolled', scrollY > 30);
+});
+
+// Theme toggle
+const themeBtn = document.getElementById('themeToggle');
+const saved = localStorage.getItem('theme') || 'light';
+document.documentElement.setAttribute('data-theme', saved);
+themeBtn.textContent = saved === 'dark' ? '☀️' : '🌙';
+themeBtn.onclick = () => {
+  const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('theme', t);
+  themeBtn.textContent = t === 'dark' ? '☀️' : '🌙';
+};
+
+// Mobile menu
+function toggleMobileMenu() {
+  document.getElementById('mobileMenu').classList.toggle('open');
+}
+
+// Dynamic nav CTA
+const user = typeof Auth !== 'undefined' ? Auth.getUser() : null;
+if (user) {
+  const dest = user.role_id === 4 ? '/super-admin' : user.role_id === 2 ? '/admin' : user.role_id === 3 ? '/instructor' : '/dashboard';
+  document.getElementById('navCta').innerHTML = `
+    <span style="font-size:.85rem;font-weight:600;color:var(--text-muted);">Hi, ${user.name?.split(' ')[0]}</span>
+    <a href="${dest}" class="btn btn-primary btn-sm">Dashboard →</a>`;
+}
+
+// Load popular courses
+async function loadHomeCourses() {
+  try {
+    const r = await fetch('/api/courses?limit=3&is_published=true');
+    const d = await r.json();
+    const courses = d.courses || d || [];
+    const el = document.getElementById('homeCourses');
+    if (!courses.length) {
+      el.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="icon">📚</div><h3>Courses coming soon!</h3><p>Our instructors are preparing amazing content.</p></div>`;
+      return;
+    }
+    el.innerHTML = courses.map(c => `
+      <div class="course-card" onclick="location.href='/courses/${c.id}'">
+        <div class="course-thumb">
+          ${c.thumbnail ? `<img src="${c.thumbnail}" alt="${c.title}" loading="lazy">` : '🎓'}
+          <div class="course-level-tag level-${c.level || 'beginner'}">${(c.level||'beginner').charAt(0).toUpperCase()+(c.level||'beginner').slice(1)}</div>
+        </div>
+        <div class="course-body">
+          <div class="course-category">${c.category || 'Education'}</div>
+          <div class="course-title">${c.title}</div>
+          <div class="course-instructor">👤 ${c.instructor_name || 'Expert Instructor'}</div>
+          <div class="course-meta">
+            <span>📖 ${c.total_lessons||0} lessons</span>
+            <span>⏱ ${c.duration_hours||0}h</span>
+            <span>👥 ${c.enrolled_count||0} enrolled</span>
+          </div>
+          <div class="course-footer">
+            <div class="course-price">${c.price > 0 ? '₦'+Number(c.price).toLocaleString() : 'FREE'}</div>
+            <div class="course-rating"><span class="stars">★</span> ${Number(c.rating||0).toFixed(1)}</div>
+          </div>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+     document.getElementById('homeCourses').innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="icon">📚</div><h3>Courses loading...</h3></div>`;
+  }
+}
+loadHomeCourses();
+</script>
+</body>
+</html>

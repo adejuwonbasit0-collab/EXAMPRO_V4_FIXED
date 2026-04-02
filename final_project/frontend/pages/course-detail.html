@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course — ExamPro</title>
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ─── RESET & BASE ─────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+:root {
+  --cd-ink: #0d0d12;
+  --cd-ink2: #3b3b4a;
+  --cd-muted: #767689;
+  --cd-border: rgba(0,0,0,0.08);
+  --cd-surface: #fff;
+  --cd-surface2: #f7f7fb;
+  --cd-accent: #5B4FCF;
+  --cd-accent-light: #ede9ff;
+  --cd-accent-glow: rgba(91,79,207,0.18);
+  --cd-gold: #f59e0b;
+  --cd-green: #10b981;
+  --cd-hero-bg: #0f0e1a;
+  --cd-hero-text: #fff;
+  --cd-radius: 14px;
+  --cd-shadow: 0 4px 32px rgba(0,0,0,0.10);
+  --cd-shadow-lg: 0 12px 60px rgba(0,0,0,0.16);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--cd-ink);
+}
+[data-theme="dark"] {
+  --cd-ink: #f0f0fa;
+  --cd-ink2: #b8b8cc;
+  --cd-muted: #8080a0;
+  --cd-border: rgba(255,255,255,0.08);
+  --cd-surface: #18182a;
+  --cd-surface2: #121220;
+  --cd-hero-bg: #08080f;
+  --cd-accent-light: rgba(91,79,207,0.18);
+  --cd-shadow: 0 4px 32px rgba(0,0,0,0.4);
+  --cd-shadow-lg: 0 12px 60px rgba(0,0,0,0.5);
+}
+body { margin: 0; background: var(--cd-surface2); color: var(--cd-ink); }
+
+/* ─── NAVBAR ─────────────────────────────────────── */
+.cd-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(15,14,26,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 0 5%;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 60px;
+}
+.cd-nav-logo {
+  font-family: 'Sora', sans-serif;
+  font-weight: 800; font-size: 1.25rem;
+  color: #fff; text-decoration: none;
+  display: flex; align-items: center; gap: 8px;
+}
+.cd-nav-logo-dot { width:8px;height:8px;border-radius:50%;background:var(--cd-accent);display:inline-block; }
+.cd-nav-links { display: flex; align-items: center; gap: 6px; }
+.cd-nav-link {
+  color: rgba(255,255,255,0.65); text-decoration: none;
+  font-size: .84rem; padding: 6px 12px; border-radius: 8px;
+  transition: all .15s;
+}
+.cd-nav-link:hover { color: #fff; background: rgba(255,255,255,0.08); }
+.cd-nav-btn {
+  padding: 8px 18px; border-radius: 9px; font-size: .84rem;
+  font-weight: 600; cursor: pointer; text-decoration: none; transition: all .18s;
+}
+.cd-nav-btn-outline {
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.85); background: transparent;
+}
+.cd-nav-btn-outline:hover { background: rgba(255,255,255,0.08); }
+.cd-nav-btn-primary {
+  background: var(--cd-accent); color: #fff; border: none;
+  box-shadow: 0 4px 18px rgba(91,79,207,0.35);
+}
+.cd-nav-btn-primary:hover { background: #4a3fb8; transform: translateY(-1px); }
+
+/* ─── HERO ─────────────────────────────────────────── */
+.cd-hero {
+  background: var(--cd-hero-bg);
+  padding: 100px 5% 48px;
+  position: relative; overflow: hidden;
+}
+.cd-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 70% 50%, rgba(91,79,207,0.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+.cd-hero-grid {
+  max-width: 1180px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 380px;
+  gap: 48px; align-items: start;
+  position: relative; z-index: 1;
+}
+.cd-hero-breadcrumb {
+  font-size: .75rem; color: rgba(255,255,255,0.45);
+  margin-bottom: 16px; display: flex; align-items: center; gap: 6px;
+}
+.cd-hero-breadcrumb a { color: rgba(255,255,255,0.55); text-decoration: none; }
+.cd-hero-breadcrumb a:hover { color: rgba(255,255,255,0.9); }
+.cd-hero-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(91,79,207,0.25); border: 1px solid rgba(91,79,207,0.4);
+  color: #c4bbff; padding: 4px 12px; border-radius: 99px;
+  font-size: .72rem; font-weight: 700; letter-spacing: .4px;
+  text-transform: uppercase; margin-bottom: 16px;
+}
+.cd-hero-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 2.1rem; font-weight: 800;
+  color: #fff; line-height: 1.22; margin: 0 0 14px;
+}
+.cd-hero-subtitle {
+  font-size: 1rem; color: rgba(255,255,255,0.7);
+  line-height: 1.65; margin: 0 0 22px; max-width: 600px;
+}
+.cd-hero-meta {
+  display: flex; flex-wrap: wrap; gap: 16px;
+  margin-bottom: 20px; align-items: center;
+}
+.cd-hero-meta-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .82rem; color: rgba(255,255,255,0.65);
+}
+.cd-hero-meta-item i { font-size: .78rem; color: rgba(255,255,255,0.4); }
+.cd-rating-stars { color: var(--cd-gold); font-size: .88rem; }
+.cd-rating-val { color: var(--cd-gold); font-weight: 700; font-size: .9rem; }
+.cd-instructor-mini {
+  display: flex; align-items: center; gap: 10px;
+}
+.cd-instructor-mini-av {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, #5B4FCF, #9b8fea);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; color: #fff; font-size: .85rem; overflow: hidden; flex-shrink:0;
+}
+.cd-instructor-mini-av img { width:100%;height:100%;object-fit:cover; }
+.cd-instructor-mini-name {
+  font-size: .82rem; color: rgba(255,255,255,0.75);
+}
+.cd-instructor-mini-label { font-size: .7rem; color: rgba(255,255,255,0.4); }
+.cd-hero-badges {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;
+}
+.cd-hero-badge {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6); padding: 5px 10px;
+  border-radius: 7px; font-size: .74rem;
+}
+.cd-hero-badge i { font-size: .72rem; color: rgba(255,255,255,0.4); }
+
+/* ─── PURCHASE CARD (hero sidebar) ─────────────────── */
+.cd-purchase-card {
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border);
+  border-radius: var(--cd-radius);
+  box-shadow: var(--cd-shadow-lg);
+  overflow: hidden;
+  position: sticky; top: 72px;
+}
+.cd-purchase-thumb {
+  width: 100%; aspect-ratio: 16/9;
+  background: linear-gradient(135deg, #1a1744, #2d1f6e);
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem; cursor: pointer;
+}
+.cd-purchase-thumb img {
+  width: 100%; height: 100%; object-fit: cover;
+  position: absolute; inset: 0;
+}
+.cd-purchase-thumb .play-btn {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity .2s;
+}
+.cd-purchase-thumb:hover .play-btn { opacity: 1; }
+.cd-purchase-thumb .play-btn i {
+  font-size: 3rem; color: #fff;
+  filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5));
+}
+.cd-preview-label {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.75); color: #fff; padding: 5px 14px;
+  border-radius: 99px; font-size: .75rem; font-weight: 600;
+  backdrop-filter: blur(8px); white-space: nowrap;
+}
+.cd-purchase-body { padding: 22px; }
+.cd-price-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px; }
+.cd-price-main {
+  font-family: 'Sora', sans-serif;
+  font-size: 2rem; font-weight: 800; color: var(--cd-ink);
+}
+.cd-price-original {
+  font-size: 1rem; color: var(--cd-muted);
+  text-decoration: line-through;
+}
+.cd-price-badge {
+  background: #fef3c7; color: #92400e;
+  padding: 3px 8px; border-radius: 6px;
+  font-size: .72rem; font-weight: 700;
+}
+.cd-enroll-btn {
+  width: 100%; padding: 14px;
+  border-radius: 10px; border: none; cursor: pointer;
+  font-family: 'Sora', sans-serif;
+  font-size: .95rem; font-weight: 700;
+  transition: all .2s; margin-bottom: 10px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.cd-enroll-btn-primary {
+  background: linear-gradient(135deg, #5B4FCF, #7c5dd4);
+  color: #fff;
+  box-shadow: 0 6px 24px rgba(91,79,207,0.35);
+}
+.cd-enroll-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(91,79,207,0.45); }
+.cd-enroll-btn-success {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: #fff;
+  box-shadow: 0 6px 24px rgba(16,185,129,0.3);
+}
+.cd-enroll-btn-continue {
+  background: linear-gradient(135deg, #0369a1, #0ea5e9);
+  color: #fff;
+  box-shadow: 0 6px 24px rgba(14,165,233,0.3);
+}
+.cd-wishlist-btn {
+  width: 100%; padding: 11px;
+  border-radius: 10px; border: 2px solid var(--cd-border);
+  background: transparent; color: var(--cd-ink2);
+  font-size: .85rem; font-weight: 600; cursor: pointer;
+  transition: all .18s; display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-bottom: 14px;
+}
+.cd-wishlist-btn:hover { border-color: var(--cd-accent); color: var(--cd-accent); }
+.cd-wishlist-btn.wishlisted { border-color: #ef4444; color: #ef4444; }
+.cd-purchase-includes {
+  border-top: 1px solid var(--cd-border); padding-top: 16px;
+}
+.cd-includes-title { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--cd-muted); margin-bottom: 10px; }
+.cd-includes-item {
+  display: flex; align-items: center; gap: 9px;
+  font-size: .8rem; color: var(--cd-ink2); padding: 4px 0;
+}
+.cd-includes-item i { color: var(--cd-green); font-size: .78rem; width: 14px; text-align: center; }
+.cd-guarantee {
+  text-align: center; font-size: .73rem; color: var(--cd-muted);
+  margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+
+/* ─── MAIN CONTENT ──────────────────────────────────── */
+.cd-body {
+  max-width: 1180px; margin: 0 auto;
+  padding: 48px 5%;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 48px;
+}
+.cd-main {}
+.cd-sidebar { display: none; } /* hidden on desktop — card is in hero */
+
+/* ─── SECTION BLOCK ─────────────────────────────────── */
+.cd-section {
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border);
+  border-radius: var(--cd-radius);
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.cd-section-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.05rem; font-weight: 700;
+  margin: 0 0 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.cd-section-title i { color: var(--cd-accent); font-size: .95rem; }
+
+/* ─── WHAT YOU'LL LEARN ─────────────────────────────── */
+.cd-learn-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.cd-learn-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: .85rem; color: var(--cd-ink2); line-height: 1.5;
+}
+.cd-learn-item i { color: var(--cd-green); flex-shrink: 0; margin-top: 3px; font-size: .78rem; }
+
+/* ─── REQUIREMENTS ──────────────────────────────────── */
+.cd-req-list { padding: 0; margin: 0; list-style: none; }
+.cd-req-list li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: .85rem; color: var(--cd-ink2); padding: 6px 0;
+  border-bottom: 1px solid var(--cd-border);
+  line-height: 1.5;
+}
+.cd-req-list li:last-child { border-bottom: none; }
+.cd-req-list li::before { content: '→'; color: var(--cd-accent); font-weight: 700; flex-shrink: 0; }
+
+/* ─── CURRICULUM ────────────────────────────────────── */
+.cd-curriculum-summary {
+  display: flex; gap: 20px; flex-wrap: wrap;
+  font-size: .82rem; color: var(--cd-muted);
+  margin-bottom: 18px; padding-bottom: 16px;
+  border-bottom: 1px solid var(--cd-border);
+}
+.cd-curriculum-summary span { display: flex; align-items: center; gap: 5px; }
+.cd-curriculum-summary i { font-size: .75rem; }
+.cd-module {
+  border: 1px solid var(--cd-border);
+  border-radius: 10px; overflow: hidden; margin-bottom: 10px;
+}
+.cd-module-header {
+  padding: 14px 18px;
+  background: var(--cd-surface2);
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; transition: background .15s;
+  user-select: none;
+}
+.cd-module-header:hover { background: var(--cd-accent-light); }
+.cd-module-header.open { background: var(--cd-accent-light); }
+.cd-module-title {
+  font-weight: 700; font-size: .88rem;
+  display: flex; align-items: center; gap: 10px;
+}
+.cd-module-title i { color: var(--cd-accent); font-size: .8rem; }
+.cd-module-meta { font-size: .75rem; color: var(--cd-muted); display: flex; gap: 14px; align-items: center; }
+.cd-module-chevron { transition: transform .25s; color: var(--cd-muted); font-size: .78rem; }
+.cd-module-header.open .cd-module-chevron { transform: rotate(180deg); }
+.cd-lessons-list {
+  display: none; padding: 8px 0;
+  border-top: 1px solid var(--cd-border);
+}
+.cd-lessons-list.open { display: block; }
+.cd-lesson-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 18px; font-size: .83rem;
+  transition: background .12s; cursor: pointer;
+}
+.cd-lesson-row:hover { background: var(--cd-surface2); }
+.cd-lesson-icon {
+  width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: .72rem;
+}
+.cd-lesson-icon-video { background: rgba(91,79,207,0.1); color: var(--cd-accent); }
+.cd-lesson-icon-quiz { background: rgba(245,158,11,0.1); color: var(--cd-gold); }
+.cd-lesson-icon-file { background: rgba(16,185,129,0.1); color: var(--cd-green); }
+.cd-lesson-icon-lock { background: rgba(0,0,0,0.05); color: var(--cd-muted); }
+.cd-lesson-title-wrap { flex: 1; min-width: 0; }
+.cd-lesson-title { font-weight: 500; color: var(--cd-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cd-lesson-meta { font-size: .72rem; color: var(--cd-muted); margin-top: 1px; }
+.cd-preview-chip {
+  font-size: .66rem; font-weight: 700;
+  background: var(--cd-accent-light); color: var(--cd-accent);
+  padding: 2px 7px; border-radius: 99px; flex-shrink: 0;
+}
+.cd-lesson-duration { font-size: .75rem; color: var(--cd-muted); flex-shrink: 0; }
+
+/* ─── INSTRUCTOR CARD ──────────────────────────────── */
+.cd-instr-card {
+  display: flex; gap: 20px; align-items: flex-start;
+}
+.cd-instr-avatar {
+  width: 80px; height: 80px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, #5B4FCF, #9b8fea);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Sora', sans-serif;
+  font-size: 2rem; font-weight: 800; color: #fff;
+  overflow: hidden;
+}
+.cd-instr-avatar img { width:100%;height:100%;object-fit:cover; }
+.cd-instr-info { flex: 1; min-width: 0; }
+.cd-instr-name {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.1rem; font-weight: 700;
+  margin: 0 0 4px;
+}
+.cd-instr-title { font-size: .83rem; color: var(--cd-muted); margin-bottom: 12px; }
+.cd-instr-stats {
+  display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 14px;
+}
+.cd-instr-stat { font-size: .8rem; color: var(--cd-ink2); display: flex; align-items: center; gap: 5px; }
+.cd-instr-stat i { color: var(--cd-accent); font-size: .75rem; }
+.cd-instr-bio { font-size: .85rem; color: var(--cd-ink2); line-height: 1.65; }
+.cd-instr-bio.collapsed { max-height: 72px; overflow: hidden; position: relative; }
+.cd-instr-bio.collapsed::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 36px;
+  background: linear-gradient(transparent, var(--cd-surface));
+}
+.cd-read-more {
+  background: none; border: none; cursor: pointer;
+  color: var(--cd-accent); font-size: .82rem; font-weight: 600;
+  padding: 6px 0; display: block;
+}
+.cd-instr-profile-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--cd-accent); font-size: .82rem; font-weight: 600;
+  text-decoration: none; margin-top: 10px;
+  padding: 7px 14px; border: 1px solid var(--cd-accent-light);
+  border-radius: 8px; transition: all .15s;
+  background: var(--cd-accent-light);
+}
+.cd-instr-profile-link:hover { background: var(--cd-accent); color: #fff; }
+
+/* ─── REVIEWS ───────────────────────────────────────── */
+.cd-review-summary {
+  display: grid; grid-template-columns: auto 1fr;
+  gap: 28px; align-items: center; margin-bottom: 28px;
+  padding-bottom: 24px; border-bottom: 1px solid var(--cd-border);
+}
+.cd-review-big-score {
+  text-align: center;
+}
+.cd-review-big-num {
+  font-family: 'Sora', sans-serif;
+  font-size: 3.5rem; font-weight: 800; color: var(--cd-gold); line-height: 1;
+}
+.cd-review-big-stars { font-size: 1.2rem; margin: 6px 0; }
+.cd-review-big-count { font-size: .78rem; color: var(--cd-muted); }
+.cd-review-bars {}
+.cd-review-bar-row {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 6px; font-size: .8rem; color: var(--cd-muted);
+}
+.cd-review-bar-track {
+  flex: 1; height: 6px; background: var(--cd-border);
+  border-radius: 99px; overflow: hidden;
+}
+.cd-review-bar-fill {
+  height: 100%; background: var(--cd-gold); border-radius: 99px;
+  transition: width .6s ease;
+}
+.cd-review-bar-pct { width: 32px; text-align: right; }
+.cd-review-card {
+  background: var(--cd-surface2);
+  border: 1px solid var(--cd-border);
+  border-radius: 12px; padding: 18px;
+  margin-bottom: 14px;
+}
+.cd-review-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.cd-reviewer-av {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, #5B4FCF, #9b8fea);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; color: #fff; font-size: .85rem;
+}
+.cd-reviewer-info { flex: 1; min-width: 0; }
+.cd-reviewer-name { font-weight: 700; font-size: .88rem; margin-bottom: 2px; }
+.cd-reviewer-date { font-size: .73rem; color: var(--cd-muted); }
+.cd-review-stars { color: var(--cd-gold); font-size: .8rem; }
+.cd-review-text { font-size: .84rem; color: var(--cd-ink2); line-height: 1.65; margin: 0; }
+
+/* Review form */
+.cd-review-form {
+  background: var(--cd-surface2);
+  border: 1px solid var(--cd-border);
+  border-radius: 12px; padding: 20px;
+  margin-bottom: 24px;
+}
+.cd-review-form-title { font-weight: 700; font-size: .9rem; margin: 0 0 14px; }
+.cd-star-select { display: flex; gap: 8px; margin-bottom: 14px; }
+.cd-star-select i {
+  font-size: 1.5rem; color: var(--cd-border);
+  cursor: pointer; transition: color .1s;
+}
+.cd-star-select i.active { color: var(--cd-gold); }
+.cd-review-textarea {
+  width: 100%; padding: 12px; resize: vertical; min-height: 80px;
+  background: var(--cd-surface); border: 1px solid var(--cd-border);
+  border-radius: 9px; color: var(--cd-ink); font-family: 'DM Sans', sans-serif;
+  font-size: .85rem; outline: none; box-sizing: border-box; margin-bottom: 12px;
+}
+.cd-review-textarea:focus { border-color: var(--cd-accent); }
+
+/* ─── STICKY BUY BAR (mobile) ──────────────────────── */
+.cd-sticky-bar {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 90;
+  background: var(--cd-surface);
+  border-top: 1px solid var(--cd-border);
+  padding: 12px 5%;
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.12);
+  align-items: center; gap: 16px;
+}
+.cd-sticky-bar-price {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.4rem; font-weight: 800;
+}
+.cd-sticky-enroll-btn {
+  flex: 1; padding: 12px; border-radius: 10px; border: none;
+  background: var(--cd-accent); color: #fff;
+  font-weight: 700; font-size: .9rem; cursor: pointer;
+}
+
+/* ─── MODAL ────────────────────────────────────────── */
+.cd-modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+.cd-modal-overlay.open { display: flex; }
+.cd-modal {
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border);
+  border-radius: 18px; padding: 32px;
+  width: 90%; max-width: 480px;
+  box-shadow: var(--cd-shadow-lg);
+  animation: cd-modal-in .2s ease;
+}
+@keyframes cd-modal-in { from { opacity:0; transform: scale(.96) translateY(8px); } to { opacity:1; transform: scale(1) translateY(0); } }
+.cd-modal-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.1rem; font-weight: 700; margin: 0 0 4px;
+}
+.cd-modal-sub { font-size: .83rem; color: var(--cd-muted); margin: 0 0 20px; }
+.cd-gw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.cd-gw-btn {
+  padding: 14px; border-radius: 10px;
+  border: 2px solid var(--cd-border);
+  background: var(--cd-surface2); cursor: pointer; color: var(--cd-ink);
+  font-size: .85rem; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all .18s;
+}
+.cd-gw-btn.selected { border-color: var(--cd-accent); background: var(--cd-accent-light); color: var(--cd-accent); }
+.cd-bank-block {
+  background: var(--cd-accent-light);
+  border: 1px solid rgba(91,79,207,0.2);
+  border-radius: 10px; padding: 14px; margin-bottom: 14px;
+  font-size: .83rem; color: var(--cd-ink2); line-height: 1.8;
+}
+.cd-pay-btn {
+  width: 100%; padding: 14px; border-radius: 10px; border: none;
+  background: linear-gradient(135deg, #5B4FCF, #7c5dd4);
+  color: #fff; font-weight: 700; font-size: .95rem; cursor: pointer;
+  transition: all .18s; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.cd-pay-btn:hover { transform: translateY(-1px); }
+.cd-pay-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+.cd-modal-alert { font-size: .82rem; padding: 10px 14px; border-radius: 8px; margin-bottom: 10px; }
+.cd-modal-close {
+  float: right; background: none; border: none; cursor: pointer;
+  font-size: 1.2rem; color: var(--cd-muted); padding: 0; line-height: 1;
+}
+.cd-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── TABS ──────────────────────────────────────────── */
+.cd-tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid var(--cd-border); }
+.cd-tab {
+  padding: 10px 18px; font-size: .85rem; font-weight: 600;
+  cursor: pointer; border: none; background: none; color: var(--cd-muted);
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  transition: all .15s;
+}
+.cd-tab.active { color: var(--cd-accent); border-bottom-color: var(--cd-accent); }
+.cd-tab-panel { display: none; }
+.cd-tab-panel.active { display: block; }
+
+/* ─── UTILITIES ─────────────────────────────────────── */
+.btn-sm-accent {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 8px;
+  background: var(--cd-accent-light); color: var(--cd-accent);
+  border: 1px solid rgba(91,79,207,0.2);
+  font-size: .8rem; font-weight: 600; cursor: pointer;
+  text-decoration: none; transition: all .15s;
+}
+.btn-sm-accent:hover { background: var(--cd-accent); color: #fff; }
+
+/* ─── RESPONSIVE ────────────────────────────────────── */
+@media (max-width: 900px) {
+  .cd-hero-grid { grid-template-columns: 1fr; }
+  .cd-hero-grid .cd-purchase-card { display: none; }
+  .cd-body { grid-template-columns: 1fr; }
+  .cd-hero-title { font-size: 1.6rem; }
+  .cd-learn-grid { grid-template-columns: 1fr; }
+  .cd-sticky-bar { display: flex; }
+  .cd-review-summary { grid-template-columns: 1fr; gap: 16px; }
+  .cd-instr-card { flex-direction: column; }
+}
+@media (max-width: 600px) {
+  .cd-hero { padding: 80px 5% 32px; }
+  .cd-hero-meta { gap: 10px; }
+  .cd-body { padding: 24px 5% 80px; }
+}
+
+/* ─── SKELETON LOADER ───────────────────────────────── */
+.skeleton { background: linear-gradient(90deg, var(--cd-border) 25%, rgba(0,0,0,0.04) 50%, var(--cd-border) 75%); background-size: 200%; animation: sk-wave 1.5s infinite; border-radius: 6px; }
+@keyframes sk-wave { 0%{background-position:200%}100%{background-position:-200%} }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="cd-nav">
+  <a href="/" class="cd-nav-logo">
+    <span class="cd-nav-logo-dot"></span> ExamPro
+  </a>
+  <div class="cd-nav-links">
+    <a href="/courses" class="cd-nav-link">Courses</a>
+    <a href="/past-questions" class="cd-nav-link">Past Qs</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;" id="navActions">
+    <a href="/login" class="cd-nav-btn cd-nav-btn-outline">Login</a>
+    <a href="/register" class="cd-nav-btn cd-nav-btn-primary">Get Started</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="cd-hero">
+  <div class="cd-hero-grid">
+    <!-- LEFT: course info -->
+    <div id="heroLeft">
+      <div class="cd-hero-breadcrumb">
+        <a href="/courses">Courses</a> <i class="fas fa-chevron-right" style="font-size:.6rem;"></i>
+        <span id="hero-category">Loading…</span>
+      </div>
+      <div class="cd-hero-tag" id="hero-tag"><i class="fas fa-tag"></i> <span id="hero-tag-text">Course</span></div>
+      <h1 class="cd-hero-title" id="hero-title">Loading course…</h1>
+      <p class="cd-hero-subtitle" id="hero-subtitle"></p>
+      <div class="cd-hero-meta">
+        <div class="cd-hero-meta-item" id="hero-rating-wrap" style="display:none;">
+          <span class="cd-rating-val" id="hero-rating-val"></span>
+          <span class="cd-rating-stars" id="hero-stars"></span>
+          <span id="hero-review-count" style="font-size:.78rem;color:rgba(255,255,255,0.5);"></span>
+        </div>
+        <div class="cd-hero-meta-item">
+          <i class="fas fa-users"></i>
+          <span id="hero-students">0 students enrolled</span>
+        </div>
+        <div class="cd-hero-meta-item">
+          <i class="fas fa-clock"></i>
+          <span id="hero-duration">0 hours</span>
+        </div>
+        <div class="cd-hero-meta-item">
+          <i class="fas fa-layer-group"></i>
+          <span id="hero-lessons">0 lessons</span>
+        </div>
+      </div>
+      <div class="cd-instructor-mini" id="hero-instr-mini">
+        <div class="cd-instructor-mini-av" id="hero-instr-av">?</div>
+        <div>
+          <div class="cd-instructor-mini-name" id="hero-instr-name">Loading…</div>
+          <div class="cd-instructor-mini-label">Instructor</div>
+        </div>
+      </div>
+      <div class="cd-hero-badges" style="margin-top:16px;">
+        <div class="cd-hero-badge"><i class="fas fa-infinity"></i> Lifetime access</div>
+        <div class="cd-hero-badge"><i class="fas fa-mobile-alt"></i> Mobile & desktop</div>
+        <div class="cd-hero-badge"><i class="fas fa-certificate"></i> Certificate on completion</div>
+        <div class="cd-hero-badge" id="hero-lang-badge" style="display:none;"><i class="fas fa-globe"></i> <span id="hero-lang">English</span></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: purchase card (sticky) -->
+    <div>
+      <div class="cd-purchase-card" id="purchaseCard">
+        <div class="cd-purchase-thumb" id="card-thumb">
+          <div class="play-btn" id="preview-play" onclick="playPreviewVideo()" style="display:none;"><i class="fas fa-play-circle"></i></div>
+          <div class="cd-preview-label" id="preview-label" style="display:none;">▶ Preview this course</div>
+        </div>
+        <div class="cd-purchase-body">
+          <div class="cd-price-row">
+            <div class="cd-price-main" id="card-price">₦0</div>
+            <div class="cd-price-original" id="card-orig-price" style="display:none;"></div>
+            <div class="cd-price-badge" id="card-discount" style="display:none;"></div>
+          </div>
+          <button class="cd-enroll-btn cd-enroll-btn-primary" id="enrollBtn" onclick="handleEnroll()">
+            <i class="fas fa-graduation-cap"></i> Enroll Now
+          </button>
+          <button class="cd-wishlist-btn" id="wishlistBtn" onclick="toggleWishlist()">
+            <i class="far fa-heart" id="wishlist-icon"></i> <span id="wishlist-label">Add to Wishlist</span>
+          </button>
+          <div class="cd-purchase-includes">
+            <div class="cd-includes-title">This course includes:</div>
+            <div class="cd-includes-item"><i class="fas fa-video"></i> <span id="inc-hours">0 hours</span> on-demand video</div>
+            <div class="cd-includes-item"><i class="fas fa-file-alt"></i> <span id="inc-lessons">0 lessons</span> across <span id="inc-sections">0 sections</span></div>
+            <div class="cd-includes-item"><i class="fas fa-tasks"></i> Quizzes &amp; assessments</div>
+            <div class="cd-includes-item"><i class="fas fa-download"></i> Downloadable resources</div>
+            <div class="cd-includes-item"><i class="fas fa-infinity"></i> Lifetime access</div>
+            <div class="cd-includes-item"><i class="fas fa-certificate"></i> Certificate of completion</div>
+          </div>
+          <div class="cd-guarantee">
+            <i class="fas fa-shield-alt" style="color:var(--cd-green);"></i>
+            30-Day Money-Back Guarantee
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BODY -->
+<div class="cd-body">
+  <div class="cd-main" id="cdMain">
+
+    <!-- TABS: Overview / Curriculum / Reviews -->
+    <div class="cd-tabs">
+      <button class="cd-tab active" onclick="switchTab('overview')">Overview</button>
+      <button class="cd-tab" onclick="switchTab('curriculum')">Curriculum</button>
+      <button class="cd-tab" onclick="switchTab('reviews')">Reviews</button>
+      <button class="cd-tab" onclick="switchTab('instructor')">Instructor</button>
+    </div>
+
+    <!-- OVERVIEW TAB -->
+    <div class="cd-tab-panel active" id="tab-overview">
+      <!-- What you'll learn -->
+      <div class="cd-section" id="section-learn" style="display:none;">
+        <h2 class="cd-section-title"><i class="fas fa-check-circle"></i> What You'll Learn</h2>
+        <div class="cd-learn-grid" id="learn-grid"></div>
+      </div>
+
+      <!-- Requirements -->
+      <div class="cd-section" id="section-req" style="display:none;">
+        <h2 class="cd-section-title"><i class="fas fa-list-check"></i> Requirements</h2>
+        <ul class="cd-req-list" id="req-list"></ul>
+      </div>
+
+      <!-- Description -->
+      <div class="cd-section">
+        <h2 class="cd-section-title"><i class="fas fa-align-left"></i> Course Description</h2>
+        <div id="course-desc" style="font-size:.88rem;color:var(--cd-ink2);line-height:1.75;"></div>
+      </div>
+    </div>
+
+    <!-- CURRICULUM TAB -->
+    <div class="cd-tab-panel" id="tab-curriculum">
+      <div class="cd-section">
+        <h2 class="cd-section-title"><i class="fas fa-list-ul"></i> Course Curriculum</h2>
+        <div class="cd-curriculum-summary">
+          <span><i class="fas fa-layer-group"></i> <span id="cur-sections">0 sections</span></span>
+          <span><i class="fas fa-play-circle"></i> <span id="cur-lessons">0 lessons</span></span>
+          <span><i class="fas fa-clock"></i> <span id="cur-hours">0 hours total</span></span>
+        </div>
+        <div id="modules-list">
+          <div class="skeleton" style="height:52px;margin-bottom:10px;border-radius:10px;"></div>
+          <div class="skeleton" style="height:52px;margin-bottom:10px;border-radius:10px;"></div>
+          <div class="skeleton" style="height:52px;border-radius:10px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVIEWS TAB -->
+    <div class="cd-tab-panel" id="tab-reviews">
+      <div class="cd-section">
+        <h2 class="cd-section-title"><i class="fas fa-star"></i> Student Reviews</h2>
+
+        <!-- Rating summary -->
+        <div class="cd-review-summary" id="review-summary-block">
+          <div class="cd-review-big-score">
+            <div class="cd-review-big-num" id="rv-big-num">—</div>
+            <div class="cd-review-big-stars" id="rv-big-stars"></div>
+            <div class="cd-review-big-count" id="rv-big-count">No reviews yet</div>
+          </div>
+          <div class="cd-review-bars" id="rv-bars">
+            <div class="skeleton" style="height:14px;margin-bottom:8px;width:100%;border-radius:4px;"></div>
+            <div class="skeleton" style="height:14px;margin-bottom:8px;width:90%;border-radius:4px;"></div>
+            <div class="skeleton" style="height:14px;margin-bottom:8px;width:80%;border-radius:4px;"></div>
+            <div class="skeleton" style="height:14px;margin-bottom:8px;width:60%;border-radius:4px;"></div>
+            <div class="skeleton" style="height:14px;width:40%;border-radius:4px;"></div>
+          </div>
+        </div>
+
+        <!-- Write a review (only if enrolled) -->
+        <div id="review-form-wrap" style="display:none;">
+          <div class="cd-review-form">
+            <div class="cd-review-form-title">Write a Review</div>
+            <div class="cd-star-select" id="star-select">
+              <i class="fas fa-star" data-star="1"></i>
+              <i class="fas fa-star" data-star="2"></i>
+              <i class="fas fa-star" data-star="3"></i>
+              <i class="fas fa-star" data-star="4"></i>
+              <i class="fas fa-star" data-star="5"></i>
+            </div>
+            <textarea class="cd-review-textarea" id="review-text" placeholder="Share your experience with this course…"></textarea>
+            <div id="review-msg"></div>
+            <button class="btn-sm-accent" onclick="submitReview()"><i class="fas fa-paper-plane"></i> Submit Review</button>
+          </div>
+        </div>
+
+        <div id="reviews-list">
+          <div style="text-align:center;padding:30px;color:var(--cd-muted);font-size:.85rem;">Loading reviews…</div>
+        </div>
+        <div id="reviews-load-more" style="text-align:center;margin-top:12px;display:none;">
+          <button class="btn-sm-accent" onclick="loadMoreReviews()"><i class="fas fa-chevron-down"></i> Load More Reviews</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSTRUCTOR TAB -->
+    <div class="cd-tab-panel" id="tab-instructor">
+      <div class="cd-section">
+        <h2 class="cd-section-title"><i class="fas fa-chalkboard-teacher"></i> About the Instructor</h2>
+        <div class="cd-instr-card" id="instr-card">
+          <div class="cd-instr-avatar" id="instr-av">?</div>
+          <div class="cd-instr-info">
+            <h3 class="cd-instr-name" id="instr-name">Loading…</h3>
+            <div class="cd-instr-title" id="instr-title"></div>
+            <div class="cd-instr-stats" id="instr-stats"></div>
+            <div class="cd-instr-bio collapsed" id="instr-bio"></div>
+            <button class="cd-read-more" id="bio-toggle" onclick="toggleBio()" style="display:none;">Read more →</button>
+            <a href="#" class="cd-instr-profile-link" id="instr-profile-link" style="display:none;">
+              <i class="fas fa-user"></i> View Full Profile
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR placeholder for balance -->
+  <div class="cd-sidebar"></div>
+</div>
+
+<!-- STICKY BAR (mobile) -->
+<div class="cd-sticky-bar" id="stickyBar">
+  <div class="cd-sticky-bar-price" id="sticky-price">₦0</div>
+  <button class="cd-sticky-enroll-btn" id="stickyEnrollBtn" onclick="handleEnroll()">Enroll Now</button>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="cd-modal-overlay" id="payModal">
+  <div class="cd-modal">
+    <button class="cd-modal-close" onclick="closePayModal()">✕</button>
+    <h3 class="cd-modal-title" id="pay-modal-title">Enroll in Course</h3>
+    <p class="cd-modal-sub" id="pay-modal-sub"></p>
+    <div id="pay-alert"></div>
+    <div class="cd-gw-grid" id="gw-grid"></div>
+    <div class="cd-bank-block" id="bank-block" style="display:none;"></div>
+    <button class="cd-pay-btn" id="pay-btn" onclick="doPay()">
+      <i class="fas fa-lock"></i> Pay &amp; Enroll
+    </button>
+  </div>
+</div>
+
+<!-- PREVIEW VIDEO MODAL -->
+<div class="cd-modal-overlay" id="previewModal">
+  <div class="cd-modal" style="max-width:720px;padding:0;overflow:hidden;border-radius:14px;">
+    <div style="position:relative;aspect-ratio:16/9;background:#000;" id="preview-video-container">
+    </div>
+    <div style="padding:16px;display:flex;justify-content:space-between;align-items:center;">
+      <div id="preview-lesson-title" style="font-weight:600;font-size:.9rem;"></div>
+      <button onclick="closePreview()" style="background:none;border:none;cursor:pointer;color:var(--cd-muted);font-size:.85rem;"><i class="fas fa-times"></i> Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+// ── Init nav ─────────────────────────────────────────────────────────────────
+if (Auth.isLoggedIn()) {
+  document.getElementById('navActions').innerHTML = `
+    <a href="${Auth.getDashboardUrl()}" class="cd-nav-btn cd-nav-btn-outline">Dashboard</a>
+    <button class="cd-nav-btn cd-nav-btn-primary" onclick="Auth.logout()">Logout</button>
+  `;
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+const courseId = window.location.pathname.split('/').pop();
+let courseData = null;
+let isEnrolled = false;
+let isWishlisted = false;
+let selGw = 'paystack';
+let bankDetails = null;
+let reviewPage = 1;
+let reviewRating = 0;
+let freeLessons = [];
+
+// ── Tab switching ────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.cd-tab').forEach((t, i) => {
+    const tabs = ['overview','curriculum','reviews','instructor'];
+    t.classList.toggle('active', tabs[i] === name);
+  });
+  document.querySelectorAll('.cd-tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'reviews' && !document.getElementById('reviews-list').querySelector('.cd-review-card')) {
+    loadReviews();
+  }
+}
+
+// ── Load course ───────────────────────────────────────────────────────────────
+async function loadCourse() {
+  // Load school branding first (for users who belong to a school site)
+  const user = Auth.getUser();
+  if (user && user.site_id) {
+    try {
+      const site = await http.get('/institutions/public/site-by-id/' + user.site_id);
+      if (site && site.school_name) {
+        // Replace logo text
+        const logoEl = document.querySelector('.cd-nav-logo');
+        if (logoEl) logoEl.innerHTML = '<span class="cd-nav-logo-dot"></span> ' + site.school_name;
+        window.__platformName = site.school_name;
+        if (site.primary_color) {
+          document.documentElement.style.setProperty('--cd-accent', site.primary_color);
+        }
+      }
+    } catch(e) {}
+  }
+  window.__platformName = window.__platformName || 'ExamPro';
+
+  const data = await http.get('/courses/' + courseId);
+  if (!data) {
+    document.getElementById('hero-title').textContent = 'Course not found';
+    return;
+  }
+  courseData = data;
+  isEnrolled = !!data.is_enrolled;
+  renderHero(data);
+  renderPurchaseCard(data);
+  renderCurriculum(data);
+  renderInstructor(data);
+  renderOverview(data);
+  checkWishlist();
+  if (isEnrolled) loadReviewForm();
+}
+
+// ── Render hero ───────────────────────────────────────────────────────────────
+function renderHero(d) {
+  document.title = d.title + ' — ' + (window.__platformName || 'ExamPro');
+  const cat = d.exam_type || d.category || 'Course';
+  document.getElementById('hero-category').textContent = cat;
+  document.getElementById('hero-tag-text').textContent = cat;
+  document.getElementById('hero-title').textContent = d.title;
+  document.getElementById('hero-subtitle').textContent = d.short_description || d.description?.substring(0, 180) || '';
+
+  // Rating
+  if (d.rating > 0) {
+    document.getElementById('hero-rating-wrap').style.display = 'flex';
+    document.getElementById('hero-rating-val').textContent = Number(d.rating).toFixed(1);
+    document.getElementById('hero-stars').innerHTML = renderStars(d.rating);
+    document.getElementById('hero-review-count').textContent = '(' + (d.review_count || 0) + ' reviews)';
+  }
+
+  document.getElementById('hero-students').textContent = (d.enrolled_count || 0).toLocaleString() + ' students enrolled';
+  document.getElementById('hero-duration').textContent = (d.duration_hours || 0) + ' hours';
+  document.getElementById('hero-lessons').textContent = (d.total_lessons || 0) + ' lessons';
+
+  // Instructor mini
+  const initials = (d.instructor_name || 'I')[0].toUpperCase();
+  const av = document.getElementById('hero-instr-av');
+  if (d.instructor_avatar) {
+    av.innerHTML = '<img src="' + d.instructor_avatar + '" alt="">';
+  } else {
+    av.textContent = initials;
+  }
+  document.getElementById('hero-instr-name').textContent = d.instructor_name || 'Instructor';
+
+  if (d.language) {
+    document.getElementById('hero-lang-badge').style.display = 'flex';
+    document.getElementById('hero-lang').textContent = d.language;
+  }
+}
+
+// ── Render purchase card ──────────────────────────────────────────────────────
+function renderPurchaseCard(d) {
+  // Thumbnail
+  const thumb = document.getElementById('card-thumb');
+  if (d.thumbnail) {
+    thumb.innerHTML = '<img src="' + d.thumbnail + '" alt="' + d.title + '"><div class="play-btn" id="preview-play" style="' + (freeLessons.length ? '' : 'display:none;') + '" onclick="playPreviewVideo()"><i class="fas fa-play-circle"></i></div><div class="cd-preview-label" id="preview-label" style="display:none;">▶ Preview this course</div>';
+  }
+
+  // Find free preview lessons
+  freeLessons = (d.sections || []).flatMap(s => s.lessons || []).filter(l => l.is_preview);
+  if (freeLessons.length) {
+    const previewPlay = document.getElementById('preview-play');
+    const previewLabel = document.getElementById('preview-label');
+    if (previewPlay) { previewPlay.style.display = 'flex'; }
+    if (previewLabel) { previewLabel.style.display = 'block'; }
+  }
+
+  // Price
+  document.getElementById('card-price').textContent = fmt.currency(d.price);
+  document.getElementById('sticky-price').textContent = fmt.currency(d.price);
+  document.getElementById('inc-hours').textContent = (d.duration_hours || 0) + ' hours';
+  document.getElementById('inc-lessons').textContent = (d.total_lessons || 0) + ' lessons';
+  document.getElementById('inc-sections').textContent = (d.sections?.length || 0) + ' sections';
+
+  // Enrolled state
+  updateEnrollButton();
+}
+
+function updateEnrollButton() {
+  const btn = document.getElementById('enrollBtn');
+  const stickyBtn = document.getElementById('stickyEnrollBtn');
+  const wishlistBtn = document.getElementById('wishlistBtn');
+  if (!btn) return;
+
+  if (isEnrolled) {
+    btn.className = 'cd-enroll-btn cd-enroll-btn-continue';
+    btn.innerHTML = '<i class="fas fa-play"></i> Continue Learning';
+    if (stickyBtn) { stickyBtn.textContent = 'Continue Learning'; stickyBtn.style.background = '#0369a1'; }
+    if (wishlistBtn) wishlistBtn.style.display = 'none';
+  } else {
+    btn.className = 'cd-enroll-btn cd-enroll-btn-primary';
+    btn.innerHTML = '<i class="fas fa-graduation-cap"></i> Enroll Now — ' + fmt.currency(courseData?.price || 0);
+    if (stickyBtn) { stickyBtn.textContent = 'Enroll Now'; stickyBtn.style.background = ''; }
+  }
+}
+
+function handleEnroll() {
+  if (isEnrolled) {
+    window.location.href = '/learn/' + courseId;
+    return;
+  }
+  if (!Auth.isLoggedIn()) {
+    window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+    return;
+  }
+  openPayModal();
+}
+
+// ── Curriculum ────────────────────────────────────────────────────────────────
+function renderCurriculum(d) {
+  const sections = d.sections || [];
+  const totalLessons = sections.reduce((sum, s) => sum + (s.lessons?.length || 0), 0);
+  const totalMinutes = sections.flatMap(s => s.lessons || []).reduce((sum, l) => sum + (l.duration_minutes || 0), 0);
+  const totalHours = (totalMinutes / 60).toFixed(1);
+
+  document.getElementById('cur-sections').textContent = sections.length + ' section' + (sections.length !== 1 ? 's' : '');
+  document.getElementById('cur-lessons').textContent = totalLessons + ' lesson' + (totalLessons !== 1 ? 's' : '');
+  document.getElementById('cur-hours').textContent = totalHours + ' hours total';
+
+  const list = document.getElementById('modules-list');
+  if (!sections.length) {
+    list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--cd-muted);">No curriculum yet</div>';
+    return;
+  }
+
+  list.innerHTML = sections.map((s, idx) => {
+    const lessons = s.lessons || [];
+    const secMinutes = lessons.reduce((sum, l) => sum + (l.duration_minutes || 0), 0);
+    const secHours = secMinutes >= 60 ? (secMinutes/60).toFixed(1) + 'h' : secMinutes + 'min';
+    return `
+      <div class="cd-module">
+        <div class="cd-module-header ${idx === 0 ? 'open' : ''}" onclick="toggleModule(this)">
+          <div class="cd-module-title">
+            <i class="fas fa-folder${idx === 0 ? '-open' : ''}"></i>
+            ${s.title}
+          </div>
+          <div class="cd-module-meta">
+            <span>${lessons.length} lesson${lessons.length !== 1 ? 's' : ''}</span>
+            <span>${secHours}</span>
+            <i class="fas fa-chevron-down cd-module-chevron"></i>
+          </div>
+        </div>
+        <div class="cd-lessons-list ${idx === 0 ? 'open' : ''}">
+          ${lessons.map(l => {
+            const canAccess = l.is_preview || isEnrolled;
+            const icon = canAccess ? (l.video_type ? 'fa-play-circle cd-lesson-icon-video' : 'fa-file-alt cd-lesson-icon-file') : 'fa-lock cd-lesson-icon-lock';
+            return `
+              <div class="cd-lesson-row" onclick="${canAccess ? 'playLessonPreview(' + l.id + ')' : 'promptEnroll()'}">
+                <div class="cd-lesson-icon"><i class="fas ${icon}"></i></div>
+                <div class="cd-lesson-title-wrap">
+                  <div class="cd-lesson-title">${l.title}</div>
+                  <div class="cd-lesson-meta">${l.video_type || 'Video'}</div>
+                </div>
+                ${l.is_preview ? '<span class="cd-preview-chip">Free</span>' : ''}
+                <span class="cd-lesson-duration">${l.duration_minutes || 0} min</span>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleModule(header) {
+  header.classList.toggle('open');
+  const list = header.nextElementSibling;
+  list.classList.toggle('open');
+}
+
+// ── Overview / learn / requirements ──────────────────────────────────────────
+function renderOverview(d) {
+  // Description
+  const descEl = document.getElementById('course-desc');
+  descEl.innerHTML = (d.description || 'No description provided.').replace(/\n/g, '<br>');
+
+  // What you'll learn
+  let objectives = [];
+  try { objectives = typeof d.what_you_learn === 'string' ? JSON.parse(d.what_you_learn) : (d.what_you_learn || []); } catch (_) {}
+  if (objectives.length) {
+    document.getElementById('section-learn').style.display = 'block';
+    document.getElementById('learn-grid').innerHTML = objectives.map(o =>
+      '<div class="cd-learn-item"><i class="fas fa-check"></i><span>' + o + '</span></div>'
+    ).join('');
+  }
+
+  // Requirements
+  let reqs = [];
+  try { reqs = typeof d.requirements === 'string' ? JSON.parse(d.requirements) : (d.requirements || []); } catch (_) {}
+  if (reqs.length) {
+    document.getElementById('section-req').style.display = 'block';
+    document.getElementById('req-list').innerHTML = reqs.map(r => '<li>' + r + '</li>').join('');
+  }
+}
+
+// ── Instructor ────────────────────────────────────────────────────────────────
+function renderInstructor(d) {
+  const initials = (d.instructor_name || 'I')[0].toUpperCase();
+  const av = document.getElementById('instr-av');
+  if (d.instructor_avatar) {
+    av.innerHTML = '<img src="' + d.instructor_avatar + '" alt="" style="width:100%;height:100%;object-fit:cover;">';
+  } else {
+    av.textContent = initials;
+  }
+  document.getElementById('instr-name').textContent = d.instructor_name || 'Instructor';
+  document.getElementById('instr-title').textContent = d.instructor_title || 'Course Instructor';
+
+  const stats = document.getElementById('instr-stats');
+  stats.innerHTML =
+    (d.instructor_total_students ? '<div class="cd-instr-stat"><i class="fas fa-users"></i>' + Number(d.instructor_total_students).toLocaleString() + ' students</div>' : '') +
+    (d.instructor_total_courses ? '<div class="cd-instr-stat"><i class="fas fa-book"></i>' + d.instructor_total_courses + ' courses</div>' : '') +
+    (d.instructor_rating ? '<div class="cd-instr-stat"><i class="fas fa-star"></i>' + Number(d.instructor_rating).toFixed(1) + ' rating</div>' : '');
+
+  const bio = document.getElementById('instr-bio');
+  bio.innerHTML = (d.instructor_bio || 'No biography provided.').replace(/\n/g, '<br>');
+  const toggle = document.getElementById('bio-toggle');
+  if ((d.instructor_bio || '').length > 200) {
+    toggle.style.display = 'block';
+  }
+
+  const profileLink = document.getElementById('instr-profile-link');
+  if (d.instructor_id) {
+    profileLink.href = '/instructor/profile/' + d.instructor_id;
+    profileLink.style.display = 'inline-flex';
+  }
+}
+
+function toggleBio() {
+  const bio = document.getElementById('instr-bio');
+  const btn = document.getElementById('bio-toggle');
+  bio.classList.toggle('collapsed');
+  btn.textContent = bio.classList.contains('collapsed') ? 'Read more →' : '← Read less';
+}
+
+// ── Reviews ───────────────────────────────────────────────────────────────────
+async function loadReviews(append = false) {
+  if (!append) reviewPage = 1;
+  const data = await http.get('/courses/' + courseId + '/reviews?page=' + reviewPage + '&limit=5');
+  if (!data) return;
+
+  // Summary
+  if (!append) renderReviewSummary(data);
+
+  const list = document.getElementById('reviews-list');
+  const reviews = data.reviews || [];
+  if (!reviews.length && !append) {
+    list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--cd-muted);">No reviews yet. Be the first!</div>';
+    return;
+  }
+  const html = reviews.map(r => `
+    <div class="cd-review-card">
+      <div class="cd-review-header">
+        <div class="cd-reviewer-av">${(r.reviewer_name || 'A')[0].toUpperCase()}</div>
+        <div class="cd-reviewer-info">
+          <div class="cd-reviewer-name">${r.reviewer_name || 'Student'}</div>
+          <div class="cd-review-stars">${renderStars(r.rating)}</div>
+        </div>
+        <div class="cd-reviewer-date">${fmt.date(r.created_at)}</div>
+      </div>
+      <p class="cd-review-text">${r.review_text || ''}</p>
+    </div>`).join('');
+  if (append) list.innerHTML += html;
+  else list.innerHTML = html;
+
+  document.getElementById('reviews-load-more').style.display = data.has_more ? 'block' : 'none';
+}
+
+function renderReviewSummary(data) {
+  const avg = data.average_rating || 0;
+  const total = data.total_reviews || 0;
+  document.getElementById('rv-big-num').textContent = avg > 0 ? Number(avg).toFixed(1) : '—';
+  document.getElementById('rv-big-stars').innerHTML = avg > 0 ? renderStars(avg) : '';
+  document.getElementById('rv-big-count').textContent = total + ' review' + (total !== 1 ? 's' : '');
+
+  // Distribution bars
+  const dist = data.distribution || {};
+  const bars = document.getElementById('rv-bars');
+  bars.innerHTML = [5,4,3,2,1].map(star => {
+    const count = dist[star] || 0;
+    const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+    return `<div class="cd-review-bar-row">
+      <span style="width:14px;">${star}</span>
+      <i class="fas fa-star" style="color:var(--cd-gold);font-size:.7rem;"></i>
+      <div class="cd-review-bar-track"><div class="cd-review-bar-fill" style="width:${pct}%;"></div></div>
+      <span class="cd-review-bar-pct">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+function loadMoreReviews() {
+  reviewPage++;
+  loadReviews(true);
+}
+
+// Star rating selector
+document.getElementById('star-select').querySelectorAll('i').forEach(star => {
+  star.addEventListener('click', function() {
+    reviewRating = parseInt(this.dataset.star);
+    document.querySelectorAll('#star-select i').forEach((s, i) => {
+      s.classList.toggle('active', i < reviewRating);
+    });
+  });
+  star.addEventListener('mouseenter', function() {
+    const val = parseInt(this.dataset.star);
+    document.querySelectorAll('#star-select i').forEach((s, i) => {
+      s.style.color = i < val ? 'var(--cd-gold)' : 'var(--cd-border)';
+    });
+  });
+  star.addEventListener('mouseleave', function() {
+    document.querySelectorAll('#star-select i').forEach((s, i) => {
+      s.style.color = i < reviewRating ? 'var(--cd-gold)' : 'var(--cd-border)';
+    });
+  });
+});
+
+async function submitReview() {
+  if (!reviewRating) {
+    document.getElementById('review-msg').innerHTML = '<div style="color:#ef4444;font-size:.8rem;">Please select a star rating</div>';
+    return;
+  }
+  const text = document.getElementById('review-text').value.trim();
+  const res = await http.post('/courses/' + courseId + '/reviews', { rating: reviewRating, review_text: text });
+  if (res?.ok) {
+    document.getElementById('review-msg').innerHTML = '<div style="color:var(--cd-green);font-size:.8rem;">✅ Review submitted!</div>';
+    document.getElementById('review-text').value = '';
+    reviewRating = 0;
+    document.querySelectorAll('#star-select i').forEach(s => s.classList.remove('active'));
+    loadReviews();
+  } else {
+    document.getElementById('review-msg').innerHTML = '<div style="color:#ef4444;font-size:.8rem;">' + (res?.message || 'Failed') + '</div>';
+  }
+}
+
+function loadReviewForm() {
+  document.getElementById('review-form-wrap').style.display = 'block';
+}
+
+// ── Wishlist ──────────────────────────────────────────────────────────────────
+async function checkWishlist() {
+  if (!Auth.isLoggedIn()) return;
+  const data = await http.get('/student/wishlist');
+  if (!data) return;
+  const list = Array.isArray(data) ? data : (data.wishlist || []);
+  isWishlisted = list.some(w => w.item_id == courseId && w.item_type === 'course');
+  updateWishlistBtn();
+}
+
+function updateWishlistBtn() {
+  const btn = document.getElementById('wishlistBtn');
+  const icon = document.getElementById('wishlist-icon');
+  const label = document.getElementById('wishlist-label');
+  if (!btn) return;
+  if (isWishlisted) {
+    btn.classList.add('wishlisted');
+    if (icon) { icon.className = 'fas fa-heart'; }
+    if (label) label.textContent = 'Wishlisted';
+  } else {
+    btn.classList.remove('wishlisted');
+    if (icon) { icon.className = 'far fa-heart'; }
+    if (label) label.textContent = 'Add to Wishlist';
+  }
+}
+
+async function toggleWishlist() {
+  if (!Auth.isLoggedIn()) {
+    window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+    return;
+  }
+  if (isWishlisted) {
+    await http.delete('/student/wishlist/' + courseId);
+    isWishlisted = false;
+  } else {
+    await http.post('/student/wishlist', { item_type: 'course', item_id: courseId });
+    isWishlisted = true;
+  }
+  updateWishlistBtn();
+}
+
+// ── Payment modal ─────────────────────────────────────────────────────────────
+async function openPayModal() {
+  document.getElementById('pay-modal-title').textContent = 'Enroll in Course';
+  document.getElementById('pay-modal-sub').textContent = (courseData?.title || '') + ' — ' + fmt.currency(courseData?.price || 0);
+  document.getElementById('pay-alert').innerHTML = '';
+  document.getElementById('payModal').classList.add('open');
+  await loadGatewayButtons();
+}
+
+function closePayModal() {
+  document.getElementById('payModal').classList.remove('open');
+}
+
+document.getElementById('payModal').addEventListener('click', function(e) {
+  if (e.target === this) closePayModal();
+});
+
+let _bankDetails = null;
+
+async function loadGatewayButtons() {
+  const grid = document.getElementById('gw-grid');
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--cd-muted);font-size:.84rem;"><div class="cd-spinner"></div> Loading payment options…</div>';
+  const user = Auth.getUser();
+  const siteId = user?.site_id || '';
+  const gws = await http.get('/payments/gateways' + (siteId ? '?site_id=' + siteId : '')) || [];
+  if (!gws.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--cd-muted);">No payment methods configured</div>';
+    return;
+  }
+  selGw = gws[0].gateway;
+  grid.innerHTML = gws.map(g => `
+    <button class="cd-gw-btn ${g.gateway === selGw ? 'selected' : ''}" data-gw="${g.gateway}"
+      onclick="selectGateway('${g.gateway}', ${JSON.stringify(g).replace(/"/g,'&quot;')})">
+      ${g.display_name || g.gateway}
+    </button>`).join('');
+  if (gws[0].gateway === 'bank_transfer') showBankDetails(gws[0]);
+}
+
+function selectGateway(gw, gwData) {
+  selGw = gw;
+  _bankDetails = gwData;
+  document.querySelectorAll('.cd-gw-btn').forEach(b => b.classList.toggle('selected', b.dataset.gw === gw));
+  if (gw === 'bank_transfer') showBankDetails(gwData);
+  else document.getElementById('bank-block').style.display = 'none';
+}
+
+function showBankDetails(gwData) {
+  const block = document.getElementById('bank-block');
+  block.style.display = 'block';
+  block.innerHTML = `
+    <strong style="display:block;margin-bottom:8px;"><i class="fas fa-university"></i> Bank Transfer Details</strong>
+    <div><strong>Bank:</strong> ${gwData?.bank_name || '—'}</div>
+    <div><strong>Account No:</strong> <span style="font-size:1.05rem;letter-spacing:2px;font-weight:700;">${gwData?.bank_account_number || '—'}</span></div>
+    <div><strong>Name:</strong> ${gwData?.bank_account_name || '—'}</div>
+    <div style="margin-top:10px;">
+      <label style="font-size:.78rem;display:block;margin-bottom:4px;font-weight:600;">Upload payment proof *</label>
+      <input type="file" id="bank-proof-input" accept="image/*,.pdf" style="width:100%;padding:6px;background:var(--cd-surface);border:1px solid var(--cd-border);border-radius:6px;color:var(--cd-ink);">
+    </div>`;
+}
+
+async function doPay() {
+  const btn = document.getElementById('pay-btn');
+  const alertEl = document.getElementById('pay-alert');
+  alertEl.innerHTML = '';
+  const user = Auth.getUser();
+  const siteId = user?.site_id || null;
+
+  if (selGw === 'bank_transfer') {
+    const file = document.getElementById('bank-proof-input')?.files[0];
+    if (!file) { alertEl.innerHTML = '<div class="cd-modal-alert" style="background:rgba(239,68,68,.1);color:#ef4444;">Please upload payment proof</div>'; return; }
+    btn.disabled = true;
+    btn.innerHTML = '<span class="cd-spinner"></span> Submitting…';
+    const fd = new FormData();
+    fd.append('proof', file);
+    fd.append('item_type', 'course');
+    fd.append('item_id', courseId);
+    fd.append('amount', courseData?.price);
+    if (siteId) fd.append('site_id', siteId);
+    const res = await fetch(API + '/payments/bank-proof', {
+      method: 'POST', headers: { Authorization: 'Bearer ' + Auth.getToken() }, body: fd
+    });
+    const data = await res.json();
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-lock"></i> Pay & Enroll';
+    if (res.ok) {
+      alertEl.innerHTML = '<div class="cd-modal-alert" style="background:rgba(16,185,129,.1);color:var(--cd-green);">✅ Proof submitted! Access granted after admin review.</div>';
+      btn.style.display = 'none';
+    } else {
+      alertEl.innerHTML = '<div class="cd-modal-alert" style="background:rgba(239,68,68,.1);color:#ef4444;">' + (data.message || 'Upload failed') + '</div>';
+    }
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="cd-spinner"></span> Processing…';
+  const data = await http.post('/payments/initiate', {
+    item_type: 'course', item_id: courseId,
+    gateway: selGw, site_id: siteId
+  });
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-lock"></i> Pay & Enroll';
+  if (data?.authorization_url || data?.session_url || data?.link) {
+    window.location.href = data.authorization_url || data.session_url || data.link;
+  } else {
+    alertEl.innerHTML = '<div class="cd-modal-alert" style="background:rgba(239,68,68,.1);color:#ef4444;">' + (data?.message || 'Payment initiation failed') + '</div>';
+  }
+}
+
+function promptEnroll() {
+  if (!Auth.isLoggedIn()) {
+    window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+    return;
+  }
+  switchTab('overview');
+  document.getElementById('enrollBtn').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  document.getElementById('enrollBtn').style.animation = 'none';
+  setTimeout(() => {
+    document.getElementById('enrollBtn').style.boxShadow = '0 0 0 4px rgba(91,79,207,0.3)';
+    setTimeout(() => { document.getElementById('enrollBtn').style.boxShadow = ''; }, 1500);
+  }, 100);
+}
+
+// ── Preview video ─────────────────────────────────────────────────────────────
+function playPreviewVideo() {
+  const lesson = freeLessons[0];
+  if (!lesson) return;
+  playLessonPreview(lesson.id);
+}
+
+function playLessonPreview(lessonId) {
+  const lesson = (courseData?.sections || []).flatMap(s => s.lessons || []).find(l => l.id === lessonId);
+  if (!lesson) return;
+  if (!lesson.is_preview && !isEnrolled) { promptEnroll(); return; }
+
+  let videoHTML = '';
+  if (lesson.video_type === 'youtube' && lesson.video_url) {
+    const ytId = extractYouTubeId(lesson.video_url);
+    videoHTML = ytId ? '<iframe src="https://www.youtube-nocookie.com/embed/' + ytId + '?autoplay=1&rel=0&modestbranding=1" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" style="width:100%;height:100%;border:none;"></iframe>' : '';
+  } else if (lesson.video_type === 'vimeo' && lesson.video_url) {
+    const vId = lesson.video_url.match(/vimeo\.com\/(\d+)/)?.[1];
+    videoHTML = vId ? '<iframe src="https://player.vimeo.com/video/' + vId + '?autoplay=1" allowfullscreen allow="autoplay" style="width:100%;height:100%;border:none;"></iframe>' : '';
+  } else if (lesson.video_type === 'upload' && lesson.video_url) {
+    videoHTML = '<video src="' + lesson.video_url + '" controls autoplay style="width:100%;height:100%;"></video>';
+  } else {
+    // No video — if enrolled, go straight to learn page
+    if (isEnrolled) { window.location.href = '/learn/' + courseId + '?lesson=' + lessonId; return; }
+    return;
+  }
+
+  if (isEnrolled) {
+    window.location.href = '/learn/' + courseId + '?lesson=' + lessonId;
+    return;
+  }
+
+  document.getElementById('preview-video-container').innerHTML = videoHTML;
+  document.getElementById('preview-lesson-title').textContent = lesson.title;
+  document.getElementById('previewModal').classList.add('open');
+}
+
+function closePreview() {
+  document.getElementById('previewModal').classList.remove('open');
+  document.getElementById('preview-video-container').innerHTML = '';
+}
+document.getElementById('previewModal').addEventListener('click', function(e) {
+  if (e.target === this) closePreview();
+});
+
+function extractYouTubeId(url) {
+  if (!url) return null;
+  url = url.trim();
+  if (/^[\w-]{11}$/.test(url)) return url;
+  const m = url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([\w-]{11})/);
+  return m ? m[1] : null;
+}
+
+// ── Star helper ───────────────────────────────────────────────────────────────
+function renderStars(rating) {
+  const r = Math.round(Number(rating) * 2) / 2;
+  let html = '';
+  for (let i = 1; i <= 5; i++) {
+    if (i <= r) html += '<i class="fas fa-star"></i>';
+    else if (i - 0.5 <= r) html += '<i class="fas fa-star-half-alt"></i>';
+    else html += '<i class="far fa-star"></i>';
+  }
+  return html;
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+loadCourse();
+</script>
+</body>
+</html>

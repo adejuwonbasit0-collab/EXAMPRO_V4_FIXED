@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learn — ExamPro</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ─── BASE ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --lp-bg: #0c0c14;
+  --lp-surface: #13131f;
+  --lp-surface2: #1a1a2e;
+  --lp-border: rgba(255,255,255,0.07);
+  --lp-text: #e8e8f0;
+  --lp-muted: #8080a0;
+  --lp-accent: #7c5dd4;
+  --lp-accent-light: rgba(124,93,212,0.18);
+  --lp-green: #10b981;
+  --lp-gold: #f59e0b;
+  --lp-radius: 10px;
+  --sidebar-w: 320px;
+  --topbar-h: 56px;
+  --tabs-h: 46px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--lp-text);
+}
+body { background: var(--lp-bg); overflow: hidden; height: 100vh; }
+
+/* ─── TOPBAR ────────────────────────────────────────────── */
+.lp-topbar {
+  height: var(--topbar-h);
+  background: var(--lp-surface);
+  border-bottom: 1px solid var(--lp-border);
+  display: flex; align-items: center;
+  padding: 0 16px; gap: 12px;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+}
+.lp-topbar-logo {
+  font-family: 'Sora', sans-serif;
+  font-size: .9rem; font-weight: 800; color: #fff;
+  text-decoration: none; white-space: nowrap;
+}
+.lp-topbar-sep { width: 1px; height: 22px; background: var(--lp-border); flex-shrink: 0; }
+.lp-topbar-title {
+  font-size: .82rem; font-weight: 600;
+  color: var(--lp-muted); flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.lp-topbar-progress {
+  display: flex; align-items: center; gap: 10px;
+  font-size: .76rem; color: var(--lp-muted);
+}
+.lp-progress-track {
+  width: 120px; height: 4px;
+  background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden;
+}
+.lp-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--lp-accent), var(--lp-green));
+  border-radius: 99px; transition: width .5s ease;
+}
+.lp-topbar-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 8px;
+  border: 1px solid var(--lp-border);
+  background: transparent; color: var(--lp-muted);
+  font-size: .78rem; font-weight: 600; cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+}
+.lp-topbar-btn:hover { background: var(--lp-accent-light); color: #fff; border-color: var(--lp-accent); }
+.lp-topbar-btn-accent {
+  background: var(--lp-accent); color: #fff; border-color: transparent;
+}
+.lp-topbar-btn-accent:hover { background: #6b4ec0; }
+.lp-sidebar-toggle {
+  display: none;
+  background: none; border: none; color: var(--lp-muted);
+  cursor: pointer; font-size: 1rem; padding: 6px 8px;
+}
+
+/* ─── LAYOUT ────────────────────────────────────────────── */
+.lp-layout {
+  display: grid;
+  grid-template-columns: 1fr var(--sidebar-w);
+  height: 100vh;
+  padding-top: var(--topbar-h);
+}
+.lp-main {
+  display: flex; flex-direction: column;
+  overflow: hidden; min-width: 0;
+}
+.lp-sidebar {
+  background: var(--lp-surface);
+  border-left: 1px solid var(--lp-border);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+/* ─── VIDEO AREA ────────────────────────────────────────── */
+.lp-video-wrap {
+  background: #000;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+.lp-video-wrap iframe, .lp-video-wrap video {
+  width: 100%; height: 100%; border: none; display: block;
+}
+.lp-video-placeholder {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%; color: var(--lp-muted); gap: 12px;
+  background: var(--lp-surface2);
+}
+.lp-video-placeholder i { font-size: 3.5rem; opacity: .3; }
+.lp-video-placeholder p { font-size: .88rem; }
+
+/* ─── LESSON TABS ───────────────────────────────────────── */
+.lp-tabs {
+  height: var(--tabs-h);
+  display: flex; align-items: center;
+  border-bottom: 1px solid var(--lp-border);
+  padding: 0 20px; gap: 4px; flex-shrink: 0;
+  background: var(--lp-surface);
+}
+.lp-tab {
+  padding: 8px 14px; border: none; background: none;
+  color: var(--lp-muted); font-size: .8rem; font-weight: 600;
+  cursor: pointer; border-radius: 7px; transition: all .14s;
+  display: flex; align-items: center; gap: 6px;
+}
+.lp-tab:hover { background: var(--lp-accent-light); color: var(--lp-text); }
+.lp-tab.active { background: var(--lp-accent-light); color: var(--lp-accent); }
+
+/* ─── TAB PANELS ────────────────────────────────────────── */
+.lp-tab-content {
+  flex: 1; overflow-y: auto; padding: 20px;
+}
+.lp-tab-panel { display: none; }
+.lp-tab-panel.active { display: block; }
+
+/* Overview */
+.lp-overview-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 1rem; font-weight: 700;
+  margin-bottom: 10px; line-height: 1.4;
+}
+.lp-overview-meta {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  font-size: .78rem; color: var(--lp-muted);
+  margin-bottom: 16px; padding-bottom: 16px;
+  border-bottom: 1px solid var(--lp-border);
+}
+.lp-overview-meta span { display: flex; align-items: center; gap: 5px; }
+.lp-overview-meta i { font-size: .72rem; }
+.lp-overview-body { font-size: .85rem; color: rgba(255,255,255,0.65); line-height: 1.75; }
+
+/* Resources */
+.lp-resource-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  background: var(--lp-surface2);
+  border: 1px solid var(--lp-border);
+  border-radius: 9px; margin-bottom: 10px;
+  text-decoration: none; transition: border-color .14s;
+}
+.lp-resource-item:hover { border-color: var(--lp-accent); }
+.lp-resource-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--lp-accent-light); color: var(--lp-accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; flex-shrink: 0;
+}
+.lp-resource-name { font-size: .83rem; font-weight: 600; color: var(--lp-text); }
+.lp-resource-size { font-size: .73rem; color: var(--lp-muted); margin-top: 1px; }
+
+/* Notes */
+.lp-note-input {
+  width: 100%; min-height: 100px; resize: vertical;
+  background: var(--lp-surface2);
+  border: 1px solid var(--lp-border);
+  border-radius: 9px; padding: 12px;
+  color: var(--lp-text); font-family: 'DM Sans', sans-serif;
+  font-size: .84rem; outline: none; margin-bottom: 10px;
+  transition: border-color .14s;
+}
+.lp-note-input:focus { border-color: var(--lp-accent); }
+.lp-note-card {
+  background: var(--lp-surface2); border: 1px solid var(--lp-border);
+  border-radius: 9px; padding: 14px; margin-bottom: 10px;
+}
+.lp-note-card-head {
+  display: flex; justify-content: space-between;
+  font-size: .73rem; color: var(--lp-muted); margin-bottom: 6px;
+}
+.lp-note-card-body { font-size: .84rem; color: rgba(255,255,255,0.72); line-height: 1.65; }
+
+/* Discussion */
+.lp-disc-input-wrap {
+  display: flex; gap: 10px; margin-bottom: 16px;
+}
+.lp-disc-av {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, #5B4FCF, #9b8fea);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: .8rem; color: #fff;
+}
+.lp-disc-input {
+  flex: 1; padding: 10px 14px;
+  background: var(--lp-surface2);
+  border: 1px solid var(--lp-border);
+  border-radius: 9px; color: var(--lp-text);
+  font-family: 'DM Sans', sans-serif; font-size: .84rem;
+  outline: none; resize: none; min-height: 44px;
+}
+.lp-disc-input:focus { border-color: var(--lp-accent); }
+.lp-disc-msg {
+  background: var(--lp-surface2); border: 1px solid var(--lp-border);
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 10px;
+}
+.lp-disc-msg-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.lp-disc-msg-name { font-size: .8rem; font-weight: 700; color: var(--lp-text); }
+.lp-disc-msg-date { font-size: .7rem; color: var(--lp-muted); margin-left: auto; }
+.lp-disc-msg-body { font-size: .83rem; color: rgba(255,255,255,0.65); line-height: 1.6; }
+
+/* ─── SIDEBAR ───────────────────────────────────────────── */
+.lp-sidebar-head {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--lp-border);
+  font-size: .8rem; font-weight: 700;
+  color: var(--lp-muted); text-transform: uppercase;
+  letter-spacing: .5px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.lp-sidebar-prog {
+  display: flex; align-items: center; gap: 8px;
+  font-size: .76rem; color: var(--lp-muted);
+}
+.lp-sidebar-list { overflow-y: auto; flex: 1; padding: 8px 0; }
+
+.lp-module-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 18px; cursor: pointer;
+  background: rgba(255,255,255,0.02);
+  font-size: .77rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .4px;
+  color: var(--lp-muted); transition: background .14s;
+  border-bottom: 1px solid var(--lp-border);
+  user-select: none;
+}
+.lp-module-head:hover { background: rgba(255,255,255,0.04); }
+.lp-module-chevron { margin-left: auto; font-size: .68rem; transition: transform .2s; }
+.lp-module-head.closed .lp-module-chevron { transform: rotate(-90deg); }
+.lp-module-lessons { }
+.lp-module-lessons.collapsed { display: none; }
+
+.lp-lesson-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 18px; cursor: pointer;
+  transition: background .12s; border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.lp-lesson-item:hover { background: rgba(255,255,255,0.04); }
+.lp-lesson-item.active { background: var(--lp-accent-light); border-left: 3px solid var(--lp-accent); }
+.lp-lesson-item.completed { opacity: .85; }
+.lp-lesson-dot {
+  width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .58rem; color: var(--lp-muted);
+  transition: all .2s;
+}
+.lp-lesson-dot.done { background: var(--lp-green); border-color: var(--lp-green); color: #fff; }
+.lp-lesson-dot.current { background: var(--lp-accent); border-color: var(--lp-accent); color: #fff; }
+.lp-lesson-info { flex: 1; min-width: 0; }
+.lp-lesson-name { font-size: .8rem; font-weight: 500; color: var(--lp-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lp-lesson-item.active .lp-lesson-name { color: #fff; font-weight: 600; }
+.lp-lesson-dur { font-size: .7rem; color: var(--lp-muted); margin-top: 1px; }
+.lp-lesson-type-badge {
+  font-size: .6rem; font-weight: 700; padding: 2px 6px; border-radius: 99px; flex-shrink: 0;
+}
+.lp-badge-video { background: rgba(124,93,212,0.2); color: #a78bfa; }
+.lp-badge-quiz { background: rgba(245,158,11,0.2); color: var(--lp-gold); }
+
+/* ─── MARK COMPLETE BUTTON ──────────────────────────────── */
+.lp-complete-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 18px; border-radius: 8px; border: none;
+  background: var(--lp-accent-light);
+  color: var(--lp-accent); font-size: .82rem; font-weight: 700;
+  cursor: pointer; transition: all .18s;
+  margin-left: auto;
+}
+.lp-complete-btn:hover { background: var(--lp-green); color: #fff; }
+.lp-complete-btn.done { background: rgba(16,185,129,0.15); color: var(--lp-green); cursor: default; }
+.lp-complete-btn.done:hover { background: rgba(16,185,129,0.15); }
+
+/* ─── QUIZ MODAL ────────────────────────────────────────── */
+.lp-modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.8); backdrop-filter: blur(6px);
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.lp-modal-overlay.open { display: flex; }
+.lp-modal {
+  background: var(--lp-surface);
+  border: 1px solid var(--lp-border);
+  border-radius: 16px; padding: 32px;
+  width: 90%; max-width: 560px;
+  max-height: 85vh; overflow-y: auto;
+  animation: lp-modal-in .2s ease;
+}
+@keyframes lp-modal-in { from { opacity:0; transform: scale(.96) translateY(8px); } to { opacity:1; transform: scale(1) translateY(0); } }
+.lp-quiz-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 24px; }
+.lp-quiz-title { font-family: 'Sora', sans-serif; font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; }
+.lp-quiz-meta { font-size: .78rem; color: var(--lp-muted); }
+.lp-quiz-timer {
+  margin-left: auto; font-family: 'Sora', sans-serif;
+  font-size: 1.2rem; font-weight: 800;
+  color: var(--lp-accent); white-space: nowrap;
+}
+.lp-quiz-timer.warning { color: #ef4444; animation: pulse .5s infinite alternate; }
+@keyframes pulse { from { opacity:.7; } to { opacity:1; } }
+.lp-question {
+  background: var(--lp-surface2); border: 1px solid var(--lp-border);
+  border-radius: 12px; padding: 20px; margin-bottom: 16px;
+}
+.lp-question-num { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--lp-muted); margin-bottom: 8px; }
+.lp-question-text { font-size: .92rem; font-weight: 600; color: var(--lp-text); margin-bottom: 16px; line-height: 1.5; }
+.lp-options { display: flex; flex-direction: column; gap: 8px; }
+.lp-option {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border-radius: 9px;
+  border: 2px solid var(--lp-border);
+  cursor: pointer; transition: all .14s;
+  font-size: .85rem; color: var(--lp-text);
+}
+.lp-option:hover { border-color: var(--lp-accent); background: var(--lp-accent-light); }
+.lp-option.selected { border-color: var(--lp-accent); background: var(--lp-accent-light); color: #fff; }
+.lp-option.correct { border-color: var(--lp-green); background: rgba(16,185,129,0.15); color: var(--lp-green); }
+.lp-option.wrong { border-color: #ef4444; background: rgba(239,68,68,0.12); color: #ef4444; }
+.lp-option-radio {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.2); flex-shrink: 0;
+  transition: all .14s; background: transparent;
+  display: flex; align-items: center; justify-content: center;
+}
+.lp-option.selected .lp-option-radio { background: var(--lp-accent); border-color: var(--lp-accent); }
+.lp-option.selected .lp-option-radio::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #fff; display: block; }
+.lp-quiz-explanation {
+  font-size: .8rem; color: var(--lp-muted);
+  background: rgba(255,255,255,0.03); border-radius: 7px;
+  padding: 8px 12px; margin-top: 8px;
+}
+.lp-quiz-actions {
+  display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;
+}
+.lp-quiz-btn {
+  padding: 11px 22px; border-radius: 9px; border: none;
+  font-weight: 700; font-size: .85rem; cursor: pointer; transition: all .18s;
+}
+.lp-quiz-btn-primary { background: var(--lp-accent); color: #fff; }
+.lp-quiz-btn-primary:hover { background: #6b4ec0; }
+.lp-quiz-btn-outline {
+  background: transparent; color: var(--lp-muted);
+  border: 1px solid var(--lp-border);
+}
+.lp-quiz-btn-outline:hover { background: var(--lp-surface2); color: var(--lp-text); }
+
+/* Quiz result */
+.lp-quiz-result { text-align: center; padding: 10px 0 20px; }
+.lp-result-score {
+  font-family: 'Sora', sans-serif;
+  font-size: 4rem; font-weight: 800;
+  margin-bottom: 8px;
+}
+.lp-result-score.pass { color: var(--lp-green); }
+.lp-result-score.fail { color: #ef4444; }
+.lp-result-label { font-size: 1rem; font-weight: 600; color: var(--lp-text); margin-bottom: 6px; }
+.lp-result-sub { font-size: .85rem; color: var(--lp-muted); }
+
+/* ─── TOAST ─────────────────────────────────────────────── */
+.lp-toast-container {
+  position: fixed; bottom: 24px; right: 24px; z-index: 300;
+  display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
+}
+.lp-toast {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px; border-radius: 10px;
+  font-size: .84rem; font-weight: 600;
+  max-width: 340px; box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  animation: lp-toast-in .25s ease;
+  transition: opacity .3s;
+}
+@keyframes lp-toast-in { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+.lp-toast-success { background: rgba(16,185,129,0.18); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
+.lp-toast-info { background: rgba(124,93,212,0.18); border: 1px solid rgba(124,93,212,0.3); color: #c4b5fd; }
+.lp-toast-error { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+
+/* ─── AI TUTOR ──────────────────────────────────────────── */
+#ai-tutor-btn {
+  position: fixed; bottom: 24px; right: 24px; z-index: 180;
+  width: 50px; height: 50px; border-radius: 50%; border: none;
+  background: linear-gradient(135deg, var(--lp-accent), #a78bfa);
+  color: #fff; font-size: 1.2rem; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(124,93,212,.5);
+  transition: transform .2s, box-shadow .2s;
+  display: flex; align-items: center; justify-content: center;
+}
+#ai-tutor-btn:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(124,93,212,.7); }
+#ai-tutor-panel {
+  display: none; position: fixed; bottom: 84px; right: 24px;
+  width: 320px; max-height: 420px; z-index: 180;
+  background: var(--lp-surface); border: 1px solid var(--lp-border);
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0,0,0,.6);
+  flex-direction: column;
+  animation: lp-modal-in .2s ease;
+}
+#ai-tutor-panel.open { display: flex; }
+.ai-tutor-head {
+  padding: 14px 16px; background: linear-gradient(135deg, rgba(124,93,212,.2), rgba(167,139,250,.1));
+  border-bottom: 1px solid var(--lp-border);
+  display: flex; align-items: center; gap: 10px;
+}
+.ai-tutor-head-name { font-size: .88rem; font-weight: 700; flex: 1; }
+.ai-tutor-head-close { background: none; border: none; color: var(--lp-muted); cursor: pointer; font-size: 1rem; }
+.ai-tutor-msgs { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.ai-msg { max-width: 85%; padding: 10px 13px; border-radius: 12px; font-size: .82rem; line-height: 1.55; }
+.ai-msg-bot { background: var(--lp-surface2); border: 1px solid var(--lp-border); color: var(--lp-text); align-self: flex-start; border-radius: 4px 12px 12px 12px; }
+.ai-msg-user { background: var(--lp-accent); color: #fff; align-self: flex-end; border-radius: 12px 4px 12px 12px; }
+.ai-msg-typing { opacity: .6; font-style: italic; }
+.ai-tutor-input-row { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--lp-border); }
+.ai-tutor-input { flex: 1; background: var(--lp-surface2); border: 1px solid var(--lp-border); border-radius: 8px; padding: 8px 12px; color: var(--lp-text); font-size: .82rem; outline: none; font-family: 'DM Sans', sans-serif; }
+.ai-tutor-input:focus { border-color: var(--lp-accent); }
+.ai-tutor-send { width: 34px; height: 34px; border-radius: 8px; border: none; background: var(--lp-accent); color: #fff; cursor: pointer; font-size: .85rem; flex-shrink: 0; }
+.ai-tutor-send:hover { background: #6b4ec0; }
+.ai-tutor-send:disabled { opacity: .4; cursor: default; }
+
+/* ─── SPEED CONTROL ─────────────────────────────────────── */
+.lp-speed-btn {
+  padding: 5px 10px; border: 1px solid var(--lp-border);
+  background: transparent; color: var(--lp-muted);
+  border-radius: 6px; font-size: .72rem; font-weight: 700;
+  cursor: pointer; transition: all .14s;
+}
+.lp-speed-btn:hover, .lp-speed-btn.active { background: var(--lp-accent-light); color: var(--lp-accent); border-color: var(--lp-accent); }
+
+/* ─── SHORTCUTS HINT ────────────────────────────────────── */
+.lp-shortcuts-hint {
+  font-size: .72rem; color: var(--lp-muted);
+  display: flex; gap: 12px; flex-wrap: wrap; padding: 4px 0;
+}
+.lp-shortcut-key {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px; padding: 1px 5px; font-family: monospace; font-size: .68rem;
+}
+
+/* ─── RESPONSIVE ────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .lp-layout { grid-template-columns: 1fr; }
+  .lp-sidebar {
+    position: fixed; right: -100%; top: var(--topbar-h); bottom: 0;
+    width: 290px; z-index: 90; transition: right .25s;
+  }
+  .lp-sidebar.open { right: 0; box-shadow: -8px 0 40px rgba(0,0,0,0.5); }
+  .lp-sidebar-toggle { display: flex; align-items: center; }
+  body.sidebar-visible::after {
+    content: ''; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    z-index: 89;
+  }
+}
+@media (max-width: 600px) {
+  .lp-topbar-progress { display: none; }
+  .lp-topbar-title { font-size: .78rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="lp-topbar">
+  <button class="lp-sidebar-toggle" onclick="toggleSidebar()" title="Course content">
+    <i class="fas fa-bars"></i>
+  </button>
+  <a href="/courses" class="lp-topbar-logo">ExamPro</a>
+  <div class="lp-topbar-sep"></div>
+  <div class="lp-topbar-title" id="lp-course-title">Loading course…</div>
+  <div class="lp-topbar-progress">
+    <div class="lp-progress-track">
+      <div class="lp-progress-fill" id="lp-progress-fill" style="width:0%;"></div>
+    </div>
+    <span id="lp-progress-text">0%</span>
+  </div>
+  <button class="lp-topbar-btn" id="lp-complete-btn" onclick="markComplete()" style="margin-left:8px;">
+    <i class="fas fa-check"></i> Mark Complete
+  </button>
+  <div style="display:flex;gap:6px;align-items:center;">
+    <button class="lp-speed-btn" onclick="setSpeed(0.75)" title="0.75x speed">0.75×</button>
+    <button class="lp-speed-btn active" id="spd-1" onclick="setSpeed(1)" title="Normal speed">1×</button>
+    <button class="lp-speed-btn" onclick="setSpeed(1.25)" title="1.25x speed">1.25×</button>
+    <button class="lp-speed-btn" onclick="setSpeed(1.5)" title="1.5x speed">1.5×</button>
+    <button class="lp-speed-btn" onclick="setSpeed(2)" title="2x speed">2×</button>
+  </div>
+  <button class="lp-topbar-btn" onclick="goBack()">
+    <i class="fas fa-arrow-left"></i> Exit
+  </button>
+</header>
+
+<!-- LAYOUT -->
+<div class="lp-layout">
+
+  <!-- MAIN (video + tabs) -->
+  <div class="lp-main">
+    <div class="lp-video-wrap" id="lp-video-wrap">
+      <div class="lp-video-placeholder" id="lp-video-placeholder">
+        <i class="fas fa-play-circle"></i>
+        <p>Select a lesson to begin</p>
+      </div>
+    </div>
+
+    <div class="lp-tabs">
+      <button class="lp-tab active" onclick="switchLessonTab('overview')"><i class="fas fa-align-left"></i> Overview</button>
+      <button class="lp-tab" onclick="switchLessonTab('resources')"><i class="fas fa-paperclip"></i> Resources</button>
+      <button class="lp-tab" onclick="switchLessonTab('notes')"><i class="fas fa-sticky-note"></i> Notes</button>
+      <button class="lp-tab" onclick="switchLessonTab('discussion')"><i class="fas fa-comments"></i> Discussion</button>
+      <button class="lp-tab" id="quiz-tab-btn" onclick="openQuiz()" style="margin-left:auto;display:none;">
+        <i class="fas fa-brain"></i> Quiz
+      </button>
+    </div>
+
+    <div class="lp-tab-content">
+      <!-- OVERVIEW -->
+      <div class="lp-tab-panel active" id="ltab-overview">
+        <div class="lp-overview-title" id="lp-lesson-title">Select a lesson</div>
+        <div class="lp-overview-meta" id="lp-lesson-meta"></div>
+        <div class="lp-overview-body" id="lp-lesson-content">Choose a lesson from the curriculum on the right to begin learning.</div>
+      </div>
+
+      <!-- RESOURCES -->
+      <div class="lp-tab-panel" id="ltab-resources">
+        <div id="lp-resources-list">
+          <div style="text-align:center;padding:40px;color:var(--lp-muted);">
+            <i class="fas fa-paperclip" style="font-size:2rem;opacity:.3;display:block;margin-bottom:10px;"></i>
+            No resources for this lesson
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTES -->
+      <div class="lp-tab-panel" id="ltab-notes">
+        <div style="margin-bottom:16px;">
+          <textarea class="lp-note-input" id="note-input" placeholder="Add a note about this lesson…" rows="4"></textarea>
+          <div style="display:flex;justify-content:flex-end;">
+            <button onclick="saveNote()" style="padding:8px 18px;background:var(--lp-accent);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:.82rem;cursor:pointer;">
+              <i class="fas fa-save"></i> Save Note
+            </button>
+          </div>
+        </div>
+        <div id="notes-list"></div>
+      </div>
+
+      <!-- DISCUSSION -->
+      <div class="lp-tab-panel" id="ltab-discussion">
+        <div class="lp-disc-input-wrap">
+          <div class="lp-disc-av" id="disc-av">S</div>
+          <div style="flex:1;">
+            <textarea class="lp-disc-input" id="disc-input" placeholder="Ask a question or leave a comment…" rows="3"></textarea>
+            <button onclick="postComment()" style="margin-top:8px;padding:8px 18px;background:var(--lp-accent);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:.82rem;cursor:pointer;">
+              <i class="fas fa-paper-plane"></i> Post
+            </button>
+          </div>
+        </div>
+        <div id="disc-list">
+          <div style="text-align:center;padding:30px;color:var(--lp-muted);font-size:.84rem;">
+            No comments yet — start the discussion!
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR (curriculum) -->
+  <aside class="lp-sidebar" id="lp-sidebar">
+    <div class="lp-sidebar-head">
+      <span>Course Content</span>
+      <div class="lp-sidebar-prog">
+        <span id="sb-progress-text">0% complete</span>
+      </div>
+    </div>
+    <div class="lp-sidebar-list" id="lp-sidebar-list">
+      <div style="padding:20px;text-align:center;color:var(--lp-muted);">
+        <i class="fas fa-spinner fa-spin"></i> Loading…
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- QUIZ MODAL -->
+<div class="lp-modal-overlay" id="quizModal">
+  <div class="lp-modal" id="quiz-modal-inner">
+    <div id="quiz-content"></div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="lp-toast-container" id="lp-toasts"></div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────────────────
+const API = window.location.origin + '/api';
+const Auth = {
+  getToken: () => localStorage.getItem('ep_token'),
+  getUser: () => JSON.parse(localStorage.getItem('ep_user') || 'null'),
+  isLoggedIn: () => !!localStorage.getItem('ep_token'),
+  headers: () => ({ 'Content-Type': 'application/json', ...(localStorage.getItem('ep_token') ? { Authorization: 'Bearer ' + localStorage.getItem('ep_token') } : {}) })
+};
+const http = {
+  get: async url => { try { const r = await fetch(API+url,{headers:Auth.headers()}); return await r.json(); } catch(e){ return null; } },
+  post: async (url, body) => { try { const r = await fetch(API+url,{method:'POST',headers:Auth.headers(),body:JSON.stringify(body)}); const d=await r.json(); return Object.assign({},d,{ok:r.ok}); } catch(e){ return null; } },
+  delete: async url => { try { const r = await fetch(API+url,{method:'DELETE',headers:Auth.headers()}); return Object.assign({},await r.json(),{ok:r.ok}); } catch(e){ return null; } }
+};
+const fmt = {
+  date: d => new Date(d).toLocaleDateString('en-NG', {day:'numeric',month:'short',year:'numeric'}),
+  datetime: d => new Date(d).toLocaleString('en-NG',{hour:'2-digit',minute:'2-digit',month:'short',day:'numeric'})
+};
+
+if (!Auth.isLoggedIn()) {
+  window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+// Extract courseId from /learn/{courseId}
+const pathParts = window.location.pathname.split('/').filter(Boolean);
+const courseId = pathParts.length >= 2 ? pathParts[pathParts.length - 1] : pathParts[0];
+const urlParams = new URLSearchParams(window.location.search);
+let targetLessonId = urlParams.get('lesson') ? parseInt(urlParams.get('lesson')) : null;
+
+let courseData = null;
+let currentLesson = null;
+let completedLessons = [];
+let allLessons = [];
+let quizData = null;
+let quizAnswers = {};
+let quizTimer = null;
+let quizTimeLeft = 0;
+let notes = {}; // { lessonId: [{ text, date }] }
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg, type = 'info', duration = 4000) {
+  const c = document.getElementById('lp-toasts');
+  const icons = { success: '✅', info: 'ℹ️', error: '❌' };
+  const el = document.createElement('div');
+  el.className = 'lp-toast lp-toast-' + type;
+  el.innerHTML = '<span>' + (icons[type] || '•') + '</span><span>' + msg + '</span>';
+  c.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, duration);
+}
+
+// ── Video sizing ──────────────────────────────────────────────────────────────
+function resizeVideoWrap() {
+  const wrap = document.getElementById('lp-video-wrap');
+  const main = wrap.parentElement;
+  const mainH = main.clientHeight;
+  const tabsH = 46;
+  const tabContentH = 160;
+  const videoH = Math.max(200, mainH - tabsH - tabContentH);
+  wrap.style.height = videoH + 'px';
+}
+window.addEventListener('resize', resizeVideoWrap);
+
+// ── Sidebar toggle ────────────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.getElementById('lp-sidebar');
+  sb.classList.toggle('open');
+  document.body.classList.toggle('sidebar-visible', sb.classList.contains('open'));
+}
+document.addEventListener('click', e => {
+  const sb = document.getElementById('lp-sidebar');
+  if (document.body.classList.contains('sidebar-visible') && !sb.contains(e.target) && !e.target.closest('.lp-sidebar-toggle')) {
+    sb.classList.remove('open');
+    document.body.classList.remove('sidebar-visible');
+  }
+});
+
+// ── Load course ───────────────────────────────────────────────────────────────
+async function loadCourse() {
+  // Load school branding
+  const user = Auth.getUser();
+  if (user && user.site_id) {
+    try {
+      const site = await http.get('/institutions/public/site-by-id/' + user.site_id);
+      if (site && site.school_name) {
+        window.__platformName = site.school_name;
+        const logoEl = document.querySelector('.lp-topbar-logo');
+        if (logoEl) {
+          logoEl.textContent = site.school_name;
+          // Point logo back to school site
+          if (site.subdomain) {
+            logoEl.href = '/site/' + site.subdomain;
+            window.__schoolSubdomain = site.subdomain;
+          }
+        }
+        if (site.primary_color) {
+          document.documentElement.style.setProperty('--lp-accent', site.primary_color);
+        }
+      }
+    } catch(e) {}
+  }
+  window.__platformName = window.__platformName || 'ExamPro';
+
+  const data = await http.get('/student/course/' + courseId);
+  if (!data || !data.is_enrolled) {
+    // Send back to school site course page if applicable, else platform catalog
+    if (window.__schoolSubdomain) {
+      window.location.href = '/site/' + window.__schoolSubdomain + '/course/' + courseId;
+    } else {
+      window.location.href = '/courses/' + courseId;
+    }
+    return;
+  }
+  courseData = data;
+  completedLessons = data.completed_lessons || [];
+  allLessons = (data.sections || []).flatMap(s => (s.lessons || []).map(l => ({ ...l, section_title: s.title })));
+
+  document.getElementById('lp-course-title').textContent = data.title;
+  document.title = data.title + ' — ' + (window.__platformName || 'ExamPro');
+
+  // user already declared above
+  const initial = (user?.name || 'S')[0].toUpperCase();
+  document.getElementById('disc-av').textContent = initial;
+
+  renderSidebar(data);
+  updateProgress();
+
+  // Start with target lesson or first incomplete
+  const startLesson = targetLessonId
+    ? allLessons.find(l => l.id === targetLessonId)
+    : allLessons.find(l => !completedLessons.includes(l.id)) || allLessons[0];
+  if (startLesson) playLesson(startLesson.id);
+
+  // Check for quiz
+  loadQuizData();
+  resizeVideoWrap();
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+function renderSidebar(data) {
+  const list = document.getElementById('lp-sidebar-list');
+  const sections = data.sections || [];
+  list.innerHTML = sections.map((s, si) => {
+    const sLessons = s.lessons || [];
+    const sDone = sLessons.filter(l => completedLessons.includes(l.id)).length;
+    return `
+      <div>
+        <div class="lp-module-head" onclick="toggleModule(this)">
+          <span style="flex:1;">${s.title}</span>
+          <span style="font-size:.7rem;color:var(--lp-muted);margin-right:8px;">${sDone}/${sLessons.length}</span>
+          <i class="fas fa-chevron-down lp-module-chevron"></i>
+        </div>
+        <div class="lp-module-lessons" id="module-lessons-${si}">
+          ${sLessons.map(l => renderLessonItem(l)).join('')}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderLessonItem(l) {
+  const isDone = completedLessons.includes(l.id);
+  const isCurrent = currentLesson?.id === l.id;
+  const badge = l.has_quiz ? '<span class="lp-lesson-type-badge lp-badge-quiz">Quiz</span>' : '';
+  return `
+    <div class="lp-lesson-item ${isDone ? 'completed' : ''} ${isCurrent ? 'active' : ''}" id="li-${l.id}" onclick="playLesson(${l.id})">
+      <div class="lp-lesson-dot ${isDone ? 'done' : isCurrent ? 'current' : ''}">
+        <i class="fas ${isDone ? 'fa-check' : isCurrent ? 'fa-play' : 'fa-circle'}" style="font-size:.48rem;"></i>
+      </div>
+      <div class="lp-lesson-info">
+        <div class="lp-lesson-name">${l.title}</div>
+        <div class="lp-lesson-dur">${l.duration_minutes || 0} min</div>
+      </div>
+      ${badge}
+    </div>`;
+}
+
+function toggleModule(header) {
+  header.classList.toggle('closed');
+  const lessons = header.nextElementSibling;
+  lessons.classList.toggle('collapsed');
+}
+
+// ── Play lesson ───────────────────────────────────────────────────────────────
+function playLesson(lessonId) {
+  const lesson = allLessons.find(l => l.id === lessonId);
+  if (!lesson) return;
+  currentLesson = lesson;
+
+  // Update URL without reload
+  window.history.replaceState({}, '', '/learn/' + courseId + '?lesson=' + lessonId);
+
+  // Sidebar highlights
+  document.querySelectorAll('.lp-lesson-item').forEach(el => {
+    el.classList.remove('active');
+    const dot = el.querySelector('.lp-lesson-dot');
+    if (dot && !el.classList.contains('completed')) {
+      dot.classList.remove('current');
+      dot.innerHTML = '<i class="fas fa-circle" style="font-size:.48rem;"></i>';
+    }
+  });
+  const activeItem = document.getElementById('li-' + lessonId);
+  if (activeItem) {
+    activeItem.classList.add('active');
+    const dot = activeItem.querySelector('.lp-lesson-dot');
+    if (dot && !dot.classList.contains('done')) {
+      dot.classList.add('current');
+      dot.innerHTML = '<i class="fas fa-play" style="font-size:.48rem;"></i>';
+    }
+    activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  // Render video
+  renderVideo(lesson);
+
+  // Overview
+  document.getElementById('lp-lesson-title').textContent = lesson.title;
+  document.getElementById('lp-lesson-meta').innerHTML =
+    '<span><i class="fas fa-clock"></i> ' + (lesson.duration_minutes || 0) + ' min</span>' +
+    '<span><i class="fas fa-layer-group"></i> ' + (lesson.section_title || '') + '</span>' +
+    (lesson.video_type ? '<span><i class="fas fa-film"></i> ' + lesson.video_type + '</span>' : '');
+  document.getElementById('lp-lesson-content').innerHTML = lesson.content
+    ? lesson.content.replace(/\n/g, '<br>')
+    : '<span style="color:var(--lp-muted);">No description for this lesson.</span>';
+
+  // Resources
+  const resList = document.getElementById('lp-resources-list');
+  if (lesson.material_url || lesson.material_path) {
+    const url = lesson.material_url || lesson.material_path;
+    const name = lesson.material_name || 'Download Resource';
+    resList.innerHTML = `
+      <a href="${url}" target="_blank" class="lp-resource-item">
+        <div class="lp-resource-icon"><i class="fas fa-file-download"></i></div>
+        <div>
+          <div class="lp-resource-name">${name}</div>
+          <div class="lp-resource-size">Click to download</div>
+        </div>
+        <i class="fas fa-external-link-alt" style="color:var(--lp-muted);font-size:.75rem;margin-left:auto;"></i>
+      </a>`;
+  } else {
+    resList.innerHTML = '<div style="text-align:center;padding:40px;color:var(--lp-muted);"><i class="fas fa-paperclip" style="font-size:2rem;opacity:.3;display:block;margin-bottom:10px;"></i>No resources for this lesson</div>';
+  }
+
+  // Notes
+  loadNotes();
+
+  // Discussion
+  loadDiscussion();
+
+  // Complete button state
+  const complBtn = document.getElementById('lp-complete-btn');
+  const isDone = completedLessons.includes(lessonId);
+  complBtn.innerHTML = isDone
+    ? '<i class="fas fa-check-circle"></i> Completed'
+    : '<i class="fas fa-check"></i> Mark Complete';
+  complBtn.className = 'lp-topbar-btn lp-topbar-btn-accent' + (isDone ? ' done' : '');
+  if (isDone) complBtn.style.background = 'rgba(16,185,129,0.2)';
+  else complBtn.style.background = '';
+
+  // Auto-mark complete after video ends — use event, not timer
+  const vid = document.querySelector('#lp-video-wrap video');
+  if (vid && !isDone) {
+    vid.addEventListener('ended', () => markComplete(), { once: true });
+  }
+}
+
+function renderVideo(lesson) {
+  const wrap = document.getElementById('lp-video-wrap');
+  let html = '';
+
+  if (lesson.video_type === 'youtube' && lesson.video_url) {
+    const ytId = extractYouTubeId(lesson.video_url);
+    html = ytId ? '<iframe src="https://www.youtube-nocookie.com/embed/' + ytId + '?rel=0&modestbranding=1&enablejsapi=1" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" style="border:0;width:100%;height:100%;"></iframe>' : '<div class="lp-video-placeholder"><i class="fas fa-exclamation-circle"></i><p>Invalid YouTube URL. Please edit the lesson and paste a valid YouTube link.</p></div>';
+  } else if (lesson.video_type === 'vimeo' && lesson.video_url) {
+    const vId = lesson.video_url.match(/vimeo\.com\/(\d+)/)?.[1];
+    html = vId ? '<iframe src="https://player.vimeo.com/video/' + vId + '?autoplay=1&title=0&byline=0" allowfullscreen allow="autoplay; fullscreen"></iframe>' : '';
+  } else if (lesson.video_type === 'upload' && lesson.video_url) {
+    html = `<video src="${lesson.video_url}" controls style="width:100%;height:100%;background:#000;" controlsList="nodownload"></video>`;
+  } else if (lesson.video_type === 'google_meet' && lesson.video_url) {
+    html = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;background:var(--lp-surface2);">
+      <i class="fas fa-video" style="font-size:3rem;color:var(--lp-accent);"></i>
+      <div style="font-size:.95rem;font-weight:600;">Live Class Session</div>
+      <a href="${lesson.video_url}" target="_blank" style="padding:12px 24px;background:var(--lp-accent);color:#fff;border-radius:10px;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:8px;">
+        <i class="fas fa-external-link-alt"></i> Join Meeting
+      </a>
+    </div>`;
+  } else {
+    html = `<div class="lp-video-placeholder"><i class="fas fa-file-alt"></i><p style="color:var(--lp-muted);font-size:.88rem;">Text lesson — see overview below</p></div>`;
+  }
+  wrap.innerHTML = html;
+  resizeVideoWrap();
+}
+
+function extractYouTubeId(url) {
+  if (!url) return null;
+  url = url.trim();
+  // Already a plain 11-char ID
+  if (/^[\w-]{11}$/.test(url)) return url;
+  // All YouTube URL formats: watch?v=, youtu.be/, embed/, shorts/, live/
+  const m = url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([\w-]{11})/);
+  return m ? m[1] : null;
+}
+
+// ── Mark complete ─────────────────────────────────────────────────────────────
+async function markComplete() {
+  if (!currentLesson) return;
+  if (completedLessons.includes(currentLesson.id)) return;
+
+  const res = await http.post('/student/lesson-complete', { lesson_id: currentLesson.id });
+  if (res?.ok) {
+    completedLessons.push(currentLesson.id);
+    // Update dot
+    const dot = document.getElementById('li-' + currentLesson.id)?.querySelector('.lp-lesson-dot');
+    if (dot) { dot.className = 'lp-lesson-dot done'; dot.innerHTML = '<i class="fas fa-check" style="font-size:.48rem;"></i>'; }
+    document.getElementById('li-' + currentLesson.id)?.classList.add('completed');
+    updateProgress();
+    // Update button
+    const btn = document.getElementById('lp-complete-btn');
+    btn.innerHTML = '<i class="fas fa-check-circle"></i> Completed';
+    btn.style.background = 'rgba(16,185,129,0.2)';
+    toast('Lesson marked complete! 🎉', 'success');
+
+    if (res.certificate_earned) {
+      toast('🎓 Course complete! Certificate earned! Check your dashboard.', 'success', 6000);
+    }
+    // Auto-advance to next
+    setTimeout(() => advanceLesson(), 1200);
+  }
+}
+
+function advanceLesson() {
+  if (!currentLesson) return;
+  const idx = allLessons.findIndex(l => l.id === currentLesson.id);
+  const next = allLessons[idx + 1];
+  if (next) playLesson(next.id);
+}
+
+function updateProgress() {
+  const total = allLessons.length;
+  const done = completedLessons.length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  document.getElementById('lp-progress-fill').style.width = pct + '%';
+  document.getElementById('lp-progress-text').textContent = pct + '%';
+  document.getElementById('sb-progress-text').textContent = pct + '% complete';
+}
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function switchLessonTab(name) {
+  document.querySelectorAll('.lp-tab').forEach((t, i) => {
+    const tabs = ['overview','resources','notes','discussion'];
+    t.classList.toggle('active', tabs[i] === name);
+  });
+  document.querySelectorAll('.lp-tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('ltab-' + name).classList.add('active');
+}
+
+// ── Notes ─────────────────────────────────────────────────────────────────────
+function loadNotes() {
+  if (!currentLesson) return;
+  const key = 'notes_' + courseId + '_' + currentLesson.id;
+  let saved = [];
+  try { saved = JSON.parse(localStorage.getItem(key) || '[]'); } catch (_) {}
+  notes[currentLesson.id] = saved;
+  renderNotes();
+}
+
+function renderNotes() {
+  if (!currentLesson) return;
+  const list = document.getElementById('notes-list');
+  const lessonNotes = notes[currentLesson.id] || [];
+  if (!lessonNotes.length) {
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--lp-muted);font-size:.84rem;">No notes yet for this lesson</div>';
+    return;
+  }
+  list.innerHTML = lessonNotes.map((n, i) => `
+    <div class="lp-note-card">
+      <div class="lp-note-card-head">
+        <span>${fmt.datetime(n.date)}</span>
+        <button onclick="deleteNote(${i})" style="background:none;border:none;cursor:pointer;color:var(--lp-muted);font-size:.75rem;">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+      <div class="lp-note-card-body">${n.text.replace(/\n/g, '<br>')}</div>
+    </div>`).join('');
+}
+
+function saveNote() {
+  if (!currentLesson) return;
+  const text = document.getElementById('note-input').value.trim();
+  if (!text) return;
+  const key = 'notes_' + courseId + '_' + currentLesson.id;
+  if (!notes[currentLesson.id]) notes[currentLesson.id] = [];
+  notes[currentLesson.id].unshift({ text, date: new Date().toISOString() });
+  localStorage.setItem(key, JSON.stringify(notes[currentLesson.id]));
+  document.getElementById('note-input').value = '';
+  renderNotes();
+  toast('Note saved', 'success');
+}
+
+function deleteNote(idx) {
+  if (!currentLesson) return;
+  const key = 'notes_' + courseId + '_' + currentLesson.id;
+  notes[currentLesson.id].splice(idx, 1);
+  localStorage.setItem(key, JSON.stringify(notes[currentLesson.id]));
+  renderNotes();
+}
+
+// ── Discussion ────────────────────────────────────────────────────────────────
+async function loadDiscussion() {
+  if (!currentLesson) return;
+  const data = await http.get('/courses/' + courseId + '/lessons/' + currentLesson.id + '/comments');
+  const list = document.getElementById('disc-list');
+  const comments = data?.comments || data || [];
+  if (!comments.length) {
+    list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--lp-muted);font-size:.84rem;">No comments yet — start the discussion!</div>';
+    return;
+  }
+  const curUser = Auth.getUser();
+  list.innerHTML = comments.map(c => `
+    <div class="lp-disc-msg">
+      <div class="lp-disc-msg-head">
+        <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#5B4FCF,#9b8fea);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.72rem;flex-shrink:0;">
+          ${(c.commenter_name || 'A')[0].toUpperCase()}
+        </div>
+        <div class="lp-disc-msg-name">${c.commenter_name || 'Student'}</div>
+        <div class="lp-disc-msg-date">${fmt.date(c.created_at)}</div>
+      </div>
+      <div class="lp-disc-msg-body">${c.comment_text || ''}</div>
+    </div>`).join('');
+}
+
+async function postComment() {
+  if (!currentLesson) return;
+  const text = document.getElementById('disc-input').value.trim();
+  if (!text) return;
+  const res = await http.post('/courses/' + courseId + '/lessons/' + currentLesson.id + '/comments', { comment_text: text });
+  if (res?.ok || res?.id) {
+    document.getElementById('disc-input').value = '';
+    loadDiscussion();
+    toast('Comment posted', 'success');
+  } else {
+    toast(res?.message || 'Failed to post', 'error');
+  }
+}
+
+// ── Quiz ──────────────────────────────────────────────────────────────────────
+async function loadQuizData() {
+  const data = await http.get('/courses/' + courseId + '/quiz');
+  quizData = data;
+  if (data?.questions?.length) {
+    document.getElementById('quiz-tab-btn').style.display = 'flex';
+  }
+}
+
+function openQuiz() {
+  if (!quizData?.questions?.length) { toast('No quiz available', 'info'); return; }
+  quizAnswers = {};
+  renderQuizQuestions();
+  document.getElementById('quizModal').classList.add('open');
+
+  // Start timer if applicable
+  if (quizData.time_limit_minutes) {
+    quizTimeLeft = quizData.time_limit_minutes * 60;
+    updateTimerDisplay();
+    quizTimer = setInterval(() => {
+      quizTimeLeft--;
+      updateTimerDisplay();
+      if (quizTimeLeft <= 0) { clearInterval(quizTimer); submitQuiz(); }
+    }, 1000);
+  }
+}
+
+function updateTimerDisplay() {
+  const mins = Math.floor(quizTimeLeft / 60).toString().padStart(2, '0');
+  const secs = (quizTimeLeft % 60).toString().padStart(2, '0');
+  const el = document.getElementById('quiz-timer');
+  if (el) {
+    el.textContent = mins + ':' + secs;
+    el.className = 'lp-quiz-timer' + (quizTimeLeft < 60 ? ' warning' : '');
+  }
+}
+
+function renderQuizQuestions() {
+  const q = quizData;
+  const html = `
+    <div class="lp-quiz-header">
+      <div>
+        <div class="lp-quiz-title"><i class="fas fa-brain" style="color:var(--lp-accent);margin-right:8px;"></i>${q.title || 'Course Quiz'}</div>
+        <div class="lp-quiz-meta">
+          ${q.questions.length} questions · Pass mark: ${q.pass_score || 70}%
+          ${q.time_limit_minutes ? ' · ' + q.time_limit_minutes + ' min time limit' : ''}
+        </div>
+      </div>
+      ${q.time_limit_minutes ? '<div class="lp-quiz-timer" id="quiz-timer">--:--</div>' : ''}
+    </div>
+    ${q.questions.map((ques, qi) => {
+      const type = ques.question_type || 'multiple_choice';
+      let inputHtml = '';
+      const qText = type === 'fill_blank'
+        ? ques.question_text.replace(/___/g, '<span style="display:inline-block;min-width:80px;border-bottom:2px solid var(--lp-accent);margin:0 4px;"></span>')
+        : ques.question_text;
+
+      if(type === 'multiple_choice'){
+        inputHtml = '<div class="lp-options">'
+          + ['a','b','c','d'].filter(k => ques['option_'+k]).map(k => `
+            <div class="lp-option" id="opt-${ques.id}-${k}" onclick="selectAnswer(${ques.id}, '${k}')">
+              <div class="lp-option-radio"></div>
+              <span><strong style="opacity:.6">${k.toUpperCase()}.</strong> ${ques['option_'+k]}</span>
+            </div>`).join('') + '</div>';
+      } else if(type === 'true_false'){
+        inputHtml = '<div class="lp-options">'
+          + ['true','false'].map(v => `
+            <div class="lp-option" id="opt-${ques.id}-${v}" onclick="selectAnswer(${ques.id}, '${v}')">
+              <div class="lp-option-radio"></div>
+              <span>${v === 'true' ? '✅ True' : '❌ False'}</span>
+            </div>`).join('') + '</div>';
+      } else {
+        // short_answer or fill_blank
+        inputHtml = `<div style="margin-top:12px;">
+          <input type="text" id="txt-${ques.id}"
+            placeholder="${type === 'fill_blank' ? 'Type the missing word...' : 'Type your answer...'}"
+            oninput="selectAnswer(${ques.id}, this.value)"
+            style="width:100%;padding:12px 14px;background:var(--lp-card);border:1.5px solid var(--lp-border);border-radius:9px;color:var(--lp-text);font-size:.95rem;outline:none;box-sizing:border-box;"
+            onfocus="this.style.borderColor='var(--lp-accent)'" onblur="this.style.borderColor='var(--lp-border)'"/>
+        </div>`;
+      }
+
+      const typeBadge = {multiple_choice:'',true_false:'<span style="font-size:.68rem;background:rgba(16,185,129,.15);color:#10b981;padding:2px 8px;border-radius:99px;font-weight:700;margin-left:8px;">True/False</span>',short_answer:'<span style="font-size:.68rem;background:rgba(245,158,11,.15);color:#f59e0b;padding:2px 8px;border-radius:99px;font-weight:700;margin-left:8px;">Short Answer</span>',fill_blank:'<span style="font-size:.68rem;background:rgba(139,92,246,.15);color:#8b5cf6;padding:2px 8px;border-radius:99px;font-weight:700;margin-left:8px;">Fill in Blank</span>'}[type]||'';
+
+      return `<div class="lp-question" id="q-${ques.id}">
+        <div class="lp-question-num">Question ${qi + 1} of ${q.questions.length}${typeBadge}</div>
+        <div class="lp-question-text">${qText}</div>
+        ${inputHtml}
+      </div>`;
+    }).join('')}
+    <div class="lp-quiz-actions">
+      <button class="lp-quiz-btn lp-quiz-btn-outline" onclick="closeQuiz()">Cancel</button>
+      <button class="lp-quiz-btn lp-quiz-btn-primary" onclick="submitQuiz()">
+        <i class="fas fa-paper-plane"></i> Submit Quiz
+      </button>
+    </div>`;
+  document.getElementById('quiz-content').innerHTML = html;
+}
+
+function selectAnswer(questionId, option) {
+  quizAnswers[questionId] = option;
+  document.querySelectorAll('[id^="opt-' + questionId + '-"]').forEach(el => el.classList.remove('selected'));
+  document.getElementById('opt-' + questionId + '-' + option)?.classList.add('selected');
+}
+
+async function submitQuiz() {
+  if (quizTimer) clearInterval(quizTimer);
+  const res = await http.post('/courses/' + courseId + '/quiz/submit', {
+    quiz_id: quizData.id,
+    answers: quizAnswers
+  });
+  if (res?.ok !== false && res?.score !== undefined) {
+    renderQuizResult(res);
+  } else {
+    toast(res?.message || 'Submission failed', 'error');
+  }
+}
+
+function renderQuizResult(res) {
+  const isPassed = res.passed;
+  const scoreColor = isPassed ? 'var(--lp-green)' : '#ef4444';
+  const scoreIcon = res.score >= 90 ? '🏆' : res.score >= 70 ? '🎉' : res.score >= 50 ? '📝' : '💪';
+
+  // Build answer review
+  let reviewHtml = '';
+  if (quizData?.questions?.length) {
+    reviewHtml = '<div style="margin-top:24px;"><div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--lp-muted);margin-bottom:12px;">Answer Review</div>';
+    reviewHtml += quizData.questions.map((q, qi) => {
+      const type = q.question_type || 'multiple_choice';
+      const userAns = (quizAnswers[q.id] || '').toString().toLowerCase().trim();
+      const correct = type === 'short_answer' || type === 'fill_blank'
+        ? (q.correct_text_answer || '').toLowerCase().trim()
+        : (q.correct_answer || '').toLowerCase().trim();
+      const isCorrect = userAns === correct;
+      const statusColor = isCorrect ? 'var(--lp-green)' : '#ef4444';
+      const statusIcon = isCorrect ? '✓' : '✗';
+
+      let answerLine = '';
+      if (type === 'multiple_choice') {
+        const opts = {a: q.option_a, b: q.option_b, c: q.option_c, d: q.option_d};
+        answerLine = '<div style="font-size:.78rem;color:var(--lp-muted);margin-top:4px;">'
+          + (userAns ? 'Your answer: <strong style="color:' + statusColor + ';">' + (opts[userAns] || userAns.toUpperCase()) + '</strong>' : '<span style="color:#ef4444;">Not answered</span>')
+          + (!isCorrect ? ' · Correct: <strong style="color:var(--lp-green);">' + (opts[correct] || correct.toUpperCase()) + '</strong>' : '')
+          + '</div>';
+      } else if (type === 'true_false') {
+        answerLine = '<div style="font-size:.78rem;color:var(--lp-muted);margin-top:4px;">'
+          + (userAns ? 'Your answer: <strong style="color:' + statusColor + ';">' + (userAns === 'true' ? '✅ True' : '❌ False') + '</strong>' : '<span style="color:#ef4444;">Not answered</span>')
+          + (!isCorrect ? ' · Correct: <strong style="color:var(--lp-green);">' + (correct === 'true' ? '✅ True' : '❌ False') + '</strong>' : '')
+          + '</div>';
+      } else {
+        answerLine = '<div style="font-size:.78rem;color:var(--lp-muted);margin-top:4px;">'
+          + (userAns ? 'Your answer: <strong style="color:' + statusColor + ';">' + userAns + '</strong>' : '<span style="color:#ef4444;">Not answered</span>')
+          + (!isCorrect ? ' · Correct: <strong style="color:var(--lp-green);">' + correct + '</strong>' : '')
+          + '</div>';
+      }
+
+      return '<div style="background:var(--lp-surface2);border:1px solid ' + statusColor + '33;border-left:3px solid ' + statusColor + ';border-radius:9px;padding:12px 14px;margin-bottom:8px;">'
+        + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">'
+        + '<span style="background:' + statusColor + '22;color:' + statusColor + ';width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;flex-shrink:0;">' + statusIcon + '</span>'
+        + '<span style="font-size:.82rem;font-weight:600;color:var(--lp-text);">Q' + (qi+1) + '. ' + q.question_text + '</span>'
+        + '</div>'
+        + answerLine
+        + (q.explanation ? '<div style="font-size:.75rem;color:var(--lp-muted);margin-top:6px;padding-top:6px;border-top:1px solid var(--lp-border);">💡 ' + q.explanation + '</div>' : '')
+        + '</div>';
+    }).join('');
+    reviewHtml += '</div>';
+  }
+
+  document.getElementById('quiz-content').innerHTML =
+    '<div class="lp-quiz-result">'
+    + '<div class="lp-result-score ' + (isPassed ? 'pass' : 'fail') + '">' + scoreIcon + ' ' + res.score + '%</div>'
+    + '<div class="lp-result-label">' + (isPassed ? 'You Passed!' : 'Keep Practising') + '</div>'
+    + '<div class="lp-result-sub">' + res.correct + ' of ' + res.total + ' correct · Pass mark: ' + (quizData?.pass_score || 70) + '%</div>'
+    + (isPassed && res.score >= 90 ? '<div style="margin-top:8px;font-size:.82rem;color:var(--lp-gold);">Excellent work! 🌟</div>' : '')
+    + '</div>'
+    + reviewHtml
+    + '<div class="lp-quiz-actions">'
+    + (!isPassed ? '<button class="lp-quiz-btn lp-quiz-btn-outline" onclick="openQuiz()"><i class="fas fa-redo"></i> Try Again</button>' : '')
+    + '<button class="lp-quiz-btn lp-quiz-btn-primary" onclick="closeQuiz()">'
+    + (isPassed ? '<i class="fas fa-check"></i> Continue' : 'Close') + '</button>'
+    + '</div>';
+}
+
+function closeQuiz() {
+  if (quizTimer) clearInterval(quizTimer);
+  document.getElementById('quizModal').classList.remove('open');
+}
+
+document.getElementById('quizModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('quizModal')) closeQuiz();
+});
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function goBack() {
+  if (window.__schoolSubdomain) {
+    window.location.href = '/site/' + window.__schoolSubdomain + '/course/' + courseId;
+  } else {
+    window.location.href = '/courses/' + courseId;
+  }
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+// ── AI TUTOR ──────────────────────────────────────────────────────────────────
+let aiTutorHistory = [];
+let aiTutorLoading = false;
+
+function toggleAiTutor() {
+  const panel = document.getElementById('ai-tutor-panel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) {
+    setTimeout(() => document.getElementById('ai-tutor-input')?.focus(), 100);
+  }
+}
+
+function appendAiMsg(text, role) {
+  const msgs = document.getElementById('ai-tutor-msgs');
+  const div = document.createElement('div');
+  div.className = 'ai-msg ' + (role === 'user' ? 'ai-msg-user' : 'ai-msg-bot');
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+async function sendAiTutor() {
+  if (aiTutorLoading) return;
+  const input = document.getElementById('ai-tutor-input');
+  const text = (input.value || '').trim();
+  if (!text) return;
+  input.value = '';
+
+  appendAiMsg(text, 'user');
+  aiTutorHistory.push({ role: 'user', content: text });
+
+  const sendBtn = document.getElementById('ai-tutor-send');
+  sendBtn.disabled = true;
+  aiTutorLoading = true;
+  const typing = appendAiMsg('Thinking…', 'bot');
+  typing.classList.add('ai-msg-typing');
+
+  try {
+    const lessonTitle = currentLesson?.title || 'this lesson';
+    const courseTitle = document.getElementById('lp-course-title')?.textContent || 'this course';
+    const system = 'You are an expert AI tutor helping a student learn. The student is currently watching: "' + lessonTitle + '" in the course "' + courseTitle + '". Give clear, encouraging, concise answers. When showing code, use Python by default unless asked otherwise. Keep responses under 3 short paragraphs.';
+
+    const res = await fetch('/api/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('ep_token') || '') },
+      body: JSON.stringify({ system, messages: aiTutorHistory, max_tokens: 500 })
+    });
+    const data = await res.json();
+    const reply = (data.content && data.content[0] && data.content[0].text) || (data.error ? 'AI error: ' + data.error : 'Sorry, I could not get a response.');
+    typing.textContent = reply;
+    typing.classList.remove('ai-msg-typing');
+    aiTutorHistory.push({ role: 'assistant', content: reply });
+    if (aiTutorHistory.length > 12) aiTutorHistory = aiTutorHistory.slice(-12);
+  } catch(e) {
+    typing.textContent = 'Connection error. Check your network and try again.';
+    typing.classList.remove('ai-msg-typing');
+  }
+  sendBtn.disabled = false;
+  aiTutorLoading = false;
+}
+
+// ── PLAYBACK SPEED ────────────────────────────────────────────────────────────
+function setSpeed(s) {
+  const vid = document.querySelector('#lp-video-wrap video');
+  if (vid) vid.playbackRate = s;
+  document.querySelectorAll('.lp-speed-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim() === s + '×' || b.textContent.trim() === s.toString() + '×');
+  });
+  toast('Speed: ' + s + '×', 'info', 1200);
+}
+
+// ── KEYBOARD SHORTCUTS ────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  // Don't fire shortcuts if user is typing in an input/textarea
+  if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+  if (e.key === 'ArrowRight' || e.key === 'l') advanceLesson();
+  if (e.key === 'ArrowLeft' || e.key === 'j') {
+    if (!currentLesson) return;
+    const idx = allLessons.findIndex(l => l.id === currentLesson.id);
+    if (idx > 0) playLesson(allLessons[idx - 1].id);
+  }
+  if (e.key === ' ') {
+    e.preventDefault();
+    const vid = document.querySelector('#lp-video-wrap video');
+    if (vid) { vid.paused ? vid.play() : vid.pause(); }
+  }
+  if (e.key === 'f' || e.key === 'F') {
+    const wrap = document.getElementById('lp-video-wrap');
+    if (wrap) wrap.requestFullscreen?.().catch(()=>{});
+  }
+  if (e.key === 'm' || e.key === 'M') markComplete();
+  if (e.key === 'Escape') {
+    const panel = document.getElementById('ai-tutor-panel');
+    if (panel?.classList.contains('open')) panel.classList.remove('open');
+  }
+});
+
+loadCourse();
+</script>
+<!-- ── AI TUTOR WIDGET ──────────────────────────────────────── -->
+<button id="ai-tutor-btn" onclick="toggleAiTutor()" title="Ask AI Tutor">
+  <i class="fas fa-robot"></i>
+</button>
+<div id="ai-tutor-panel">
+  <div class="ai-tutor-head">
+    <i class="fas fa-robot" style="color:var(--lp-accent);"></i>
+    <div>
+      <div class="ai-tutor-head-name">AI Tutor</div>
+      <div style="font-size:.7rem;color:var(--lp-muted);">Ask about this lesson</div>
+    </div>
+    <button class="ai-tutor-head-close" onclick="toggleAiTutor()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="ai-tutor-msgs" id="ai-tutor-msgs">
+    <div class="ai-msg ai-msg-bot">Hi! I'm your AI tutor. Ask me anything about this lesson or course 🎓</div>
+  </div>
+  <div class="ai-tutor-input-row">
+    <input class="ai-tutor-input" id="ai-tutor-input" placeholder="Ask a question…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiTutor();}"/>
+    <button class="ai-tutor-send" id="ai-tutor-send" onclick="sendAiTutor()"><i class="fas fa-paper-plane"></i></button>
+  </div>
+</div>
+
+</body>
+</html>

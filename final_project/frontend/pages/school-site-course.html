@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Course</title>
+<link rel="stylesheet" href="/css/main.css"/>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<style>
+body{margin:0;}
+.site-nav{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.1);}
+.course-hero{padding:60px 40px 40px;max-width:900px;margin:0 auto;}
+.course-body{max-width:900px;margin:0 auto;padding:0 40px 60px;display:grid;grid-template-columns:1fr 320px;gap:32px;}
+.section-block{margin-bottom:12px;border:1px solid rgba(255,255,255,.1);border-radius:10px;overflow:hidden;}
+.section-header{padding:14px 18px;background:rgba(255,255,255,.05);font-weight:700;cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
+.lesson-row{padding:11px 18px 11px 36px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px;font-size:.88rem;}
+.buy-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:24px;position:sticky;top:80px;}
+@media(max-width:768px){.course-body{grid-template-columns:1fr;}.course-hero{padding:40px 20px 20px;}.course-body{padding:0 20px 40px;}}
+</style>
+</head>
+<body>
+<div id="page-root"><div style="text-align:center;padding:80px;opacity:.5;">Loading...</div></div>
+<script src="/js/app.js"></script>
+<script>
+const parts = window.location.pathname.split('/');
+const subdomain = parts[2];
+const courseId = parts[4];
+let siteInfo = null, courseData = null, paystackKey = null, bankGw = null;
+
+async function loadPage(){
+  siteInfo = await http.get('/institutions/public/site-by-id-subdomain/'+subdomain);
+  const p = siteInfo?.primary_color||'#2563eb';
+  const a = siteInfo?.accent_color||'#10b981';
+  const bg = siteInfo?.bg_color||'#0f172a';
+  const schoolName = siteInfo?.school_name||'School';
+
+  document.body.style.background = bg;
+  document.body.style.color = '#fff';
+
+  const currentUser = Auth.getUser();
+  const isLoggedIn = Auth.isLoggedIn();
+  const belongsHere = isLoggedIn && currentUser && (
+    currentUser.site_id === siteInfo?.id ||
+    (currentUser.role_id === 2 && siteInfo?.user_id === currentUser.id)
+  );
+
+  const navRight = belongsHere
+    ? `<a href="${getDashUrl()}" style="background:${p};color:#fff;padding:7px 18px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.88rem;">My Dashboard</a>`
+    : `<a href="/login?school=${subdomain}" style="background:${p};color:#fff;padding:7px 18px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.88rem;">Login</a>
+       <a href="/register?school=${subdomain}" style="border:1px solid ${p};color:#fff;padding:7px 18px;border-radius:8px;text-decoration:none;font-size:.88rem;margin-left:6px;">Register</a>`;
+
+  courseData = await http.get('/courses/'+courseId);
+  if(!courseData || courseData.message){
+    document.getElementById('page-root').innerHTML = `<div style="text-align:center;padding:80px;"><h2>Course not found</h2><a href="/site/${subdomain}" style="color:${p};">← Back to ${schoolName}</a></div>`;
+    return;
+  }
+
+  document.title = courseData.title+' — '+schoolName;
+  const isEnrolled = isLoggedIn ? !!courseData.is_enrolled : false;
+
+  // Load payment gateways for this specific school using site_id
+  const siteId = siteInfo?.id || '';
+  const gwsResult = await http.get(`/payments/gateways?site_id=${siteId}`);
+  const gws = gwsResult || [];
+  paystackKey = gws.find(g=>g.gateway==='paystack'&&g.is_active)?.public_key||null;
+  bankGw = gws.find(g=>g.gateway==='bank_transfer'&&g.is_active)||null;
+  window.__allGws = gws; // Store all for dynamic rendering
+
+  // Build sections HTML
+  const sectionsHtml = !(courseData.sections||[]).length
+    ? '<p style="opacity:.5;">No content yet</p>'
+    : courseData.sections.map(sec=>`
+        <div class="section-block">
+          <div class="section-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+            <span>${sec.title}</span>
+            <span style="font-size:.78rem;opacity:.6;">${(sec.lessons||[]).length} lessons</span>
+          </div>
+          <div>
+            ${(sec.lessons||[]).map(l=>{
+              const canWatch = l.is_preview || isEnrolled;
+              const safeTitle = (l.title||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+              const safeUrl = (l.video_url||'').replace(/'/g,"\\'");
+              const safeType = (l.video_type||'youtube').replace(/'/g,"\\'");
+              return `<div class="lesson-row">
+                <span>${l.is_preview ? '🔓' : isEnrolled ? '▶️' : '🔒'}</span>
+                <span style="flex:1;">${l.title}</span>
+                <span style="opacity:.5;font-size:.78rem;">${l.duration_minutes||0}min</span>
+                ${canWatch
+                  ? `<a href="#" onclick="playLesson('${safeUrl}','${safeType}','${safeTitle}');return false;" style="color:${p};font-size:.78rem;">Watch</a>`
+                  : `<span style="font-size:.72rem;opacity:.4;">Enroll to watch</span>`}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`).join('');
+
+  // Build enroll card HTML
+  let enrollHtml = '';
+  if(isEnrolled){
+    enrollHtml = `
+      <div style="background:rgba(39,174,96,.15);color:#27ae60;padding:10px 16px;border-radius:8px;font-weight:600;text-align:center;margin-bottom:16px;">✅ Enrolled</div>
+      <a href="${getDashUrl()}" style="display:block;background:${p};color:#fff;padding:13px;border-radius:10px;font-weight:700;text-decoration:none;text-align:center;">Go to Dashboard</a>`;
+  } else if(!isLoggedIn){
+    enrollHtml = `
+      <a href="/login?school=${subdomain}" style="display:block;background:linear-gradient(135deg,${p},${a});color:#fff;padding:13px;border-radius:10px;font-weight:700;text-decoration:none;text-align:center;">Login to Enroll</a>
+      <a href="/register?school=${subdomain}" style="display:block;border:1px solid ${p};color:#fff;padding:11px;border-radius:10px;font-weight:600;text-decoration:none;text-align:center;margin-top:10px;">Create Account</a>`;
+  } else if(courseData.price <= 0){
+    enrollHtml = `<button onclick="doFreeEnroll()" style="width:100%;background:linear-gradient(135deg,${p},${a});color:#fff;padding:13px;border-radius:10px;font-weight:700;border:none;cursor:pointer;font-size:1rem;">Enroll Free</button>`;
+  } else {
+    enrollHtml = `
+      <div id="pay-alert"></div>
+      <div id="gw-radios" style="margin-bottom:14px;">
+        ${(()=>{
+          const gwLabels={paystack:'💳 Paystack',flutterwave:'🦋 Flutterwave',stripe:'🌐 Stripe (Intl)',bank_transfer:'🏦 Bank Transfer'};
+          const available=window.__allGws||[];
+          if(!available.length) return '<p style="opacity:.6;font-size:.82rem;">No payment methods configured.</p>';
+          return available.map((g,i)=>
+            `<label style="display:flex;align-items:center;gap:8px;padding:10px;border:2px solid ${i===0?p:'rgba(255,255,255,.15)'};border-radius:8px;cursor:pointer;margin-bottom:8px;">
+              <input type="radio" name="pay-method" value="${g.gateway}" ${i===0?'checked':''}> ${gwLabels[g.gateway]||g.gateway}
+            </label>`
+          ).join('');
+        })()}
+      </div>
+      <div id="bank-block" style="display:none;background:rgba(255,165,0,.08);border:1px solid rgba(255,165,0,.3);border-radius:8px;padding:12px;margin-bottom:12px;font-size:.8rem;color:#e6a817;">
+        <div id="bank-details-info"></div>
+        <div style="margin-top:10px;">
+          <label style="font-size:.78rem;display:block;margin-bottom:4px;">Upload proof *</label>
+          <input type="file" id="bank-proof" accept="image/*,.pdf" style="width:100%;font-size:.78rem;">
+        </div>
+      </div>
+      <button onclick="doEnroll()" id="enroll-btn" style="width:100%;background:linear-gradient(135deg,${p},${a});color:#fff;padding:13px;border-radius:10px;font-weight:700;border:none;cursor:pointer;font-size:1rem;">Enroll Now</button>`;
+  }
+
+  document.getElementById('page-root').innerHTML = `
+    <nav class="site-nav" style="background:${bg}cc;">
+      <a href="/site/${subdomain}" style="font-weight:800;font-size:1.1rem;background:linear-gradient(135deg,${p},${a});-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none;">← ${schoolName}</a>
+      <div style="display:flex;gap:12px;align-items:center;">${navRight}</div>
+    </nav>
+    <div class="course-hero">
+      <div style="font-size:.78rem;opacity:.6;margin-bottom:10px;"><a href="/site/${subdomain}" style="color:inherit;text-decoration:none;">${schoolName}</a> › Course</div>
+      <h1 style="font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;margin:0 0 14px;">${courseData.title}</h1>
+      <p style="opacity:.7;max-width:600px;line-height:1.6;margin:0 0 20px;">${courseData.description||''}</p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;opacity:.7;">
+        <span>👨‍🏫 ${courseData.instructor_name||'Instructor'}</span>
+        <span>📚 ${courseData.total_lessons||0} lessons</span>
+        <span>🎯 ${courseData.level||'All levels'}</span>
+        ${courseData.category?`<span>🏷️ ${courseData.category}</span>`:''}
+      </div>
+    </div>
+    <div class="course-body">
+      <div>
+        <h3 style="margin:0 0 16px;font-size:1rem;">Course Content</h3>
+        <div id="sections-list">${sectionsHtml}</div>
+      </div>
+      <div>
+        <div class="buy-card">
+          <div style="font-size:2rem;font-weight:800;color:${a};margin-bottom:16px;">${courseData.price>0?'₦'+Number(courseData.price).toLocaleString():'Free'}</div>
+          ${enrollHtml}
+          <div style="margin-top:20px;font-size:.82rem;opacity:.6;line-height:1.8;">
+            ${courseData.duration_hours?`<div>⏱️ ${courseData.duration_hours}h total</div>`:''}
+            <div>📱 Full lifetime access</div>
+            <div>🏅 Certificate on completion</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="video-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+      <div style="width:100%;max-width:800px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <h3 id="video-title" style="margin:0;color:#fff;font-size:1rem;"></h3>
+          <button onclick="closeVideo()" style="background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;">✕</button>
+        </div>
+        <div id="video-frame" style="background:#000;border-radius:10px;overflow:hidden;aspect-ratio:16/9;"></div>
+      </div>
+    </div>`;
+
+  // Wire payment method toggle
+  document.querySelectorAll('input[name="pay-method"]').forEach(r=>{
+    r.addEventListener('change', function(){
+      const isBank = this.value==='bank';
+      document.getElementById('bank-block').style.display = isBank?'block':'none';
+      if(isBank && bankGw){
+        document.getElementById('bank-details-info').innerHTML =
+          `<strong>🏦 Pay to:</strong><br>
+           Bank: <strong>${bankGw.bank_name||'—'}</strong><br>
+           Account No: <strong style="font-size:1.1rem;letter-spacing:2px;">${bankGw.bank_account_number||'—'}</strong><br>
+           Name: <strong>${bankGw.bank_account_name||'—'}</strong><br>
+           Amount: <strong style="color:#27ae60;">₦${Number(courseData.price).toLocaleString()}</strong><br><br>
+           ⚠️ Access granted only after admin verifies (up to 24hrs).`;
+      } else if(isBank){
+        document.getElementById('bank-details-info').innerHTML = '⚠️ Bank transfer not configured for this school.';
+      }
+    });
+  });
+}
+
+async function doFreeEnroll(){
+  const data = await http.post('/payments/enroll-free',{item_type:'course',item_id:courseId});
+  if(data?.ok){ Toast.success('Enrolled! Redirecting...'); setTimeout(()=>window.location.href=getDashUrl(),1500); }
+  else Toast.error(data?.message||'Failed to enroll');
+}
+
+async function doEnroll(){
+  const method = document.querySelector('input[name="pay-method"]:checked')?.value;
+  const btn = document.getElementById('enroll-btn');
+  const alertEl = document.getElementById('pay-alert');
+  alertEl.innerHTML='';
+
+  // Handle all online payment gateways (paystack, flutterwave, stripe)
+  if(method==='paystack'||method==='flutterwave'||method==='stripe'){
+    const gw = (window.__allGws||[]).find(g=>g.gateway===method);
+    if(!gw?.public_key && method!=='stripe'){ alertEl.innerHTML='<div style="color:#e74c3c;font-size:.82rem;margin-bottom:8px;">'+method+' not configured for this school.</div>'; return; }
+    const user = Auth.getUser();
+    setLoading(btn,true);
+    const initData = await http.post('/payments/initiate', {
+      item_type: 'course',
+      item_id: courseId,
+      gateway: method,
+      site_id: siteInfo?.id || null
+    });
+    if (!initData?.authorization_url && !initData?.order_ref) {
+      alertEl.innerHTML = `<div style="color:#e74c3c;font-size:.82rem;margin-bottom:8px;">${initData?.message || 'Payment init failed'}</div>`;
+      setLoading(btn, false);
+      return;
+    }
+    if (initData.authorization_url || initData.session_url || initData.link) {
+      window.location.href = initData.authorization_url || initData.session_url || initData.link;
+      return;
+    }
+    // Fallback: open Paystack inline with server-generated ref
+    const handler = PaystackPop.setup({
+      key: paystackKey,
+      email: user.email,
+      amount: courseData.price*100,
+      currency: 'NGN',
+      ref: initData.order_ref,
+      callback: async function(response){
+        const data = await http.post('/payments/verify',{reference:response.reference,item_type:'course',item_id:courseId,school:subdomain});
+        if(data?.ok){ Toast.success('Payment successful! ✅'); setTimeout(()=>window.location.reload(),1500); }
+        else{ alertEl.innerHTML='<div style="color:#e74c3c;font-size:.82rem;margin-bottom:8px;">Verification failed. Contact support.</div>'; setLoading(btn,false); }
+      },
+      onClose: function(){ setLoading(btn,false); }
+    });
+    handler.openIframe();
+    return;
+  }
+
+  if(method==='bank'){
+    const file = document.getElementById('bank-proof')?.files[0];
+    if(!file){ alertEl.innerHTML='<div style="color:#e74c3c;font-size:.82rem;margin-bottom:8px;">Please upload payment proof.</div>'; return; }
+    setLoading(btn,true);
+    const fd = new FormData();
+    fd.append('proof',file);
+    fd.append('item_type','course');
+    fd.append('item_id',courseId);
+    fd.append('amount',courseData.price);
+    fd.append('school',subdomain);
+    const data = await http.post('/payments/bank-proof',fd,true);
+    setLoading(btn,false);
+    if(data?.ok) alertEl.innerHTML='<div style="color:#27ae60;font-size:.82rem;margin-bottom:8px;">✅ Proof submitted! Access granted after admin approves (up to 24hrs).</div>';
+    else alertEl.innerHTML=`<div style="color:#e74c3c;font-size:.82rem;margin-bottom:8px;">${data?.message||'Upload failed.'}</div>`;
+  }
+}
+
+function playLesson(url,type,title){
+  if(!url){ Toast.error('No video for this lesson'); return; }
+  document.getElementById('video-title').textContent=title;
+  let embed='';
+  if(type==='youtube'){
+    const vid=url.match(/(?:v=|youtu\.be\/)([^&?\s]+)/)?.[1];
+    embed=vid?`<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${vid}?autoplay=1" frameborder="0" allowfullscreen style="display:block;"></iframe>`:'<p style="color:#fff;text-align:center;padding:40px;">Invalid YouTube URL</p>';
+  }else if(type==='vimeo'){
+    const vid=url.match(/vimeo\.com\/(\d+)/)?.[1];
+    embed=vid?`<iframe width="100%" height="100%" src="https://player.vimeo.com/video/${vid}?autoplay=1" frameborder="0" allowfullscreen style="display:block;"></iframe>`:'';
+  }else{
+    embed=`<video src="${url}" controls autoplay style="width:100%;height:100%;"></video>`;
+  }
+  document.getElementById('video-frame').innerHTML=embed;
+  document.getElementById('video-modal').style.display='flex';
+}
+
+function closeVideo(){
+  document.getElementById('video-modal').style.display='none';
+  document.getElementById('video-frame').innerHTML='';
+}
+
+function getDashUrl() {
+  const u = Auth.getUser ? Auth.getUser() : null;
+  if (!u) return '/login';
+  if (u.role_id === 4) return '/super-admin';
+  if (u.role_id === 2) return '/admin';
+  if (u.role_id === 3) return '/instructor';
+  return '/dashboard';
+}
+
+loadPage();
+</script>
+</body>
+</html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Past Questions - ExamPro</title>
+<link rel="stylesheet" href="/css/main.css">
+<style>
+.filter-bar {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 28px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+.filter-item { display: flex; flex-direction: column; gap: 6px; min-width: 160px; flex: 1; }
+.filter-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+.search-box { position: relative; flex: 2; min-width: 200px; }
+.search-box input { padding-left: 40px; }
+.search-box .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+.page-hero {
+  background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(6,214,160,0.08));
+  border-bottom: 1px solid var(--border);
+  padding: 60px 0 40px;
+}
+.pq-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+}
+.pq-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); border-color: rgba(124,58,237,0.4); }
+.pq-card-cover {
+  height: 140px;
+  background: var(--bg-card2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.pq-card-cover img { width: 100%; height: 100%; object-fit: cover; }
+.pq-card-cover .pq-year-badge {
+  position: absolute; top: 10px; right: 10px;
+  background: rgba(0,0,0,0.7); color: var(--accent);
+  padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+}
+.pq-card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
+.pq-card-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(124,58,237,0.15); color: var(--primary-light);
+  border: 1px solid rgba(124,58,237,0.25);
+  padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600;
+  margin-bottom: 10px;
+}
+.pq-card-title { font-family: var(--font-head); font-size: 0.95rem; margin-bottom: 8px; line-height: 1.4; }
+.pq-card-meta { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 14px; display: flex; gap: 12px; flex-wrap: wrap; }
+.pq-card-footer { margin-top: auto; display: flex; align-items: center; justify-content: space-between; }
+.pq-price { font-family: var(--font-head); font-size: 1.2rem; font-weight: 700; color: var(--accent); }
+.pq-price.free { color: var(--success); }
+
+.empty-state { text-align: center; padding: 60px 20px; grid-column: 1 / -1; }
+.empty-state .empty-icon { font-size: 4rem; margin-bottom: 16px; }
+
+.pagination { display: flex; gap: 8px; justify-content: center; margin-top: 40px; flex-wrap: wrap; }
+.page-btn {
+  width: 40px; height: 40px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); background: var(--bg-card);
+  cursor: pointer; font-size: 0.88rem; color: var(--text-muted);
+  transition: all 0.2s;
+}
+.page-btn:hover, .page-btn.active { border-color: var(--primary); color: var(--primary-light); background: rgba(124,58,237,0.1); }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">EXAMPRO</a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/past-questions" class="active">Past Questions</a>
+      <a href="/courses">Courses</a>      <a href="/notifications">Notifications</a>    </div>
+    <div class="nav-cta" id="navCta">
+      <a href="/login" class="btn btn-outline btn-sm">Login</a>
+      <a href="/register" class="btn btn-primary btn-sm">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<!-- PAGE HERO -->
+<div class="page-hero" style="padding-top:100px;">
+  <div class="container">
+    <div class="section-tag">📚 Past Questions</div>
+    <h1 style="margin:12px 0 8px;">Browse Past Questions</h1>
+    <p>WAEC, NECO, JAMB, and hundreds of institution past questions — all in one place.</p>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container section" style="padding-top:32px;">
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="form-control" id="searchInput" placeholder="Search past questions...">
+    </div>
+    <div class="filter-item">
+      <span class="filter-label">Exam Type</span>
+      <select class="form-control form-select" id="examTypeFilter">
+        <option value="">All Exams</option>
+        <option value="1">WAEC</option>
+        <option value="2">NECO</option>
+        <option value="3">JAMB</option>
+        <option value="4">NABTEB</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <span class="filter-label">Institution</span>
+      <select class="form-control form-select" id="institutionFilter">
+        <option value="">All Institutions</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <span class="filter-label">Year</span>
+      <select class="form-control form-select" id="yearFilter">
+        <option value="">All Years</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="applyFilters()">Filter</button>
+    <button class="btn btn-outline" onclick="clearFilters()">Clear</button>
+  </div>
+
+  <!-- RESULTS COUNT -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <p id="resultsCount" style="color:var(--text-muted);font-size:0.88rem;">Loading...</p>
+    <select class="form-control form-select" id="sortBy" style="width:auto;" onchange="applyFilters()">
+      <option value="newest">Newest First</option>
+      <option value="price_low">Price: Low to High</option>
+      <option value="price_high">Price: High to Low</option>
+    </select>
+  </div>
+
+  <!-- GRID -->
+  <div class="grid-4" id="pqGrid">
+    <div class="empty-state">
+      <div class="spinner" style="margin:auto;"></div>
+    </div>
+  </div>
+
+  <!-- PAGINATION -->
+  <div class="pagination" id="pagination"></div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© 2025 ExamPro. All rights reserved.</span>
+      <a href="/" style="color:var(--primary-light);">← Back to Home</a>
+    </div>
+  </div>
+</footer>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Complete Purchase</div>
+      <button class="modal-close">✕</button>
+    </div>
+    <div id="payModalContent"></div>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+// Update nav
+if (Auth.isLoggedIn()) {
+  const user = Auth.getUser();
+  document.getElementById('navCta').innerHTML = `
+    <a href="${Auth.isAdmin() ? '/admin/' : '/dashboard'}" class="btn btn-outline btn-sm">Dashboard</a>
+    <button class="btn btn-primary btn-sm" onclick="Auth.logout()">Logout</button>
+  `;
+}
+
+let currentPage = 1;
+const limit = 12;
+let currentPQ = null;
+
+// Generate year options
+const yearSel = document.getElementById('yearFilter');
+for (let y = new Date().getFullYear(); y >= 1990; y--) {
+  yearSel.innerHTML += `<option value="${y}">${y}</option>`;
+}
+
+// Load institutions for filter
+async function loadInstitutionOptions() {
+  const data = await http.get('/institutions?limit=200');
+  const sel = document.getElementById('institutionFilter');
+  if (data?.institutions) {
+    sel.innerHTML = '<option value="">All Institutions</option>' +
+      data.institutions.map(i => `<option value="${i.id}">${i.short_name} — ${i.name}</option>`).join('');
+  }
+}
+
+// Check URL params on load
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('institution_id')) document.getElementById('institutionFilter').value = urlParams.get('institution_id');
+if (urlParams.get('exam')) {
+  const examMap = { WAEC: 1, NECO: 2, JAMB: 3, NABTEB: 4 };
+  document.getElementById('examTypeFilter').value = examMap[urlParams.get('exam')] || '';
+}
+
+async function loadPastQuestions(page = 1) {
+  currentPage = page;
+  const search = document.getElementById('searchInput').value;
+  const exam_type_id = document.getElementById('examTypeFilter').value;
+  const institution_id = document.getElementById('institutionFilter').value;
+  const year = document.getElementById('yearFilter').value;
+
+  // Pass site_id so school users only see their school's PQs
+  const user = Auth.getUser();
+  const siteId = user?.site_id || 0;
+
+  let url = `/past-questions?page=${page}&limit=${limit}&site_id=${siteId}`;
+  if (search) url += `&search=${encodeURIComponent(search)}`;
+  if (exam_type_id) url += `&exam_type_id=${exam_type_id}`;
+  if (institution_id) url += `&institution_id=${institution_id}`;
+  if (year) url += `&year=${year}`;
+
+  const data = await http.get(url);
+  const grid = document.getElementById('pqGrid');
+
+  if (!data?.past_questions?.length) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <h3>No past questions found</h3>
+        <p>Try adjusting your filters or search term</p>
+        <button class="btn btn-outline" onclick="clearFilters()" style="margin-top:16px;">Clear Filters</button>
+      </div>`;
+    document.getElementById('resultsCount').textContent = '0 results found';
+    document.getElementById('pagination').innerHTML = '';
+    return;
+  }
+
+  document.getElementById('resultsCount').textContent = `Showing ${data.past_questions.length} of ${data.total} past questions`;
+
+  grid.innerHTML = data.past_questions.map(pq => `
+    <div class="pq-card">
+      <div class="pq-card-cover">
+        ${pq.cover_image
+          ? `<img src="${pq.cover_image}" alt="${pq.title}">`
+          : `<span>📄</span>`}
+        ${pq.year ? `<div class="pq-year-badge">${pq.year}</div>` : ''}
+      </div>
+      <div class="pq-card-body">
+        <div class="pq-card-tag">
+          ${pq.exam_type || pq.institution_short || 'General'}
+        </div>
+        <div class="pq-card-title">${pq.title}</div>
+        <div class="pq-card-meta">
+          <span>📝 ${pq.total_questions} Questions</span>
+          ${pq.institution_name ? `<span>🏛️ ${pq.institution_short}</span>` : ''}
+        </div>
+        <div class="pq-card-footer">
+          <div class="pq-price ${pq.price == 0 ? 'free' : ''}">
+            ${pq.price == 0 ? 'FREE' : fmt.currency(pq.price)}
+          </div>
+          <div style="display:flex;gap:8px;">
+            <a href="/past-questions/${pq.id}" class="btn btn-outline btn-sm">Preview</a>
+            <button class="btn btn-primary btn-sm" onclick="buyNow(${pq.id}, '${pq.title.replace(/'/g,"\\'")}', ${pq.price})">
+              ${pq.price == 0 ? 'Get Free' : 'Buy Now'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  // Pagination
+  const totalPages = Math.ceil(data.total / limit);
+  renderPagination(totalPages, page);
+}
+
+function renderPagination(totalPages, current) {
+  const el = document.getElementById('pagination');
+  if (totalPages <= 1) { el.innerHTML = ''; return; }
+  let html = '';
+  if (current > 1) html += `<div class="page-btn" onclick="loadPastQuestions(${current - 1})">←</div>`;
+  for (let i = Math.max(1, current - 2); i <= Math.min(totalPages, current + 2); i++) {
+    html += `<div class="page-btn ${i === current ? 'active' : ''}" onclick="loadPastQuestions(${i})">${i}</div>`;
+  }
+  if (current < totalPages) html += `<div class="page-btn" onclick="loadPastQuestions(${current + 1})">→</div>`;
+  el.innerHTML = html;
+}
+
+function applyFilters() { loadPastQuestions(1); }
+
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('examTypeFilter').value = '';
+  document.getElementById('institutionFilter').value = '';
+  document.getElementById('yearFilter').value = '';
+  loadPastQuestions(1);
+}
+
+// Debounced search
+document.getElementById('searchInput').addEventListener('input', debounce(() => loadPastQuestions(1), 400));
+
+function buyNow(id, title, price) {
+  if (!Auth.isLoggedIn()) {
+    window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+    return;
+  }
+  currentPQ = { id, title, price };
+  document.getElementById('payModalContent').innerHTML = `
+    <div style="margin-bottom:20px;">
+      <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:4px;">You are purchasing:</p>
+      <p style="font-weight:600;">${title}</p>
+      <p style="font-size:1.4rem;font-weight:700;color:var(--accent);margin-top:8px;">${fmt.currency(price)}</p>
+    </div>
+    <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px;">Choose payment method:</p>
+    <div id="pqGwContainer" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;"></div>
+    <div id="pqBankBlock" style="display:none;background:rgba(91,125,255,0.08);border:1px solid var(--primary);border-radius:8px;padding:14px;margin-bottom:14px;"></div>
+    <div id="payAlert"></div>
+    <button class="btn btn-primary" style="width:100%;" onclick="initiatePayment()" id="payBtn">Pay Now →</button>
+  `;
+  loadPQListGateways();
+  Modal.open('payModal');
+}
+
+let selectedGateway = 'paystack';
+let _pqBankDetails = null;
+
+async function loadPQListGateways() {
+  const cont = document.getElementById('pqGwContainer');
+  if (!cont) return;
+  cont.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);">Loading...</div>';
+  const user = Auth.getUser();
+  const siteId = user?.site_id || '';
+  const gws = await http.get(`/payments/gateways${siteId ? '?site_id=' + siteId : ''}`) || [];
+  if (!gws.length) {
+    cont.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);">No payment methods configured</div>';
+    return;
+  }
+  selectedGateway = gws[0].gateway;
+  cont.innerHTML = gws.map(g => `
+    <button class="gateway-btn" onclick="selectGateway('${g.gateway}', ${JSON.stringify(g).replace(/"/g,'&quot;')})"
+      style="padding:14px;border-radius:10px;border:2px solid var(--border);background:var(--bg-card2);cursor:pointer;color:var(--text);font-size:0.88rem;font-weight:600;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;"
+      data-gateway="${g.gateway}">
+      ${g.display_name || g.gateway}
+    </button>
+  `).join('');
+  // Auto-select first
+  const firstBtn = cont.querySelector('.gateway-btn');
+  if (firstBtn) firstBtn.click();
+}
+
+function selectGateway(gw, gwData) {
+  selectedGateway = gw;
+  _pqBankDetails = gwData || null;
+  document.querySelectorAll('.gateway-btn').forEach(btn => {
+    btn.style.borderColor = btn.dataset.gateway === gw ? 'var(--primary)' : 'var(--border)';
+    btn.style.background = btn.dataset.gateway === gw ? 'rgba(124,58,237,0.15)' : 'var(--bg-card2)';
+  });
+  const bankBlock = document.getElementById('pqBankBlock');
+  if (gw === 'bank_transfer' && bankBlock) {
+    bankBlock.style.display = 'block';
+    bankBlock.innerHTML = `
+      <h4 style="margin:0 0 8px;">🏦 Bank Transfer Details</h4>
+      <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:10px;">
+        <strong>Bank:</strong> ${_pqBankDetails?.bank_name || '—'}<br>
+        <strong>Account No:</strong> <strong style="font-size:1rem;letter-spacing:2px;">${_pqBankDetails?.bank_account_number || '—'}</strong><br>
+        <strong>Name:</strong> ${_pqBankDetails?.bank_account_name || '—'}
+      </p>
+      <label style="font-size:.78rem;display:block;margin-bottom:4px;">Upload proof *</label>
+      <input type="file" id="pqListBankProof" accept="image/*,.pdf" style="width:100%;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);">
+    `;
+  } else if (bankBlock) {
+    bankBlock.style.display = 'none';
+  }
+}
+
+async function initiatePayment() {
+  const btn = document.getElementById('payBtn');
+  const alertEl = document.getElementById('payAlert');
+  alertEl.innerHTML = '';
+  const user = Auth.getUser();
+  const siteId = user?.site_id || null;
+
+  if (selectedGateway === 'bank_transfer') {
+    const file = document.getElementById('pqListBankProof')?.files[0];
+    if (!file) { alertEl.innerHTML = '<div class="alert alert-error">Please upload payment proof</div>'; return; }
+    setLoading(btn, true);
+    const fd = new FormData();
+    fd.append('proof', file);
+    fd.append('item_type', 'past_question');
+    fd.append('item_id', currentPQ.id);
+    fd.append('amount', currentPQ.price);
+    if (siteId) fd.append('site_id', siteId);
+    const res = await fetch(`${API}/payments/bank-proof`, {
+      method: 'POST', headers: { Authorization: `Bearer ${Auth.getToken()}` }, body: fd
+    });
+    const data = await res.json();
+    setLoading(btn, false);
+    if (res.ok) {
+      alertEl.innerHTML = '<div class="alert alert-success">✅ Proof submitted! Access after admin review.</div>';
+      btn.style.display = 'none';
+    } else {
+      alertEl.innerHTML = `<div class="alert alert-error">${data.message || 'Upload failed'}</div>`;
+    }
+    return;
+  }
+
+  setLoading(btn, true);
+  const data = await http.post('/payments/initiate', {
+    item_type: 'past_question',
+    item_id: currentPQ.id,
+    gateway: selectedGateway,
+    site_id: siteId
+  });
+  setLoading(btn, false);
+  if (data?.authorization_url) {
+    window.location.href = data.authorization_url || data.session_url || data.link;
+  } else {
+    alertEl.innerHTML = `<div class="alert alert-error">${data?.message || 'Payment failed to initialize'}</div>`;
+  }
+}
+
+loadInstitutionOptions();
+loadPastQuestions(1);
+</script>
+</body>
+</html>

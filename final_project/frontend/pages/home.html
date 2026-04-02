@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ExamPro - Build Your Exam Platform</title>
+<link rel="stylesheet" href="/css/main.css"/>
+<style>
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px 20px;background:radial-gradient(ellipse at 30% 20%,rgba(91,125,255,.2),transparent 60%),radial-gradient(ellipse at 80% 80%,rgba(29,209,161,.15),transparent 60%),var(--bg);}
+.hero-tag{display:inline-block;background:rgba(91,125,255,.15);border:1px solid rgba(91,125,255,.3);color:var(--p);padding:5px 16px;border-radius:99px;font-size:.78rem;font-weight:600;margin-bottom:20px;}
+.hero h1{font-family:Syne,sans-serif;font-size:clamp(2.2rem,5vw,3.8rem);font-weight:800;line-height:1.1;margin-bottom:16px;}
+.hero h1 span{background:linear-gradient(135deg,var(--p),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero p{color:var(--muted);font-size:1.1rem;max-width:560px;margin:0 auto 32px;}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.section{padding:80px 40px;max-width:1200px;margin:0 auto;}
+.section-title{font-family:Syne,sans-serif;font-size:1.8rem;font-weight:800;text-align:center;margin-bottom:8px;}
+.section-sub{color:var(--muted);text-align:center;margin-bottom:40px;}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;}
+.feat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;transition:transform .2s,border-color .2s;}
+.feat:hover{transform:translateY(-3px);border-color:rgba(91,125,255,.3);}
+.feat-icon{font-size:2rem;margin-bottom:12px;}
+.feat-title{font-weight:700;margin-bottom:6px;}
+.feat-desc{font-size:.82rem;color:var(--muted);}
+.how{background:var(--card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:80px 40px;}
+.how-steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:24px;max-width:1000px;margin:0 auto;}
+.step{text-align:center;}
+.step-num{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--a));display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-weight:800;font-size:1.2rem;margin:0 auto 14px;}
+.step-title{font-weight:700;margin-bottom:6px;}
+.step-desc{font-size:.82rem;color:var(--muted);}
+.cta{text-align:center;padding:80px 40px;background:radial-gradient(ellipse at 50% 50%,rgba(91,125,255,.1),transparent 70%),var(--bg);}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,10,20,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{font-family:Syne,sans-serif;font-size:1.2rem;font-weight:800;background:linear-gradient(135deg,var(--p),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;margin-top:20px;}
+.tpl-card{background:var(--card,#1a1f2e);border:1px solid var(--border,#2a2f3e);border-radius:14px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;}
+.tpl-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.4);}
+.tpl-prev{height:160px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.tpl-prev img{width:100%;height:100%;object-fit:cover;}
+.tpl-ov{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;gap:8px;opacity:0;transition:opacity .2s;}
+.tpl-card:hover .tpl-ov{opacity:1;}
+.tpl-ov button{background:#fff;color:#111;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:700;font-size:.8rem;white-space:nowrap;}
+.tpl-ov button.primary-btn{background:var(--p,#5b7dff);color:#fff;}
+.tpl-info{padding:16px;}
+.tpl-footer{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.tpl-name{font-weight:700;font-size:.95rem;}
+.tpl-desc{font-size:.78rem;color:var(--muted,#888);margin:0 0 12px;line-height:1.5;}
+.tpl-actions{display:flex;gap:8px;}
+.badge-free{background:rgba(29,209,161,.15);color:#1dd1a1;padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:700;}
+.badge-premium{background:rgba(243,156,18,.15);color:#f39c12;padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:700;}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-logo">ExamPro</div>
+  <div style="display:flex;gap:12px;align-items:center;">
+    <a href="/" style="color:var(--muted);font-size:.88rem;text-decoration:none">Home</a>
+    <a href="#features" style="color:var(--muted);font-size:.88rem;text-decoration:none">Features</a>
+    <a href="#templates" style="color:var(--muted);font-size:.88rem;text-decoration:none">Templates</a>
+    <div id="nav-auth-btns" style="display:flex;gap:8px;align-items:center;">
+      <a href="/login" class="btn btn-outline btn-sm">Login</a>
+      <a href="/register" class="btn btn-primary btn-sm">Get Started Free</a>
+    </div>
+  </div>
+</nav>
+<script>
+// Swap nav buttons immediately based on auth state
+(function() {
+  try {
+    const token = localStorage.getItem('ep_token');
+    const user  = JSON.parse(localStorage.getItem('ep_user') || 'null');
+    if (!token || !user) return;
+    const dashUrl = user.role_id === 4 ? '/super-admin'
+                  : user.role_id === 2 ? '/admin'
+                  : user.role_id === 3 ? '/instructor'
+                  : '/dashboard';
+    const el = document.getElementById('nav-auth-btns');
+    if (el) {
+      el.innerHTML =
+        '<a href="' + dashUrl + '" class="btn btn-outline btn-sm">My Dashboard</a>' +
+        '<button class="btn btn-primary btn-sm" onclick="(function(){localStorage.removeItem(\'ep_token\');localStorage.removeItem(\'ep_user\');window.location.href=\'/home\'})()">Logout</button>';
+    }
+  } catch(_) {}
+})();
+</script>
+
+<div class="hero" style="padding-top:80px;">
+  <div>
+    <div class="hero-tag">SaaS Exam Platform</div>
+    <h1>Launch Your Own<br/><span>Exam Platform</span><br/>in Minutes</h1>
+    <p>ExamPro lets schools and tutors sell courses, past questions, and host live classes — all on their own branded subdomain.</p>
+    <div class="hero-btns">
+      <a href="/register" class="btn btn-primary" style="padding:13px 28px;font-size:.95rem;">Start Free Today</a>
+      <a href="#templates" class="btn btn-outline" style="padding:13px 28px;font-size:.95rem;">Browse Templates</a>
+    </div>
+    <p style="color:var(--muted);font-size:.78rem;margin-top:16px;">yourschool.exampro.ng • Custom domain supported</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Everything You Need</div>
+  <div class="section-sub">One platform to build, sell, and manage your school online</div>
+  <div class="features-grid">
+    <div class="feat"><div class="feat-icon">🏫</div><div class="feat-title">Your Own Subdomain</div><div class="feat-desc">yourschool.exampro.ng or connect your custom domain</div></div>
+    <div class="feat"><div class="feat-icon">🎓</div><div class="feat-title">Sell Courses</div><div class="feat-desc">Upload video lessons, PDFs, and organize into sections</div></div>
+    <div class="feat"><div class="feat-icon">📚</div><div class="feat-title">Past Questions</div><div class="feat-desc">Sell WAEC, NECO, JAMB past question PDFs by subject and year</div></div>
+    <div class="feat"><div class="feat-icon">🎥</div><div class="feat-title">Live Lectures</div><div class="feat-desc">Schedule Google Meet, Zoom, or YouTube Live sessions</div></div>
+    <div class="feat"><div class="feat-icon">💰</div><div class="feat-title">Bank Transfer & Paystack</div><div class="feat-desc">Accept payments by bank transfer with manual approval or Paystack</div></div>
+    <div class="feat"><div class="feat-icon">🎨</div><div class="feat-title">Page Builder</div><div class="feat-desc">Customize your site colors, fonts, and hero text. No coding needed</div></div>
+    <div class="feat"><div class="feat-icon">🏅</div><div class="feat-title">Auto Certificates</div><div class="feat-desc">Upload your certificate design. Students get them automatically</div></div>
+    <div class="feat"><div class="feat-icon">📢</div><div class="feat-title">Notify Students</div><div class="feat-desc">Send announcements to all your students in one click</div></div>
+  </div>
+</div>
+
+<div class="how">
+  <div style="max-width:1000px;margin:0 auto;">
+    <div class="section-title">How It Works</div>
+    <div class="section-sub" style="margin-bottom:40px;">Get your school online in 4 simple steps</div>
+    <div class="how-steps">
+      <div class="step"><div class="step-num">1</div><div class="step-title">Register</div><div class="step-desc">Create your school owner account with your school name and subdomain</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-title">Choose Template</div><div class="step-desc">Pick a design from our marketplace — free or premium</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-title">Get Approved</div><div class="step-desc">Admin reviews your application and approves your site</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-title">Go Live</div><div class="step-desc">Add your content and start selling to students</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="templates">
+  <div class="section-title">Browse Templates</div>
+  <div class="section-sub">Choose a design for your school. Customize colors, fonts, and text after purchase.</div>
+  <div class="tpl-grid" id="home-tpls">
+    <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);">Loading templates...</div>
+  </div>
+</div>
+
+<div class="cta">
+  <div class="section-title">Ready to Start?</div>
+  <p style="color:var(--muted);margin:12px 0 28px;font-size:1rem;">Join schools already using ExamPro to sell online</p>
+  <a href="/register" class="btn btn-primary" style="padding:14px 36px;font-size:1rem;">Create Your School Free</a>
+</div>
+
+<footer style="background:var(--card);border-top:1px solid var(--border);padding:48px 40px 28px;">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px;flex-wrap:wrap;">
+      <div>
+        <div style="font-family:var(--font-head,Syne,sans-serif);font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--p,#5b7dff),var(--a,#1dd1a1));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px;">ExamPro</div>
+        <p style="font-size:.83rem;color:var(--muted);line-height:1.7;max-width:260px;">The all-in-one platform for Nigerian schools to sell courses, past questions, and host live classes — on your own branded subdomain.</p>
+        <p style="font-size:.75rem;color:var(--muted);margin-top:8px;">yourschool.exampro.ng</p>
+      </div>
+      <div>
+        <div style="font-size:.8rem;font-weight:700;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px;">Product</div>
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <a href="#features" style="font-size:.83rem;color:var(--muted);text-decoration:none;">Features</a>
+          <a href="#templates" style="font-size:.83rem;color:var(--muted);text-decoration:none;">Templates</a>
+          <a href="/register" style="font-size:.83rem;color:var(--muted);text-decoration:none;">Get Started</a>
+          <a href="/login" style="font-size:.83rem;color:var(--muted);text-decoration:none;">Login</a>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:.8rem;font-weight:700;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px;">For Schools</div>
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <span style="font-size:.83rem;color:var(--muted);">Sell Courses</span>
+          <span style="font-size:.83rem;color:var(--muted);">Past Questions</span>
+          <span style="font-size:.83rem;color:var(--muted);">Live Classes</span>
+          <span style="font-size:.83rem;color:var(--muted);">Certificates</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:.8rem;font-weight:700;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px;">Payment</div>
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <span style="font-size:.83rem;color:var(--muted);">Paystack</span>
+          <span style="font-size:.83rem;color:var(--muted);">Flutterwave</span>
+          <span style="font-size:.83rem;color:var(--muted);">Bank Transfer</span>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <span style="font-size:.78rem;color:var(--muted);">&copy; 2025 ExamPro. All rights reserved.</span>
+      <div style="display:flex;gap:20px;">
+        <a href="/login" style="font-size:.78rem;color:var(--muted);text-decoration:none;">Login</a>
+        <a href="/register" style="font-size:.78rem;color:var(--muted);text-decoration:none;">Register</a>
+      </div>
+    </div>
+  </div>
+</footer>
+<script src="/js/app.js"></script>
+<script>
+// Show dashboard link if logged in
+if(Auth.loggedIn()) {
+  const btns = document.querySelector(".hero-btns");
+  if(btns) btns.innerHTML += '<a href="' + (Auth.getDashboardUrl ? Auth.getDashboardUrl() : '/dashboard') + '" class="btn btn-outline" style="padding:13px 28px;font-size:.95rem;">Go to Dashboard →</a>';
+}
+
+// ── Load Templates ──
+async function loadTemplates(){
+  const g = document.getElementById("home-tpls");
+  try {
+    const res  = await http.get("/public/templates");
+    const rows = Array.isArray(res) ? res : (res?.templates || res?.data || []);
+
+    if(!rows.length){
+      g.innerHTML = "<div style='grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted)'><div style='font-size:3rem;margin-bottom:12px;'>🎨</div><p>No templates available yet. Check back soon!</p></div>";
+      return;
+    }
+
+    g.innerHTML = rows.map(t => {
+      const p       = t.primary_color || "#5b7dff";
+      const a       = t.accent_color  || "#1dd1a1";
+      const safeName = (t.name || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      const preview  = t.thumbnail
+        ? `<img src="${t.thumbnail}" alt="${t.name}" loading="lazy">`
+        : `<div style="width:100%;height:100%;background:linear-gradient(135deg,${p},${a});display:flex;align-items:center;justify-content:center;font-size:3rem;">🎨</div>`;
+      const badge = t.is_premium
+        ? `<span class="badge-premium">₦${Number(t.price||0).toLocaleString()}</span>`
+        : `<span class="badge-free">FREE</span>`;
+
+      return `<div class="tpl-card">
+        <div class="tpl-prev">
+          ${preview}
+          <div class="tpl-ov">
+            <button onclick="event.stopPropagation();previewTemplate(${t.id})">👁 Preview</button>
+            <button class="primary-btn" onclick="event.stopPropagation();chooseTemplate(${t.id},'${safeName}',${t.price||0},${t.is_premium?1:0})">Use This</button>
+          </div>
+        </div>
+        <div class="tpl-info">
+          <div class="tpl-footer">
+            <span class="tpl-name">${t.name}</span>
+            ${badge}
+          </div>
+          <p class="tpl-desc">${t.description || 'Clean, modern school template'}</p>
+          <div class="tpl-actions">
+            <button class="btn btn-primary btn-sm" style="flex:1;" onclick="chooseTemplate(${t.id},'${safeName}',${t.price||0},${t.is_premium?1:0})">✅ Use This</button>
+            <button class="btn btn-outline btn-sm" onclick="previewTemplate(${t.id})">👁 Preview</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+  } catch(err) {
+    console.error('Failed to load templates:', err);
+    g.innerHTML = "<div style='grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted)'><div style='font-size:3rem;margin-bottom:12px;'>⚠️</div><p>Could not load templates. Please refresh the page.</p></div>";
+  }
+}
+
+function previewTemplate(id){ window.open('/template-preview?id='+id,'_blank','width=1100,height=700,scrollbars=yes'); }
+
+function chooseTemplate(id, name, price, isPremium){
+  sessionStorage.setItem('chosen_template', JSON.stringify({id, name, price, is_premium: isPremium}));
+  // Templates are included in subscription plans — no separate purchase
+  window.location.href = '/register?role=admin&template=' + id;
+}
+
+loadTemplates();
+</script>
+
+<script>
+// ── AI Widget context for ExamPro Home ──
+window.__AI_CONTEXT = {
+  assistantName: 'ExamPro AI',
+  assistantSub: 'Ask about our platform',
+  welcomeMsg: '👋 Hi! I\'m the ExamPro AI assistant. Ask me how to create a school, sell courses, pricing, or anything else!',
+  quickBtns: ['How do I create a school?', 'What payment methods are supported?', 'Is there a free plan?', 'How do certificates work?'],
+  primaryColor: '#7C3AED',
+  accentColor: '#06D6A0',
+  systemPrompt: `You are a helpful AI assistant for ExamPro, a multi-tenant online learning management system (LMS) platform. ExamPro lets school owners create their own branded school site on a subdomain, add instructors, sell courses and past questions, and issue certificates to students.
+
+Key facts about ExamPro:
+- School owners sign up, choose a template, and get their own school site (e.g. yourschool.exampro.com)
+- Instructors can create and sell video courses and past exam questions
+- Students enroll, learn, and earn certificates on completion
+- Payment gateways supported: Paystack, Flutterwave, Stripe, and Bank Transfer
+- Super admins manage all schools on the platform
+- Each school has its own branding, colors, and domain
+
+Be friendly, concise, and helpful. Direct users to register or login if relevant.`
+};
+</script>
+<!-- ═══════════════════════════════════════════════════════════════
+     AI ASSISTANT WIDGET
+     Powered by Claude API — context-aware per-page
+     ═══════════════════════════════════════════════════════════════ -->
+<style>
+#ai-fab{position:fixed;bottom:28px;right:28px;z-index:9999;width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.35rem;box-shadow:0 4px 24px rgba(0,0,0,.35);transition:transform .2s,box-shadow .2s;background:linear-gradient(135deg,var(--ai-p,#7C3AED),var(--ai-a,#06D6A0));}
+#ai-fab:hover{transform:scale(1.08);box-shadow:0 6px 32px rgba(0,0,0,.45);}
+#ai-fab .ai-badge{position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:#ef4444;border:2px solid #0f172a;display:none;}
+#ai-box{position:fixed;bottom:96px;right:28px;z-index:9999;width:360px;max-width:calc(100vw - 40px);border-radius:18px;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.5);display:none;flex-direction:column;max-height:520px;border:1px solid rgba(255,255,255,.08);background:#13172b;}
+#ai-box.open{display:flex;}
+.ai-head{padding:14px 16px;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--ai-p,#7C3AED),var(--ai-a,#06D6A0));}
+.ai-head-av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.ai-head-info{flex:1;}
+.ai-head-name{font-weight:700;font-size:.9rem;color:#fff;}
+.ai-head-sub{font-size:.72rem;color:rgba(255,255,255,.75);}
+.ai-head-close{background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;font-size:1.1rem;padding:4px;line-height:1;}
+.ai-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;}
+.ai-msgs::-webkit-scrollbar{width:4px;}
+.ai-msgs::-webkit-scrollbar-track{background:transparent;}
+.ai-msgs::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+.ai-msg{max-width:85%;padding:10px 13px;border-radius:14px;font-size:.83rem;line-height:1.55;word-break:break-word;}
+.ai-msg.bot{background:rgba(255,255,255,.07);color:rgba(255,255,255,.88);border-radius:14px 14px 14px 4px;align-self:flex-start;}
+.ai-msg.user{background:linear-gradient(135deg,var(--ai-p,#7C3AED),var(--ai-a,#06D6A0));color:#fff;border-radius:14px 14px 4px 14px;align-self:flex-end;}
+.ai-msg.bot.typing{opacity:.6;}
+.ai-msg a{color:var(--ai-a,#06D6A0);text-decoration:underline;}
+.ai-quick{padding:0 14px 10px;display:flex;flex-wrap:wrap;gap:6px;}
+.ai-qbtn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.75);padding:5px 11px;border-radius:99px;font-size:.72rem;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.ai-qbtn:hover{background:rgba(255,255,255,.12);color:#fff;}
+.ai-foot{display:flex;gap:8px;padding:12px 14px;border-top:1px solid rgba(255,255,255,.07);}
+.ai-input{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:9px 12px;color:#fff;font-size:.83rem;outline:none;resize:none;min-height:38px;max-height:100px;font-family:inherit;}
+.ai-input::placeholder{color:rgba(255,255,255,.35);}
+.ai-input:focus{border-color:rgba(255,255,255,.25);}
+.ai-send{background:linear-gradient(135deg,var(--ai-p,#7C3AED),var(--ai-a,#06D6A0));border:none;border-radius:10px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:.9rem;flex-shrink:0;transition:opacity .15s;}
+.ai-send:hover{opacity:.85;}
+.ai-send:disabled{opacity:.4;cursor:default;}
+@media(max-width:480px){#ai-box{width:calc(100vw - 24px);right:12px;bottom:82px;}#ai-fab{bottom:16px;right:16px;}}
+</style>
+
+<button id="ai-fab" onclick="toggleAI()" title="Ask AI Assistant">
+  🤖<span class="ai-badge" id="ai-badge"></span>
+</button>
+<div id="ai-box">
+  <div class="ai-head">
+    <div class="ai-head-av">🤖</div>
+    <div class="ai-head-info">
+      <div class="ai-head-name" id="ai-head-name">AI Assistant</div>
+      <div class="ai-head-sub" id="ai-head-sub">Ask me anything</div>
+    </div>
+    <button class="ai-head-close" onclick="toggleAI()">✕</button>
+  </div>
+  <div class="ai-msgs" id="ai-msgs">
+    <div class="ai-msg bot" id="ai-welcome">👋 Hi! I'm your AI assistant. How can I help you today?</div>
+  </div>
+  <div class="ai-quick" id="ai-quick-btns"></div>
+  <div class="ai-foot">
+    <textarea class="ai-input" id="ai-input" placeholder="Type your question…" rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI();}"></textarea>
+    <button class="ai-send" id="ai-send-btn" onclick="sendAI()">➤</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ── Config (set by each page before this script runs) ──
+  // window.__AI_CONTEXT = { systemPrompt, welcomeMsg, quickBtns, primaryColor, accentColor, assistantName, assistantSub }
+  const ctx = window.__AI_CONTEXT || {};
+
+  // Apply colors
+  if (ctx.primaryColor) document.documentElement.style.setProperty('--ai-p', ctx.primaryColor);
+  if (ctx.accentColor)  document.documentElement.style.setProperty('--ai-a', ctx.accentColor);
+
+  // Names
+  const nameEl = document.getElementById('ai-head-name');
+  const subEl  = document.getElementById('ai-head-sub');
+  if (nameEl) nameEl.textContent  = ctx.assistantName || 'AI Assistant';
+  if (subEl)  subEl.textContent   = ctx.assistantSub  || 'Ask me anything';
+
+  // Welcome
+  const welEl = document.getElementById('ai-welcome');
+  if (welEl) welEl.textContent = ctx.welcomeMsg || '👋 Hi! How can I help you today?';
+
+  // Quick buttons
+  const qCont = document.getElementById('ai-quick-btns');
+  if (qCont && ctx.quickBtns && ctx.quickBtns.length) {
+    qCont.innerHTML = ctx.quickBtns.map(function(q){
+      return '<button class="ai-qbtn" onclick="sendAIMsg('+JSON.stringify(q)+')">'+q+'</button>';
+    }).join('');
+  }
+
+  let aiOpen = false;
+  let aiLoading = false;
+  let aiHistory = [];
+
+  window.toggleAI = function() {
+    aiOpen = !aiOpen;
+    const box = document.getElementById('ai-box');
+    if (aiOpen) { box.classList.add('open'); document.getElementById('ai-input').focus(); }
+    else box.classList.remove('open');
+  };
+
+  window.sendAIMsg = function(text) {
+    if (!text) return;
+    document.getElementById('ai-input').value = text;
+    sendAI();
+  };
+
+  function appendMsg(text, role) {
+    const msgs = document.getElementById('ai-msgs');
+    const div = document.createElement('div');
+    div.className = 'ai-msg ' + role;
+    div.textContent = text;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+    return div;
+  }
+
+  function setTyping(on) {
+    const btn = document.getElementById('ai-send-btn');
+    if (btn) btn.disabled = on;
+    aiLoading = on;
+  }
+
+  window.sendAI = async function() {
+    if (aiLoading) return;
+    const input = document.getElementById('ai-input');
+    const text = (input.value || '').trim();
+    if (!text) return;
+    input.value = '';
+    input.style.height = '';
+
+    appendMsg(text, 'user');
+    aiHistory.push({ role: 'user', content: text });
+
+    // Hide quick buttons after first real message
+    const qb = document.getElementById('ai-quick-btns');
+    if (qb) qb.style.display = 'none';
+
+    setTyping(true);
+    const typingDiv = appendMsg('Thinking…', 'bot typing');
+
+    try {
+      const systemPrompt = (ctx.systemPrompt || 'You are a helpful assistant for an online learning platform.') +
+        '\n\nIMPORTANT: Keep responses concise and friendly. Use plain text — no markdown symbols like ** or ##. Max 3 short paragraphs.';
+
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-5',
+          max_tokens: 400,
+          system: systemPrompt,
+          messages: aiHistory
+        })
+      });
+
+      const data = await res.json();
+      const reply = (data.content && data.content[0] && data.content[0].text) || 'Sorry, I could not get a response. Please try again.';
+      typingDiv.textContent = reply;
+      typingDiv.classList.remove('typing');
+      aiHistory.push({ role: 'assistant', content: reply });
+
+      // Keep history to last 10 turns (5 pairs) to avoid token blowup
+      if (aiHistory.length > 10) aiHistory = aiHistory.slice(aiHistory.length - 10);
+
+    } catch(e) {
+      typingDiv.textContent = 'Sorry, something went wrong. Please try again.';
+      typingDiv.classList.remove('typing');
+    }
+    setTyping(false);
+  };
+
+  // Auto-resize textarea
+  const inp = document.getElementById('ai-input');
+  if (inp) inp.addEventListener('input', function(){
+    this.style.height = '';
+    this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+  });
+})();
+</script>
+
+</body></html>

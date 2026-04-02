@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Courses - ExamPro</title>
+<link rel="stylesheet" href="/css/main.css">
+<style>
+.page-hero { padding: 100px 0 40px; background: linear-gradient(135deg, rgba(109,40,217,.08), rgba(16,185,129,.05)); border-bottom: 1px solid var(--border); }
+.filter-bar { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 28px; display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; box-shadow: var(--shadow-sm); }
+.filter-item { display: flex; flex-direction: column; gap: 6px; min-width: 160px; flex: 1; }
+.filter-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-muted); }
+.search-box { position: relative; flex: 2; }
+.search-box input { padding-left: 40px; }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+/* course-card comes from main.css */
+.level-beginner { background: rgba(34,197,94,.8); color: white; }
+.level-intermediate { background: rgba(245,158,11,.8); color: white; }
+.level-advanced { background: rgba(239,68,68,.8); color: white; }
+.course-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--primary-50); color: var(--primary); padding: 3px 10px; border-radius: 20px; font-size: .72rem; font-weight: 700; margin-bottom: 10px; }
+.course-stats { display: flex; gap: 12px; font-size: .78rem; color: var(--text-muted); margin-bottom: 14px; }
+.star-rating { color: var(--accent-yellow); font-size: .82rem; }
+.courses-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.courses-count { font-size:.875rem; color:var(--text-muted); }
+.sort-select { font-size:.84rem; }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="/home" class="nav-logo">ExamPro</a>
+    <div class="nav-links">
+      <a href="/home">Home</a>
+      <a href="/past-questions">Past Questions</a>
+      <a href="/courses" class="active">Courses</a>
+      <a href="/notifications">Notifications</a>
+    </div>
+    <div class="nav-cta" id="navCta">
+      <a href="/login" class="btn btn-outline btn-sm">Login</a>
+      <a href="/register" class="btn btn-primary btn-sm">Get Started</a>
+    </div>
+    <label class="theme-switch"><input type="checkbox" id="themeToggle"><span>🌙</span></label>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="section-tag">🎓 Courses</div>
+    <h1 style="margin:12px 0 8px;">Learn from Expert Instructors</h1>
+    <p>Video courses, downloadable materials, and live classes — all in one place.</p>
+  </div>
+</div>
+
+<div class="container section" style="padding-top:32px;">
+  <div class="filter-bar">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="form-control" id="searchInput" placeholder="Search courses...">
+    </div>
+    <div class="filter-item">
+      <span class="filter-label">Category</span>
+      <input type="text" class="form-control" id="categoryFilter" placeholder="e.g. Mathematics">
+    </div>
+    <div class="filter-item">
+      <span class="filter-label">Institution</span>
+      <select class="form-control form-select" id="institutionFilter">
+        <option value="">All Institutions</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="loadCourses(1)">Filter</button>
+    <button class="btn btn-outline" onclick="clearFilters()">Clear</button>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <p id="resultsCount" style="color:var(--text-muted);font-size:0.88rem;">Loading...</p>
+  </div>
+
+  <div class="grid-3" id="coursesGrid">
+    <div class="empty-state" style="grid-column:1/-1;padding:60px;text-align:center;">
+      <div class="spinner" style="margin:auto;"></div>
+    </div>
+  </div>
+
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Enroll in Course</div>
+      <button class="modal-close">✕</button>
+    </div>
+    <div id="payModalBody"></div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© 2025 ExamPro</span>
+      <a href="/home" style="color:var(--primary-light);">← Home</a>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/app.js"></script>
+<script>
+if (Auth.isLoggedIn()) {
+  document.getElementById('navCta').innerHTML = `
+    <a href="/dashboard" class="btn btn-outline btn-sm">Dashboard</a>
+    <button class="btn btn-primary btn-sm" onclick="Auth.logout()">Logout</button>
+  `;
+}
+
+let currentCourse = null;
+let selGw = 'paystack';
+
+async function loadInstitutionOptions() {
+  const data = await http.get('/institutions?limit=200');
+  const sel = document.getElementById('institutionFilter');
+  if (data?.institutions)
+    sel.innerHTML = '<option value="">All Institutions</option>' + data.institutions.map(i => `<option value="${i.id}">${i.short_name}</option>`).join('');
+}
+
+async function loadCourses(page = 1) {
+  const search = document.getElementById('searchInput').value;
+  const category = document.getElementById('categoryFilter').value;
+  const institution_id = document.getElementById('institutionFilter').value;
+
+  // Pass site_id so school users only see their school's courses.
+  // Main-platform users (no site_id) get site_id=0 which means platform-only.
+  const user = Auth.getUser();
+  const siteId = user?.site_id || 0;
+
+  let url = `/courses?page=${page}&limit=12&site_id=${siteId}`;
+  if (search) url += `&search=${encodeURIComponent(search)}`;
+  if (category) url += `&category=${encodeURIComponent(category)}`;
+  if (institution_id) url += `&institution_id=${institution_id}`;
+
+  const data = await http.get(url);
+  const grid = document.getElementById('coursesGrid');
+
+  if (!data?.courses?.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;">
+      <div style="font-size:4rem;margin-bottom:16px;">📭</div>
+      <h3>No courses found</h3>
+      <p style="margin-bottom:16px;">Try different search terms or filters</p>
+      <button class="btn btn-outline" onclick="clearFilters()">Clear Filters</button>
+    </div>`;
+    document.getElementById('resultsCount').textContent = '0 courses found';
+    return;
+  }
+
+  document.getElementById('resultsCount').textContent = `${data.courses.length} courses found`;
+
+  grid.innerHTML = data.courses.map(c => `
+    <div class="course-card">
+      <div class="course-thumb">
+        ${c.thumbnail ? `<img src="${c.thumbnail}" alt="${c.title}">` : '🎓'}
+        <span class="course-level level-${c.level}">${c.level}</span>
+      </div>
+      <div class="course-body">
+        <span class="course-tag">${c.exam_type || c.category || 'General'}</span>
+        <div class="course-title">${c.title}</div>
+        <div class="course-instructor">👨‍🏫 ${c.instructor_name || 'ExamPro'}</div>
+        <div class="course-stats">
+          <span>📚 ${c.total_lessons} lessons</span>
+          <span>⏱️ ${c.duration_hours}h</span>
+          <span>👥 ${c.enrolled_count} enrolled</span>
+        </div>
+        ${c.rating > 0 ? `<div class="star-rating" style="margin-bottom:12px;">⭐ ${Number(c.rating).toFixed(1)}</div>` : ''}
+        <div class="course-footer">
+          <div class="course-price">${fmt.currency(c.price)}</div>
+          <div style="display:flex;gap:8px;">
+            <a href="/courses/${c.id}" class="btn btn-outline btn-sm">Details</a>
+            <button class="btn btn-primary btn-sm" onclick="enrollNow(${c.id},'${c.title.replace(/'/g,"\\'")}',${c.price})">Enroll</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('categoryFilter').value = '';
+  document.getElementById('institutionFilter').value = '';
+  loadCourses(1);
+}
+
+document.getElementById('searchInput').addEventListener('input', debounce(() => loadCourses(1), 400));
+
+function enrollNow(id, title, price) {
+  if (!Auth.isLoggedIn()) { window.location.href = `/login?redirect=/courses`; return; }
+  currentCourse = { id, title, price };
+  document.getElementById('payModalBody').innerHTML = `
+    <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:4px;">Enrolling in:</p>
+    <p style="font-weight:600;margin-bottom:4px;">${title}</p>
+    <p style="font-size:1.6rem;font-weight:700;color:var(--accent);margin-bottom:20px;">${fmt.currency(price)}</p>
+    <div id="courseGwContainer" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;"></div>
+    <div id="courseBankBlock" style="display:none;background:rgba(91,125,255,0.08);border:1px solid var(--primary);border-radius:8px;padding:14px;margin-bottom:14px;"></div>
+    <div id="payAlert"></div>
+    <button class="btn btn-primary" style="width:100%;" id="payBtn" onclick="doPay()">Pay & Enroll →</button>
+  `;
+  loadCourseGateways();
+  Modal.open('payModal');
+}
+
+// selGw already declared above
+let _courseBankDetails = null;
+
+async function loadCourseGateways() {
+  const cont = document.getElementById('courseGwContainer');
+  if (!cont) return;
+  cont.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);">Loading...</div>';
+  const user = Auth.getUser();
+  const siteId = user?.site_id || '';
+  const gws = await http.get(`/payments/gateways${siteId ? '?site_id=' + siteId : ''}`) || [];
+  if (!gws.length) {
+    cont.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);">No payment methods configured</div>';
+    return;
+  }
+  selGw = gws[0].gateway;
+  cont.innerHTML = gws.map(g => `
+    <button class="gw-btn" data-gw="${g.gateway}"
+      onclick="pickGw('${g.gateway}', ${JSON.stringify(g).replace(/"/g,'&quot;')})"
+      style="padding:14px;border-radius:10px;border:2px solid var(--border);background:var(--bg-card2);cursor:pointer;color:var(--text);font-size:0.88rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;">
+      ${g.display_name || g.gateway}
+    </button>
+  `).join('');
+  const firstBtn = cont.querySelector('.gw-btn');
+  if (firstBtn) firstBtn.click();
+}
+
+function pickGw(gw, gwData) {
+  selGw = gw;
+  _courseBankDetails = gwData || null;
+  document.querySelectorAll('.gw-btn').forEach(b => {
+    b.style.borderColor = b.dataset.gw === gw ? 'var(--primary)' : 'var(--border)';
+    b.style.background = b.dataset.gw === gw ? 'rgba(124,58,237,0.15)' : 'var(--bg-card2)';
+  });
+  const bankBlock = document.getElementById('courseBankBlock');
+  if (gw === 'bank_transfer' && bankBlock) {
+    bankBlock.style.display = 'block';
+    bankBlock.innerHTML = `
+      <h4 style="margin:0 0 8px;">🏦 Bank Transfer Details</h4>
+      <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:10px;">
+        <strong>Bank:</strong> ${_courseBankDetails?.bank_name || '—'}<br>
+        <strong>Account No:</strong> <strong style="font-size:1rem;letter-spacing:2px;">${_courseBankDetails?.bank_account_number || '—'}</strong><br>
+        <strong>Name:</strong> ${_courseBankDetails?.bank_account_name || '—'}
+      </p>
+      <label style="font-size:.78rem;display:block;margin-bottom:4px;">Upload proof *</label>
+      <input type="file" id="courseBankProof" accept="image/*,.pdf" style="width:100%;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);">
+    `;
+  } else if (bankBlock) {
+    bankBlock.style.display = 'none';
+  }
+}
+
+async function doPay() {
+  const btn = document.getElementById('payBtn');
+  const alertEl = document.getElementById('payAlert');
+  alertEl.innerHTML = '';
+  const user = Auth.getUser();
+  const siteId = user?.site_id || null;
+
+  if (selGw === 'bank_transfer') {
+    const file = document.getElementById('courseBankProof')?.files[0];
+    if (!file) { alertEl.innerHTML = '<div class="alert alert-error">Please upload payment proof</div>'; return; }
+    setLoading(btn, true);
+    const fd = new FormData();
+    fd.append('proof', file);
+    fd.append('item_type', 'course');
+    fd.append('item_id', currentCourse.id);
+    fd.append('amount', currentCourse.price);
+    if (siteId) fd.append('site_id', siteId);
+    const res = await fetch(`${API}/payments/bank-proof`, {
+      method: 'POST', headers: { Authorization: `Bearer ${Auth.getToken()}` }, body: fd
+    });
+    const data = await res.json();
+    setLoading(btn, false);
+    if (res.ok) {
+      alertEl.innerHTML = '<div class="alert alert-success">✅ Proof submitted! Access after admin review.</div>';
+      btn.style.display = 'none';
+    } else {
+      alertEl.innerHTML = `<div class="alert alert-error">${data.message || 'Upload failed'}</div>`;
+    }
+    return;
+  }
+
+  setLoading(btn, true);
+  const data = await http.post('/payments/initiate', {
+    item_type: 'course',
+    item_id: currentCourse.id,
+    gateway: selGw,
+    site_id: siteId
+  });
+  setLoading(btn, false);
+  if (data?.authorization_url || data?.session_url || data?.link) window.location.href = data.authorization_url || data.session_url || data.link;
+  else alertEl.innerHTML = `<div class="alert alert-error">${data?.message || 'Failed'}</div>`;
+}
+
+loadInstitutionOptions();
+loadCourses(1);
+</script>
+<script>
+// Role-aware dashboard links
+(function fixDashLinks() {
+  if (typeof Auth === 'undefined') { setTimeout(fixDashLinks, 80); return; }
+  var url = Auth.getDashboardUrl ? Auth.getDashboardUrl() : '/dashboard';
+  document.querySelectorAll('a[href="/dashboard"]').forEach(function(a) { a.href = url; });
+})();
+</script>
+</body>
+</html>

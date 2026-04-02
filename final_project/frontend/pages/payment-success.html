@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment Successful - ExamPro</title>
+<link rel="stylesheet" href="/css/main.css">
+<style>
+@keyframes pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.success-icon { animation: pop 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+.success-card { animation: fadeUp 0.5s ease 0.2s both; }
+
+.order-detail {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+.order-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 0.88rem;
+  border-bottom: 1px solid var(--border);
+}
+.order-row:last-child { border-bottom: none; }
+.order-label { color: var(--text-muted); }
+.order-value { font-weight: 600; }
+</style>
+</head>
+<body>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(ellipse 70% 70% at 50% 30%,rgba(16,185,129,0.12),transparent);">
+  <div style="text-align:center;max-width:460px;width:100%;">
+
+    <div class="success-icon" style="font-size:5rem;margin-bottom:20px;line-height:1;">✅</div>
+
+    <div class="success-card">
+      <h1 style="color:var(--success);margin-bottom:8px;font-size:1.8rem;">Payment Successful!</h1>
+      <p style="margin-bottom:24px;color:var(--text-muted);">Your payment has been confirmed and access has been granted.</p>
+
+      <div id="orderDetails" class="order-detail" style="display:none;"></div>
+
+      <div id="bankPendingNote" style="display:none;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:16px;margin-bottom:20px;font-size:0.88rem;">
+        <div style="font-size:1.4rem;margin-bottom:8px;">⏳</div>
+        <strong>Bank Transfer Pending</strong>
+        <p style="margin-top:6px;color:var(--text-muted);">Your payment proof has been submitted. Admin will approve your access within 24 hours. You'll receive an email once approved.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+        <a id="dashboard-btn" href="/dashboard" class="btn btn-primary btn-lg">Go to Dashboard →</a>
+        <div id="browse-links" style="display:flex;gap:10px;justify-content:center;">
+          <a id="browse-courses-btn" href="/courses" class="btn btn-outline btn-sm">Browse Courses</a>
+          <a id="browse-pq-btn" href="/past-questions" class="btn btn-outline btn-sm">Past Questions</a>
+        </div>
+      </div>
+
+      <p id="refText" style="font-size:0.75rem;color:var(--text-muted);margin-top:20px;"></p>
+    </div>
+
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+const ref = params.get('ref');
+const isBankTransfer = params.get('type') === 'bank';
+
+if (ref) {
+  document.getElementById('refText').textContent = `Order Reference: ${ref}`;
+}
+
+if (isBankTransfer) {
+  document.getElementById('bankPendingNote').style.display = 'block';
+}
+
+// If logged in, try to load order details
+async function loadOrderDetails() {
+  if (!ref || !Auth.isLoggedIn()) return;
+
+  try {
+    const orders = await http.get('/payments/my-transactions');
+    if (!orders?.length) return;
+
+    const order = orders.find(o => o.order_ref === ref);
+    if (!order) return;
+
+    const detailEl = document.getElementById('orderDetails');
+    const isBankAwaiting = order.payment_status === 'awaiting_approval';
+
+    if (isBankAwaiting) {
+      document.getElementById('bankPendingNote').style.display = 'block';
+    }
+
+    detailEl.style.display = 'block';
+    detailEl.innerHTML = `
+      <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Order Summary</div>
+      <div class="order-row">
+        <span class="order-label">Item</span>
+        <span class="order-value">${order.item_type === 'course' ? '🎓 Course' : '📄 Past Question'}</span>
+      </div>
+      <div class="order-row">
+        <span class="order-label">Amount</span>
+        <span class="order-value" style="color:var(--success);">${fmt.currency(order.amount)}</span>
+      </div>
+      <div class="order-row">
+        <span class="order-label">Gateway</span>
+        <span class="order-value">${order.payment_gateway || '—'}</span>
+      </div>
+      <div class="order-row">
+        <span class="order-label">Status</span>
+        <span>${statusBadge(order.payment_status)}</span>
+      </div>
+      <div class="order-row">
+        <span class="order-label">Date</span>
+        <span class="order-value">${fmt.datetime(order.created_at)}</span>
+      </div>
+    `;
+  } catch(e) {
+    // Silently fail — order detail is cosmetic
+  }
+}
+
+loadOrderDetails();
+
+// Smart redirect: if student came from a school site, update links accordingly
+(function() {
+  const schoolCtx = sessionStorage.getItem('school_context') || new URLSearchParams(window.location.search).get('school');
+  if (schoolCtx) {
+    const dashBtn = document.getElementById('dashboard-btn');
+    const coursesBtn = document.getElementById('browse-courses-btn');
+    const pqBtn = document.getElementById('browse-pq-btn');
+    if (dashBtn) dashBtn.href = '/dashboard';  // dashboard is universal
+    if (coursesBtn) coursesBtn.href = '/site/' + schoolCtx + '#courses';
+    if (pqBtn) pqBtn.href = '/site/' + schoolCtx + '#past-questions';
+  }
+})();
+</script>
+
+<script>
+// Fix dashboard links to use correct URL for each role
+(function() {
+  function fixDashLinks() {
+    if (typeof Auth === 'undefined') { setTimeout(fixDashLinks, 100); return; }
+    const url = Auth.getDashboardUrl ? Auth.getDashboardUrl() : '/dashboard';
+    document.querySelectorAll('a[href="/dashboard"]').forEach(function(a) { a.href = url; });
+  }
+  fixDashLinks();
+})();
+</script>
+</body>
+</html>

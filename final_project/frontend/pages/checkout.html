@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Complete Payment - ExamPro</title>
+<link rel="stylesheet" href="/css/main.css"/>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg);">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:40px;width:100%;max-width:500px;">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-size:2.5rem;margin-bottom:12px;">💳</div>
+      <h2 style="margin:0 0 8px;">Complete Your Order</h2>
+      <p style="color:var(--text-muted);font-size:.9rem;">Pay for your template to continue registration</p>
+    </div>
+    <div id="order-summary" style="background:var(--bg-card2,var(--bg));border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+        <span style="color:var(--text-muted);">Template</span>
+        <span id="ck-name" style="font-weight:700;"></span>
+      </div>
+      <div id="coupon-breakdown" style="margin-bottom:8px;"></div>
+      <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:10px;margin-top:10px;">
+        <span style="font-weight:700;">Total</span>
+        <span id="ck-price" style="font-weight:800;color:var(--primary);font-size:1.1rem;"></span>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <input id="coupon-input" type="text" class="form-control" placeholder="Coupon code (optional)" style="text-transform:uppercase;flex:1;">
+      <button onclick="applyCoupon()" class="btn btn-outline" style="white-space:nowrap;padding:0 16px;">Apply</button>
+    </div>
+    <div id="coupon-msg" style="margin-bottom:12px;font-size:.84rem;"></div>
+    <div id="alertBox"></div>
+    <div style="margin-bottom:20px;">
+      <label class="form-label" style="margin-bottom:10px;display:block;">Payment Method</label>
+      <div id="gateway-options" style="display:grid;gap:10px;">
+        <div style="text-align:center;padding:20px;color:var(--text-muted);">Loading payment options…</div>
+      </div>
+    </div>
+    <div id="bank-warning" style="display:none;background:rgba(255,165,0,.08);border:1px solid rgba(255,165,0,.35);border-radius:10px;padding:14px;margin-bottom:14px;font-size:.85rem;color:#e6a817;">
+      ⚠️ <strong>Read before paying:</strong>
+      <ul style="margin:8px 0 0 16px;line-height:1.9;">
+        <li>Transfer the <strong>exact amount</strong> shown above</li>
+        <li>Upload your payment proof (screenshot/receipt)</li>
+        <li>Your site will only be activated <strong>after admin verifies</strong> your payment</li>
+        <li>Verification can take up to <strong>24 hours</strong></li>
+      </ul>
+    </div>
+    <div id="bank-details" style="display:none;background:rgba(91,125,255,.06);border:1px solid rgba(91,125,255,.2);border-radius:10px;padding:16px;margin-bottom:20px;font-size:.88rem;">
+      <strong>🏦 Bank Transfer Details:</strong>
+      <div id="bank-info" style="margin-top:12px;line-height:2;"></div>
+      <div style="margin-top:16px;">
+        <label class="form-label">Upload Payment Proof *</label>
+        <input type="file" class="form-control" id="proof-file" accept="image/*,.pdf">
+        <p style="font-size:.75rem;color:var(--text-muted);margin-top:4px;">Accepted: JPG, PNG, PDF (max 5MB)</p>
+      </div>
+    </div>
+    <button id="pay-btn" onclick="processPayment()" class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem;">Pay Now →</button>
+    <p style="text-align:center;margin-top:16px;font-size:.8rem;color:var(--text-muted);">After payment you'll complete your registration</p>
+  </div>
+</div>
+<script src="/js/app.js"></script>
+<script>
+const tpl = JSON.parse(sessionStorage.getItem('chosen_template') || '{}');
+if (!tpl.id) window.location.href = '/home';
+document.getElementById('ck-name').textContent = tpl.name || 'Template';
+document.getElementById('ck-price').textContent = '₦' + Number(tpl.price).toLocaleString();
+
+let activeGateways = [], selectedMethod = null, appliedCoupon = null;
+
+function getPayAmount() {
+  return appliedCoupon ? Number(appliedCoupon.final_amount) : Number(tpl.price);
+}
+
+http.get('/payments/template-gateways').then(gws => {
+  activeGateways = gws || [];
+  const container = document.getElementById('gateway-options');
+  if (!activeGateways.length) {
+    container.innerHTML = '<div style="color:var(--text-muted);padding:12px;text-align:center;">⚠️ No payment methods configured. Contact support.</div>';
+    document.getElementById('pay-btn').disabled = true;
+    return;
+  }
+  const labels = { paystack:'💳 Paystack (Card / Bank / USSD)', flutterwave:'🦋 Flutterwave (Card / Bank / Mobile Money)', stripe:'🌐 Stripe (International Card)', bank_transfer:'🏦 Direct Bank Transfer' };
+  container.innerHTML = activeGateways.map((g, i) =>
+    `<label style="display:flex;align-items:center;gap:10px;padding:14px;border:2px solid ${i===0?'var(--primary)':'var(--border)'};border-radius:10px;cursor:pointer;" id="lbl-${g.gateway}">
+      <input type="radio" name="method" value="${g.gateway}" ${i===0?'checked':''} onchange="onMethodChange('${g.gateway}')">
+      <span>${labels[g.gateway] || g.display_name || g.gateway}</span>
+    </label>`).join('');
+  selectedMethod = activeGateways[0].gateway;
+  onMethodChange(selectedMethod);
+  const bankGw = activeGateways.find(g => g.gateway === 'bank_transfer');
+  if (bankGw && bankGw.bank_account_number) {
+    document.getElementById('bank-info').innerHTML =
+      `<div style="display:grid;grid-template-columns:140px 1fr;gap:6px;">
+        <span style="color:var(--text-muted);">Bank Name</span><strong>${bankGw.bank_name||'—'}</strong>
+        <span style="color:var(--text-muted);">Account Name</span><strong>${bankGw.bank_account_name||'—'}</strong>
+        <span style="color:var(--text-muted);">Account Number</span>
+        <strong style="font-size:1.1rem;letter-spacing:2px;color:var(--primary);">${bankGw.bank_account_number}</strong>
+        <span style="color:var(--text-muted);">Amount</span>
+        <strong style="color:var(--accent);">₦${Number(tpl.price).toLocaleString()}</strong>
+      </div>
+      <div style="margin-top:10px;padding:8px 12px;background:rgba(39,174,96,.08);border-radius:8px;font-size:.8rem;color:#27ae60;">
+        💡 Use your name or email as payment narration so we can identify your payment faster.
+      </div>`;
+  } else if (bankGw) {
+    document.getElementById('bank-info').innerHTML = '<div style="color:#ffa500;">⚠️ Bank details not fully configured. Contact admin.</div>';
+  }
+});
+
+function onMethodChange(method) {
+  selectedMethod = method;
+  const isBank = selectedMethod === 'bank_transfer';
+  document.getElementById('bank-warning').style.display = isBank ? 'block' : 'none';
+  document.getElementById('bank-details').style.display  = isBank ? 'block' : 'none';
+  activeGateways.forEach(g => {
+    const lbl = document.getElementById('lbl-' + g.gateway);
+    if (lbl) lbl.style.border = g.gateway === selectedMethod ? '2px solid var(--primary)' : '2px solid var(--border)';
+  });
+  document.getElementById('pay-btn').textContent = isBank ? '📤 Submit Payment Proof →' : 'Pay Now →';
+}
+
+async function processPayment() {
+  const btn = document.getElementById('pay-btn');
+  const alertEl = document.getElementById('alertBox');
+  alertEl.innerHTML = '';
+  if (!selectedMethod) { alertEl.innerHTML = '<div class="alert alert-error" style="margin-bottom:12px;">Please select a payment method.</div>'; return; }
+  setLoading(btn, true);
+  const amount = getPayAmount();
+  const user = Auth.getUser();
+  const email = user?.email || ('guest_' + Date.now() + '@exampro.ng');
+
+  if (selectedMethod === 'bank_transfer') {
+    const file = document.getElementById('proof-file').files[0];
+    if (!file) { alertEl.innerHTML = '<div class="alert alert-error" style="margin-bottom:12px;">⚠️ Please upload your payment proof first.</div>'; setLoading(btn,false); return; }
+    const fd = new FormData();
+    fd.append('proof', file); fd.append('template_id', tpl.id); fd.append('amount', amount);
+    const data = await http.post('/payments/template-bank-proof', fd, true);
+    if (data?.ok) {
+      sessionStorage.setItem('tpl_payment_ref', data.ref);
+      sessionStorage.setItem('tpl_payment_method', 'bank_transfer');
+      alertEl.innerHTML = '<div class="alert alert-success" style="margin-bottom:12px;">✅ Proof uploaded! Redirecting…<br><small>Your site activates after admin verifies payment (up to 24hrs).</small></div>';
+      setTimeout(() => window.location.href = '/register?role=admin&paid=pending', 2500);
+    } else { alertEl.innerHTML = `<div class="alert alert-error" style="margin-bottom:12px;">${data?.message||'Upload failed. Try again.'}</div>`; setLoading(btn,false); }
+    return;
+  }
+
+  if (selectedMethod === 'paystack') {
+    const gw = activeGateways.find(g => g.gateway === 'paystack');
+    if (!gw?.public_key) { alertEl.innerHTML = '<div class="alert alert-error" style="margin-bottom:12px;">Paystack not configured.</div>'; setLoading(btn,false); return; }
+    const ref = 'tpl_' + tpl.id + '_' + Date.now();
+    PaystackPop.setup({ key: gw.public_key, email, amount: amount * 100, currency: 'NGN', ref,
+      metadata: { template_id: tpl.id, template_name: tpl.name },
+      callback: function(resp) { sessionStorage.setItem('tpl_payment_ref', resp.reference); sessionStorage.setItem('tpl_payment_method','paystack'); window.location.href='/register?role=admin&paid=1'; },
+      onClose: function() { setLoading(btn,false); alertEl.innerHTML='<div class="alert alert-error" style="margin-bottom:12px;">Payment cancelled.</div>'; }
+    }).openIframe();
+    return;
+  }
+
+  if (selectedMethod === 'flutterwave') {
+    const gw = activeGateways.find(g => g.gateway === 'flutterwave');
+    if (!gw?.public_key) { alertEl.innerHTML = '<div class="alert alert-error" style="margin-bottom:12px;">Flutterwave not configured.</div>'; setLoading(btn,false); return; }
+    if (!window.FlutterwaveCheckout) {
+      await new Promise((resolve, reject) => { const s = document.createElement('script'); s.src = 'https://checkout.flutterwave.com/v3.js'; s.onload = resolve; s.onerror = reject; document.head.appendChild(s); });
+    }
+    const ref = 'tpl_fw_' + tpl.id + '_' + Date.now();
+    FlutterwaveCheckout({ public_key: gw.public_key, tx_ref: ref, amount, currency: 'NGN', payment_options: 'card,banktransfer,ussd',
+      customer: { email }, meta: { template_id: tpl.id },
+      customizations: { title: 'ExamPro Template', description: tpl.name },
+      callback: function(data) {
+        if (data.status === 'successful' || data.status === 'completed') { sessionStorage.setItem('tpl_payment_ref', ref); sessionStorage.setItem('tpl_payment_method','flutterwave'); window.location.href='/register?role=admin&paid=1'; }
+        else { alertEl.innerHTML = '<div class="alert alert-error" style="margin-bottom:12px;">Payment not completed.</div>'; setLoading(btn,false); }
+      },
+      onclose: function() { setLoading(btn,false); }
+    });
+    return;
+  }
+
+  if (selectedMethod === 'stripe') {
+    const data = await http.post('/payments/initiate', { gateway:'stripe', item_type:'template', item_id: tpl.id, amount, email });
+    if (data?.session_url || data?.authorization_url) { sessionStorage.setItem('tpl_payment_method','stripe'); window.location.href = data.session_url || data.authorization_url; }
+    else { alertEl.innerHTML = `<div class="alert alert-error" style="margin-bottom:12px;">${data?.message||'Stripe session failed.'}</div>`; setLoading(btn,false); }
+    return;
+  }
+
+  alertEl.innerHTML = '<div class="alert alert-error" style="margin-bottom:12px;">Unknown payment method.</div>';
+  setLoading(btn,false);
+}
+
+async function applyCoupon() {
+  const code = (document.getElementById('coupon-input').value || '').trim().toUpperCase();
+  const msg = document.getElementById('coupon-msg');
+  const breakdown = document.getElementById('coupon-breakdown');
+  if (!code) { msg.style.color='#e74c3c'; msg.textContent='Please enter a coupon code'; return; }
+  msg.style.color='var(--text-muted)'; msg.textContent='Checking…';
+  const r = await http.post('/admin/coupons/validate', { code, site_id: tpl.site_id||null, amount: Number(tpl.price) });
+  if (r && r.ok) {
+    appliedCoupon = r;
+    msg.style.color='#2ecc71'; msg.textContent='✅ Coupon applied! You save ₦'+Number(r.discount_amount).toLocaleString();
+    breakdown.innerHTML='<div style="padding:10px 14px;background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);border-radius:8px;font-size:.84rem;">'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span>Original</span><span>₦'+Number(tpl.price).toLocaleString()+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;color:#2ecc71;margin-bottom:4px;"><span>Discount ('+code+')</span><span>-₦'+Number(r.discount_amount).toLocaleString()+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;font-weight:700;border-top:1px solid rgba(46,204,113,.2);padding-top:6px;"><span>You Pay</span><span>₦'+Number(r.final_amount).toLocaleString()+'</span></div></div>';
+    document.getElementById('ck-price').textContent='₦'+Number(r.final_amount).toLocaleString();
+  } else {
+    appliedCoupon=null; msg.style.color='#e74c3c'; msg.textContent='❌ '+(r?.message||'Invalid coupon code');
+    breakdown.innerHTML=''; document.getElementById('ck-price').textContent='₦'+Number(tpl.price).toLocaleString();
+  }
+}
+</script>
+</body>
+</html>

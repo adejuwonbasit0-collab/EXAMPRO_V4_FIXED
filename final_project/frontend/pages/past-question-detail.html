@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Past Question - ExamPro</title>
+<link rel="stylesheet" href="/css/main.css">
+<style>
+.detail-hero { padding: 100px 0 40px; background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(6,214,160,0.06)); border-bottom: 1px solid var(--border); }
+.detail-layout { display: grid; grid-template-columns: 1fr 340px; gap: 28px; margin-top: 32px; }
+.sticky-card { position: sticky; top: 90px; }
+.tab-nav { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.tab-nav-btn { padding: 12px 20px; border: none; background: none; color: var(--text-muted); cursor: pointer; font-family: var(--font-body); font-size: 0.9rem; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; }
+.tab-nav-btn.active { color: var(--primary-light); border-bottom-color: var(--primary); }
+
+/* ---- QUIZ STYLES ---- */
+#quizSection { display: none; }
+.quiz-progress-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+.q-dot { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; cursor: pointer; transition: all 0.15s; background: var(--bg-card2); }
+.q-dot.answered { background: var(--primary); border-color: var(--primary); color: white; }
+.q-dot.current { border-color: var(--accent); color: var(--accent); }
+.q-dot.correct { background: var(--success); border-color: var(--success); color: white; }
+.q-dot.wrong { background: var(--danger); border-color: var(--danger); color: white; }
+
+.result-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 40px; text-align: center; }
+.result-score { font-family: var(--font-head); font-size: 5rem; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.result-grade { font-size: 1.2rem; font-weight: 700; margin: 8px 0 4px; }
+
+@media (max-width: 900px) {
+  .detail-layout { grid-template-columns: 1fr; }
+  .sticky-card { position: static; }
+}
+
+/* PDF Viewer Styles */
+.pdf-viewer-container {
+  position: relative;
+  background: #333;
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 600px;
+}
+.pdf-controls {
+  background: #2d2d2d;
+  padding: 8px 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  color: #fff;
+}
+.pdf-controls button {
+  background: rgba(255,255,255,.1);
+  border: none;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.pdf-canvas-wrap {
+  overflow-y: auto;
+  max-height: 580px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.pdf-canvas-wrap canvas {
+  max-width: 100%;
+  box-shadow: 0 2px 8px rgba(0,0,0,.5);
+  pointer-events: none;
+}
+.watermark-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.12;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  transform: rotate(-30deg);
+  white-space: nowrap;
+  overflow: hidden;
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>if(typeof pdfjsLib !== "undefined") pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">EXAMPRO</a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/past-questions" class="active">Past Questions</a>
+      <a href="/courses">Courses</a>      <a href="/notifications">Notifications</a>    </div>
+    <div class="nav-cta" id="navCta">
+      <a href="/login" class="btn btn-outline btn-sm">Login</a>
+      <a href="/register" class="btn btn-primary btn-sm">Register</a>
+    </div>
+  </div>
+</nav>
+
+<div id="pageContent">
+  <div class="loading-page"><div class="spinner"></div></div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Purchase to Unlock Full Access</div>
+      <button class="modal-close">✕</button>
+    </div>
+    <div id="payModalBody"></div>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+// Update nav
+if (Auth.isLoggedIn()) {
+  document.getElementById('navCta').innerHTML = `
+    <a href="/dashboard" class="btn btn-outline btn-sm">Dashboard</a>
+    <button class="btn btn-primary btn-sm" onclick="Auth.logout()">Logout</button>
+  `;
+}
+
+const pqId = window.location.pathname.split('/').pop();
+let pqData = null;
+let quizAnswers = {};
+let currentQ = 0;
+let timerInterval = null;
+let timeLeft = 0;
+let quizStarted = false;
+let quizSubmitted = false;
+
+async function loadPQ() {
+  const data = await http.get(`/past-questions/${pqId}`);
+  if (!data || data.message === 'Not found') {
+    document.getElementById('pageContent').innerHTML = `
+      <div style="text-align:center;padding:100px 20px;">
+        <div style="font-size:4rem;margin-bottom:16px;">😕</div>
+        <h2>Past Question Not Found</h2>
+        <a href="/past-questions" class="btn btn-primary" style="margin-top:16px;">Browse All</a>
+      </div>`;
+    return;
+  }
+  pqData = data;
+  renderPage();
+}
+
+function renderPage() {
+  const pq = pqData;
+  const isPurchased = pq.is_purchased;
+
+  document.title = `${pq.title} - ExamPro`;
+
+  document.getElementById('pageContent').innerHTML = `
+    <div class="detail-hero">
+      <div class="container">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+          <a href="/past-questions" style="color:var(--text-muted);font-size:0.85rem;">← Past Questions</a>
+          ${pq.institution_name ? `<span style="color:var(--text-muted);">/</span><span style="font-size:0.85rem;color:var(--text-muted);">${pq.institution_name}</span>` : ''}
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+          ${pq.exam_type ? `<span class="badge badge-primary">${pq.exam_type}</span>` : ''}
+          ${pq.year ? `<span class="badge badge-accent">${pq.year}</span>` : ''}
+          ${pq.subject_name ? `<span class="badge badge-warning">${pq.subject_name}</span>` : ''}
+        </div>
+        <h1 style="margin-bottom:10px;">${pq.title}</h1>
+        <p style="max-width:600px;">${pq.description || 'Practice with this comprehensive set of past questions.'}</p>
+        <div style="display:flex;gap:24px;margin-top:20px;flex-wrap:wrap;">
+          <span style="font-size:0.88rem;color:var(--text-muted);">📝 <strong style="color:var(--text);">${pq.total_questions}</strong> Questions</span>
+          ${pq.institution_name ? `<span style="font-size:0.88rem;color:var(--text-muted);">🏛️ <strong style="color:var(--text);">${pq.institution_name}</strong></span>` : ''}
+          <span style="font-size:0.88rem;color:var(--text-muted);">👁️ Preview: <strong style="color:var(--text);">${pq.preview_questions} questions</strong></span>
+          ${isPurchased ? `<span class="badge badge-success">✅ Purchased</span>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <div class="container" style="padding-top:0;">
+      <div class="detail-layout">
+        <!-- LEFT COLUMN -->
+        <div>
+          <div class="tab-nav">
+            <button class="tab-nav-btn active" onclick="switchTab('overview', this)">Overview</button>
+            <button class="tab-nav-btn" onclick="switchTab('questions', this)">
+              Questions ${!isPurchased ? '🔒' : ''}
+            </button>
+            <button class="tab-nav-btn" onclick="switchTab('quiz', this)" id="quizTabBtn">
+              Take Quiz ${!isPurchased ? '🔒' : ''}
+            </button>
+          </div>
+
+          <!-- OVERVIEW TAB -->
+          <div id="tab-overview">
+            <div class="card" style="margin-bottom:20px;">
+              <h3 style="margin-bottom:16px;">About This Past Question</h3>
+              <p>${pq.description || 'A comprehensive collection of past examination questions to help you prepare effectively.'}</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px;">
+                <div style="background:var(--bg-card2);border-radius:8px;padding:16px;">
+                  <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">TOTAL QUESTIONS</div>
+                  <div style="font-family:var(--font-head);font-size:1.5rem;font-weight:700;">${pq.total_questions}</div>
+                </div>
+                <div style="background:var(--bg-card2);border-radius:8px;padding:16px;">
+                  <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">FREE PREVIEW</div>
+                  <div style="font-family:var(--font-head);font-size:1.5rem;font-weight:700;">${pq.preview_questions} Qs</div>
+                </div>
+              </div>
+            </div>
+            ${!isPurchased ? `
+              <div style="background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.25);border-radius:12px;padding:20px;text-align:center;">
+                <div style="font-size:2rem;margin-bottom:8px;">🔓</div>
+                <h3 style="margin-bottom:8px;">Unlock Full Access</h3>
+                <p style="margin-bottom:16px;">Purchase to access all ${pq.total_questions} questions and take unlimited CBT practice tests.</p>
+                <button class="btn btn-primary" onclick="openPayModal()">Buy Now — ${fmt.currency(pq.price)}</button>
+              </div>` : ''}
+          </div>
+
+          <!-- QUESTIONS TAB -->
+          <div id="tab-questions" style="display:none;">
+            ${!isPurchased && pq.questions?.length < pq.total_questions ? `
+              <div class="alert alert-info" style="margin-bottom:20px;">
+                👁️ Showing ${pq.preview_questions} preview questions out of ${pq.total_questions}.
+                <a href="#" onclick="openPayModal();return false;" style="color:var(--accent);font-weight:600;"> Unlock all →</a>
+              </div>` : ''}
+            <div id="questionsList"></div>
+          </div>
+
+          <!-- QUIZ TAB -->
+          <div id="tab-quiz" style="display:none;">
+            <div id="quizContent"></div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN (Sticky Buy Card) -->
+        <div>
+          <div class="sticky-card">
+            <div class="card">
+              ${pq.cover_image ? `<img src="${pq.cover_image}" style="width:100%;height:160px;object-fit:cover;border-radius:8px;margin-bottom:16px;">` : ''}
+              <div style="font-size:1.8rem;font-weight:700;font-family:var(--font-head);color:${pq.price == 0 ? 'var(--success)' : 'var(--accent)'};margin-bottom:4px;">
+                ${pq.price == 0 ? 'FREE' : fmt.currency(pq.price)}
+              </div>
+              ${isPurchased
+                ? `<div class="badge badge-success" style="margin-bottom:16px;">✅ You own this</div>
+                   <button class="btn btn-primary" style="width:100%;margin-bottom:10px;" onclick="switchTab('quiz', document.querySelector('.tab-nav-btn:nth-child(3)'))">
+                     🧠 Start Quiz
+                   </button>`
+                : `<button class="btn btn-primary btn-lg" style="width:100%;margin-bottom:10px;" onclick="openPayModal()">
+                     🛒 Buy Now
+                   </button>
+                   <p style="font-size:0.75rem;color:var(--text-muted);text-align:center;">One-time payment. Instant access.</p>`
+              }
+              <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px;">
+                <div style="font-size:0.82rem;color:var(--text-muted);display:flex;flex-direction:column;gap:8px;">
+                  <span>✅ ${pq.total_questions} exam questions</span>
+                  <span>✅ Detailed explanations</span>
+                  <span>✅ Unlimited CBT attempts</span>
+                  <span>✅ Score tracking</span>
+                  ${pq.file_path ? '<span>✅ PDF download included</span>' : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer" style="margin-top:60px;">
+      <div class="container">
+        <div class="footer-bottom">
+          <span>© 2025 ExamPro</span>
+          <a href="/past-questions" style="color:var(--primary-light);">← Back to Past Questions</a>
+        </div>
+      </div>
+    </footer>
+  `;
+
+  // Render questions list
+  renderQuestionsList();
+}
+
+function switchTab(tab, btn) {
+  // Check if quiz/questions require purchase
+  const isPurchased = pqData.is_purchased;
+  if (!isPurchased && (tab === 'quiz') && Auth.isLoggedIn()) {
+    openPayModal(); return;
+  }
+  if (!isPurchased && tab === 'quiz' && !Auth.isLoggedIn()) {
+    window.location.href = `/login?redirect=/past-questions/${pqId}`; return;
+  }
+
+  document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+  btn?.classList.add('active');
+  document.getElementById('tab-overview').style.display = 'none';
+  document.getElementById('tab-questions').style.display = 'none';
+  document.getElementById('tab-quiz').style.display = 'none';
+  document.getElementById(`tab-${tab}`).style.display = 'block';
+
+  if (tab === 'quiz') renderQuizSetup();
+}
+
+function renderQuestionsList() {
+  const questions = pqData.questions || [];
+  const el = document.getElementById('questionsList');
+  if (!el) return;
+  if (!questions.length) {
+    el.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:40px;">No questions available yet.</p>';
+    return;
+  }
+  el.innerHTML = questions.map((q, i) => `
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:14px;">
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;">QUESTION ${q.question_number || i+1}</div>
+      <p style="font-size:0.95rem;line-height:1.7;margin-bottom:16px;">${q.question_text}</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${['a','b','c','d'].map(opt => `
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:8px;border:1px solid var(--border);font-size:0.88rem;">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--bg-card2);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0;">${opt.toUpperCase()}</div>
+            ${q[`option_${opt}`]}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============ QUIZ ENGINE ============
+function renderQuizSetup() {
+  const el = document.getElementById('quizContent');
+  const questions = pqData.questions || [];
+  if (!questions.length) {
+    el.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:40px;">No questions available for this quiz yet.</p>';
+    return;
+  }
+  quizAnswers = {};
+  quizSubmitted = false;
+  currentQ = 0;
+
+  el.innerHTML = `
+    <div style="text-align:center;padding:20px;">
+      <div style="font-size:3rem;margin-bottom:16px;">🧠</div>
+      <h2 style="margin-bottom:8px;">CBT Practice Test</h2>
+      <p style="margin-bottom:24px;">${questions.length} questions · Timed test · Get instant results</p>
+      <div style="background:var(--bg-card2);border-radius:12px;padding:20px;display:inline-block;margin-bottom:28px;text-align:left;min-width:280px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px;"><span style="color:var(--text-muted)">Questions:</span><strong>${questions.length}</strong></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px;"><span style="color:var(--text-muted)">Time:</span><strong>${pqData.time_limit_minutes > 0 ? pqData.time_limit_minutes + ' minutes' : questions.length + ' minutes (1 min/question)'}</strong></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted)">Passing Score:</span><strong>50%</strong></div>
+      </div>
+      <br>
+      <button class="btn btn-primary btn-lg" onclick="startQuiz()">Start Quiz →</button>
+    </div>
+  `;
+}
+
+function startQuiz() {
+  quizStarted = true;
+  // Use admin-set time limit if available, else 1 minute per question
+  const timeMins = (pqData.time_limit_minutes > 0) ? pqData.time_limit_minutes : (pqData.questions?.length || 40);
+  timeLeft = timeMins * 60;
+  renderQuizQuestion();
+  startTimer();
+}
+
+function startTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    const el = document.getElementById('quizTimer');
+    if (el) {
+      const m = Math.floor(timeLeft / 60);
+      const s = timeLeft % 60;
+      el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      if (timeLeft <= 60) el.style.color = 'var(--danger)';
+    }
+    if (timeLeft <= 0) { clearInterval(timerInterval); submitQuiz(); }
+  }, 1000);
+}
+
+function renderQuizQuestion() {
+  const questions = pqData.questions;
+  const q = questions[currentQ];
+  const el = document.getElementById('quizContent');
+  const _totalSecs = (pqData.time_limit_minutes > 0 ? pqData.time_limit_minutes : pqData.questions.length) * 60;
+  const timeTaken = _totalSecs - timeLeft;
+
+  const dots = questions.map((_, i) => {
+    let cls = i === currentQ ? 'current' : (quizAnswers[questions[i].id] ? 'answered' : '');
+    return `<div class="q-dot ${cls}" onclick="goToQ(${i})">${i+1}</div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <!-- Quiz Header -->
+    <div class="quiz-header">
+      <div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">QUESTION ${currentQ+1} OF ${questions.length}</div>
+        <div class="progress-bar" style="width:200px;"><div class="progress-fill" style="width:${((currentQ+1)/questions.length)*100}%"></div></div>
+      </div>
+      <div class="quiz-timer" id="quizTimer">
+        ${String(Math.floor(timeLeft/60)).padStart(2,'0')}:${String(timeLeft%60).padStart(2,'0')}
+      </div>
+      <div style="font-size:0.82rem;color:var(--text-muted);">${Object.keys(quizAnswers).length} answered</div>
+    </div>
+
+    <!-- Question Navigator -->
+    <div class="quiz-progress-row">${dots}</div>
+
+    <!-- Question -->
+    <div class="quiz-question">
+      <div class="quiz-q-number">Question ${currentQ + 1}</div>
+      <div class="quiz-q-text">${q.question_text}</div>
+      <div class="quiz-options">
+        ${['a','b','c','d'].map(opt => `
+          <div class="quiz-option ${quizAnswers[q.id] === opt ? 'selected' : ''}"
+               onclick="selectAnswer('${q.id}', '${opt}')">
+            <div class="quiz-option-letter ${quizAnswers[q.id] === opt ? 'style="background:var(--primary);color:white;"' : ''}">${opt.toUpperCase()}</div>
+            ${q[`option_${opt}`]}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+      <button class="btn btn-outline" onclick="prevQ()" ${currentQ === 0 ? 'disabled style="opacity:0.4"' : ''}>← Previous</button>
+      <button class="btn btn-danger" onclick="confirmSubmit()" style="padding:10px 20px;">Submit Quiz</button>
+      ${currentQ < questions.length - 1
+        ? `<button class="btn btn-primary" onclick="nextQ()">Next →</button>`
+        : `<button class="btn btn-accent" onclick="confirmSubmit()">Finish →</button>`}
+    </div>
+  `;
+}
+
+function selectAnswer(qId, opt) {
+  quizAnswers[qId] = opt;
+  renderQuizQuestion();
+}
+
+function goToQ(i) { currentQ = i; renderQuizQuestion(); }
+function nextQ() { if (currentQ < pqData.questions.length - 1) { currentQ++; renderQuizQuestion(); } }
+function prevQ() { if (currentQ > 0) { currentQ--; renderQuizQuestion(); } }
+
+function confirmSubmit() {
+  const unanswered = pqData.questions.length - Object.keys(quizAnswers).length;
+  if (unanswered > 0) {
+    if (!window.confirm(`You have ${unanswered} unanswered question(s). Submit anyway?`)) return;
+  }
+  submitQuiz();
+}
+
+async function submitQuiz() {
+  if (quizSubmitted) return;
+  quizSubmitted = true;
+  if (timerInterval) clearInterval(timerInterval);
+
+  const _totalSecs = (pqData.time_limit_minutes > 0 ? pqData.time_limit_minutes : pqData.questions.length) * 60;
+  const timeTaken = _totalSecs - timeLeft;
+
+  const data = await http.post(`/past-questions/${pqId}/submit-quiz`, {
+    answers: JSON.stringify(quizAnswers),
+    time_taken_seconds: timeTaken
+  });
+
+  if (!data) return;
+
+  const pct = data.percentage;
+  const grade = pct >= 70 ? { label: 'Excellent! 🎉', color: 'var(--success)' }
+              : pct >= 50 ? { label: 'Pass ✅', color: 'var(--accent)' }
+              : { label: 'Fail ❌', color: 'var(--danger)' };
+
+  const el = document.getElementById('quizContent');
+  el.innerHTML = `
+    <div class="result-card">
+      <div style="font-size:3rem;margin-bottom:12px;">🏆</div>
+      <div class="result-score">${pct}%</div>
+      <div class="result-grade" style="color:${grade.color}">${grade.label}</div>
+      <p style="margin-bottom:28px;">${data.score} correct out of ${data.total} questions</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:28px;max-width:400px;margin-inline:auto;">
+        <div style="background:rgba(16,185,129,0.1);border-radius:10px;padding:14px;">
+          <div style="font-size:1.5rem;font-weight:700;color:var(--success);">${data.score}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">Correct</div>
+        </div>
+        <div style="background:rgba(239,68,68,0.1);border-radius:10px;padding:14px;">
+          <div style="font-size:1.5rem;font-weight:700;color:var(--danger);">${data.total - data.score}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">Wrong</div>
+        </div>
+        <div style="background:rgba(124,58,237,0.1);border-radius:10px;padding:14px;">
+          <div style="font-size:1.5rem;font-weight:700;color:var(--primary-light);">${Math.floor(timeTaken/60)}m</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">Time</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="renderQuizSetup()">Try Again</button>
+        <a href="/dashboard" class="btn btn-outline">View Dashboard</a>
+        <a href="/past-questions" class="btn btn-outline">More Past Questions</a>
+      </div>
+    </div>
+  `;
+}
+
+// ============ PAYMENT ============
+function openPayModal() {
+  if (!Auth.isLoggedIn()) {
+    window.location.href = `/login?redirect=/past-questions/${pqId}`; return;
+  }
+  document.getElementById('payModalBody').innerHTML = `
+    <p style="color:var(--text-muted);margin-bottom:4px;">Purchasing:</p>
+    <p style="font-weight:600;margin-bottom:4px;">${pqData.title}</p>
+    <p style="font-size:1.6rem;font-weight:700;color:var(--accent);margin-bottom:20px;">${fmt.currency(pqData.price)}</p>
+    <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:14px;">Select payment method:</p>
+    <div id="gatewaysContainer" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;"></div>
+    <div id="bankDetailsBlock" style="display:none;background:rgba(91,125,255,0.08);border:1px solid var(--primary);border-radius:8px;padding:14px;margin-bottom:14px;"></div>
+    <div id="payAlertPQ"></div>
+    <button class="btn btn-primary" style="width:100%;" onclick="doPay()" id="payBtnPQ">Pay Now →</button>
+  `;
+  loadPQGateways();
+  Modal.open('payModal');
+}
+
+async function loadPQGateways() {
+  const cont = document.getElementById('gatewaysContainer');
+  if (!cont) return;
+  cont.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted)">Loading payment methods...</div>';
+
+  const user = Auth.getUser();
+  const siteId = user?.site_id || '';
+  const gws = await http.get(`/payments/gateways${siteId ? '?site_id=' + siteId : ''}`) || [];
+
+  if (!gws.length) {
+    cont.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted)">No payment methods available</div>';
+    return;
+  }
+
+  // Pre-select first
+  selGw = gws[0].gateway;
+
+  cont.innerHTML = gws.map(g => `
+    <button class="gw-btn" data-gw="${g.gateway}" onclick="pickGw('${g.gateway}', ${JSON.stringify(g).replace(/"/g,'&quot;')})"
+      style="padding:14px;border-radius:10px;border:2px solid var(--border);background:var(--bg-card2);cursor:pointer;color:var(--text);font-size:0.88rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;">
+      ${g.display_name || g.gateway}
+    </button>
+  `).join('');
+
+  // Auto-select first gateway
+  const firstBtn = cont.querySelector('.gw-btn');
+  if (firstBtn) firstBtn.click();
+}
+
+let selGw = 'paystack';
+let _bankDetails = null;
+
+function pickGw(gw, gwData) {
+  selGw = gw;
+  _bankDetails = gwData || null;
+  document.querySelectorAll('.gw-btn').forEach(b => {
+    b.style.borderColor = b.dataset.gw === gw ? 'var(--primary)' : 'var(--border)';
+    b.style.background = b.dataset.gw === gw ? 'rgba(124,58,237,0.15)' : 'var(--bg-card2)';
+  });
+  const bankBlock = document.getElementById('bankDetailsBlock');
+  if (gw === 'bank_transfer' && bankBlock) {
+    bankBlock.style.display = 'block';
+    const bd = _bankDetails;
+    bankBlock.innerHTML = `
+      <h4 style="margin:0 0 8px;">🏦 Bank Transfer Details</h4>
+      <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:12px;">
+        <strong>Bank:</strong> ${bd?.bank_name || '—'}<br>
+        <strong>Account No:</strong> <span style="font-size:1.05rem;letter-spacing:2px;">${bd?.bank_account_number || '—'}</span><br>
+        <strong>Name:</strong> ${bd?.bank_account_name || '—'}
+      </p>
+      <label style="font-size:.78rem;display:block;margin-bottom:6px;">Upload payment proof *</label>
+      <input type="file" id="pqBankFileNew" accept="image/*,.pdf" style="width:100%;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);">
+    `;
+  } else if (bankBlock) {
+    bankBlock.style.display = 'none';
+  }
+}
+
+async function doPay() {
+  const btn = document.getElementById('payBtnPQ');
+  const alertEl = document.getElementById('payAlertPQ');
+  alertEl.innerHTML = '';
+
+  if (!Auth.isLoggedIn()) { window.location.href = `/login?redirect=/past-questions/${pqId}`; return; }
+
+  const user = Auth.getUser();
+  const siteId = user?.site_id || null;
+
+  if (selGw === 'bank_transfer') {
+    const file = document.getElementById('pqBankFileNew')?.files[0];
+    if (!file) { alertEl.innerHTML = '<div class="alert alert-error">Please upload payment proof</div>'; return; }
+    setLoading(btn, true);
+    const fd = new FormData();
+    fd.append('proof', file);
+    fd.append('item_type', 'past_question');
+    fd.append('item_id', pqId);
+    fd.append('amount', pqData.price);
+    if (siteId) fd.append('site_id', siteId);
+    const res = await fetch(`${API}/payments/bank-proof`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${Auth.getToken()}` },
+      body: fd
+    });
+    const data = await res.json();
+    setLoading(btn, false);
+    if (res.ok) {
+      alertEl.innerHTML = '<div class="alert alert-success">✅ Proof submitted! Access granted after admin review (up to 24hrs).</div>';
+      btn.style.display = 'none';
+    } else {
+      alertEl.innerHTML = `<div class="alert alert-error">${data.message || 'Upload failed'}</div>`;
+    }
+    return;
+  }
+
+  setLoading(btn, true);
+  const data = await http.post('/payments/initiate', {
+    item_type: 'past_question',
+    item_id: pqId,
+    gateway: selGw,
+    site_id: siteId
+  });
+  setLoading(btn, false);
+  if (data?.authorization_url || data?.session_url || data?.link) {
+    window.location.href = data.authorization_url || data.session_url || data.link;
+  } else {
+    alertEl.innerHTML = `<div class="alert alert-error">${data?.message || 'Payment failed to initialize'}</div>`;
+  }
+}
+
+// V4: PDF Viewer for read-only past questions
+let pdfDoc = null, pdfCurrentPage = 1, pdfTotalPages = 0;
+
+function renderPdfViewer(pqId, accessType) {
+  const container = document.getElementById('pdf-viewer-wrap');
+  if (!container) return;
+  if (accessType === 'read_only') {
+    const token = localStorage.getItem('token');
+    const url = '/api/past-questions/view/' + pqId;
+    container.innerHTML = `
+      <div class="pdf-viewer-container" oncontextmenu="return false">
+        <div class="pdf-controls">
+          <button onclick="pdfPrevPage()">◀ Prev</button>
+          <span id="pdf-page-info">Page 1 of ?</span>
+          <button onclick="pdfNextPage()">Next ▶</button>
+        </div>
+        <div class="pdf-canvas-wrap" id="pdf-canvas-wrap"></div>
+        <div class="watermark-layer" id="pdf-watermark">ExamPro • Protected Document</div>
+      </div>
+    `;
+    // Load PDF via fetch with auth
+    fetch(url, { headers: { Authorization: 'Bearer ' + token } })
+      .then(r => r.arrayBuffer())
+      .then(data => {
+        const loadingTask = pdfjsLib.getDocument({ data });
+        loadingTask.promise.then(pdf => {
+          pdfDoc = pdf;
+          pdfTotalPages = pdf.numPages;
+          pdfCurrentPage = 1;
+          renderPdfPage(1);
+          // Update watermark with user info
+          const user = Auth.getUser();
+          if (user) {
+            document.getElementById('pdf-watermark').textContent = user.email + ' • ExamPro • ' + new Date().toLocaleDateString();
+          }
+        });
+      })
+      .catch(err => { container.innerHTML = '<div class="alert alert-danger">Failed to load document. Please ensure you have purchased this item.</div>'; });
+    // Disable context menu and keyboard shortcuts
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 's' || e.key === 'u')) { e.preventDefault(); }
+    });
+  } else {
+    container.innerHTML = '<a class="btn btn-primary" href="/api/past-questions/view/' + pqId + '" target="_blank">📥 Download PDF</a>';
+  }
+}
+
+async function renderPdfPage(pageNum) {
+  if (!pdfDoc) return;
+  const page = await pdfDoc.getPage(pageNum);
+  const viewport = page.getViewport({ scale: 1.2 });
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.height = viewport.height;
+  canvas.width = viewport.width;
+  await page.render({ canvasContext: ctx, viewport }).promise;
+  const wrap = document.getElementById('pdf-canvas-wrap');
+  if (wrap) { wrap.innerHTML = ''; wrap.appendChild(canvas); }
+  const info = document.getElementById('pdf-page-info');
+  if (info) info.textContent = 'Page ' + pageNum + ' of ' + pdfTotalPages;
+  pdfCurrentPage = pageNum;
+}
+
+function pdfPrevPage() { if (pdfCurrentPage > 1) renderPdfPage(pdfCurrentPage - 1); }
+function pdfNextPage() { if (pdfCurrentPage < pdfTotalPages) renderPdfPage(pdfCurrentPage + 1); }
+
+loadPQ();
+</script>
+<script>
+// Role-aware dashboard links
+(function fixDashLinks() {
+  if (typeof Auth === 'undefined') { setTimeout(fixDashLinks, 80); return; }
+  var url = Auth.getDashboardUrl ? Auth.getDashboardUrl() : '/dashboard';
+  document.querySelectorAll('a[href="/dashboard"]').forEach(function(a) { a.href = url; });
+})();
+</script>
+</body>
+</html>

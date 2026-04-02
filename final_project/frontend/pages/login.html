@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="page-title">Login - ExamPro</title>
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<script>
+  (function(){var t=localStorage.getItem('ep_theme')||'light';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<style>
+* { box-sizing: border-box; }
+.auth-wrap { min-height:100vh; display:grid; grid-template-columns:1fr 1fr; }
+
+/* ── LEFT BRAND PANEL ── */
+.auth-brand {
+  background:linear-gradient(145deg,#1a1744 0%,#0f0e2a 60%,#1a0e2e 100%);
+  display:flex; flex-direction:column; padding:48px;
+  position:relative; overflow:hidden; transition:background 0.5s;
+}
+.auth-brand::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(ellipse 60% 50% at 30% 40%,rgba(124,58,237,0.35) 0%,transparent 65%),
+             radial-gradient(ellipse 40% 40% at 80% 80%,rgba(16,196,138,0.18) 0%,transparent 55%);
+  transition:background 0.5s;
+}
+
+.brand-logo-wrap {
+  display:flex; align-items:center; gap:10px;
+  position:relative; z-index:1; margin-bottom:4px;
+}
+.brand-logo-icon {
+  width:40px; height:40px; border-radius:10px; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:900; font-size:1.1rem; color:#fff; flex-shrink:0;
+  background:linear-gradient(135deg,#7C3AED,#10C48A);
+  border:2px solid rgba(255,255,255,0.2);
+}
+.brand-logo-icon img { width:100%; height:100%; object-fit:cover; }
+.brand-logo-name {
+  font-family:var(--font-head,'Plus Jakarta Sans',sans-serif);
+  font-size:1.5rem; font-weight:900; color:#fff;
+  background:linear-gradient(135deg,#A78BFA,#10C48A);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.brand-logo-name.school { -webkit-text-fill-color:#fff; background:none; }
+.brand-tagline { color:rgba(255,255,255,0.4); font-size:.76rem; position:relative; z-index:1; }
+
+/* School context card — shown at top of left panel in school mode */
+.school-id-card {
+  display:none; align-items:center; gap:14px;
+  background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18);
+  border-radius:14px; padding:16px 20px; margin:20px 0;
+  position:relative; z-index:1; backdrop-filter:blur(8px);
+}
+.school-id-card.show { display:flex; }
+.school-id-card-logo {
+  width:54px; height:54px; border-radius:12px; overflow:hidden; flex-shrink:0;
+  background:rgba(255,255,255,0.15); display:flex; align-items:center;
+  justify-content:center; font-size:1.6rem; border:2px solid rgba(255,255,255,0.25);
+}
+.school-id-card-logo img { width:100%; height:100%; object-fit:cover; }
+.school-id-card-name { font-weight:800; font-size:1.05rem; color:#fff; line-height:1.3; }
+.school-id-card-url  { font-size:.72rem; color:rgba(255,255,255,0.5); margin-top:3px; font-family:monospace; }
+.school-id-card-pill {
+  margin-left:auto; flex-shrink:0;
+  background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2);
+  border-radius:99px; padding:3px 12px; font-size:.68rem; font-weight:700; color:rgba(255,255,255,0.8);
+  white-space:nowrap;
+}
+
+.brand-main { flex:1; display:flex; flex-direction:column; justify-content:center; position:relative; z-index:1; }
+.brand-main h1 {
+  font-family:var(--font-head,'Plus Jakarta Sans',sans-serif);
+  font-size:clamp(1.8rem,3vw,2.6rem); font-weight:900; color:#fff;
+  line-height:1.15; letter-spacing:-.03em; margin-bottom:16px;
+}
+.brand-main h1 span {
+  background:linear-gradient(135deg,#A78BFA,#10C48A);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.brand-main p { color:rgba(255,255,255,0.5); font-size:.9rem; line-height:1.7; max-width:340px; margin-bottom:32px; }
+.brand-feat { display:flex; flex-direction:column; gap:10px; }
+.brand-feat-item {
+  display:flex; align-items:center; gap:12px; padding:11px 14px;
+  background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);
+  border-radius:11px; color:rgba(255,255,255,0.72); font-size:.84rem;
+}
+.brand-feat-item .feat-icon {
+  width:30px; height:30px; border-radius:7px; background:rgba(124,58,237,0.25);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.85rem; color:#A78BFA; flex-shrink:0;
+}
+.brand-foot { font-size:.73rem; color:rgba(255,255,255,0.22); position:relative; z-index:1; margin-top:24px; }
+
+/* ── RIGHT FORM PANEL ── */
+.auth-form-col {
+  display:flex; align-items:center; justify-content:center;
+  padding:40px 32px; background:var(--bg);
+}
+.auth-card { width:100%; max-width:420px; }
+.auth-card-title {
+  font-family:var(--font-head,'Plus Jakarta Sans',sans-serif);
+  font-size:1.55rem; font-weight:800; color:var(--text);
+  margin-bottom:5px; letter-spacing:-.02em;
+}
+.auth-card-sub { font-size:.875rem; color:var(--text-muted); margin-bottom:26px; }
+
+/* School badge on right panel */
+.school-badge {
+  display:none; align-items:center; gap:10px;
+  padding:12px 15px; border-radius:12px; margin-bottom:22px;
+  border:2px solid rgba(92,110,248,0.25); background:rgba(92,110,248,0.06);
+}
+.school-badge.show { display:flex; }
+.school-badge-logo {
+  width:38px; height:38px; border-radius:9px; overflow:hidden; flex-shrink:0;
+  background:rgba(92,110,248,0.15); display:flex; align-items:center; justify-content:center; font-size:.9rem;
+}
+.school-badge-logo img { width:100%;height:100%;object-fit:cover; }
+.school-badge-name { font-weight:700; font-size:.9rem; color:var(--text); }
+.school-badge-sub  { font-size:.71rem; color:var(--text-muted); margin-top:1px; }
+
+.input-wrap { position:relative; }
+.input-wrap .eye-btn {
+  position:absolute; right:12px; top:50%; transform:translateY(-50%);
+  background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:.9rem; padding:4px;
+}
+.input-wrap .eye-btn:hover { color:var(--primary); }
+.auth-divider { display:flex; align-items:center; gap:12px; margin:20px 0; }
+.auth-divider::before,.auth-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+.auth-divider span { font-size:.76rem; color:var(--text-muted); }
+
+@media(max-width:768px) {
+  .auth-wrap { grid-template-columns:1fr; }
+  .auth-brand { display:none; }
+  .auth-form-col { padding:28px 20px; min-height:100vh; align-items:flex-start; padding-top:48px; }
+}
+</style>
+</head>
+<body>
+
+<div class="auth-wrap">
+
+  <!-- ════════════ LEFT: BRAND PANEL ════════════ -->
+  <div class="auth-brand" id="auth-brand-panel">
+
+    <!-- Logo row -->
+    <div>
+      <div class="brand-logo-wrap">
+        <div class="brand-logo-icon" id="brand-logo-icon">E</div>
+        <div class="brand-logo-name" id="brand-logo-name">ExamPro</div>
+      </div>
+      <div class="brand-tagline" id="brand-tagline">yourschool.exampro.ng</div>
+    </div>
+
+    <!-- School identity card — hidden until school detected -->
+    <div class="school-id-card" id="school-id-card">
+      <div class="school-id-card-logo" id="school-id-card-logo">🏫</div>
+      <div style="flex:1;min-width:0;">
+        <div class="school-id-card-name" id="school-id-card-name">School</div>
+        <div class="school-id-card-url"  id="school-id-card-url">school.exampro.ng</div>
+      </div>
+      <div class="school-id-card-pill">Portal</div>
+    </div>
+
+    <div class="brand-main">
+      <h1 id="brand-headline">Your School.<br><span id="brand-headline-accent">Your Platform.</span></h1>
+      <p id="brand-desc">Sell courses, past questions & live classes on your own branded Nigerian school site.</p>
+      <div class="brand-feat" id="brand-feat">
+        <div class="brand-feat-item"><div class="feat-icon"><i class="fas fa-play-circle"></i></div><span>Video courses with certificates</span></div>
+        <div class="brand-feat-item"><div class="feat-icon"><i class="fas fa-file-alt"></i></div><span>WAEC, JAMB, NECO past questions</span></div>
+        <div class="brand-feat-item"><div class="feat-icon"><i class="fas fa-broadcast-tower"></i></div><span>Live classes via Google Meet / Zoom</span></div>
+      </div>
+    </div>
+    <div class="brand-foot" id="brand-foot">© 2025 ExamPro. All rights reserved.</div>
+  </div>
+
+  <!-- ════════════ RIGHT: FORM PANEL ════════════ -->
+  <div class="auth-form-col">
+    <div class="auth-card">
+
+      <!-- School badge (right panel) -->
+      <div class="school-badge" id="school-badge">
+        <div class="school-badge-logo" id="school-badge-logo">
+          <i class="fas fa-graduation-cap" style="color:var(--primary);"></i>
+        </div>
+        <div>
+          <div class="school-badge-name" id="school-badge-name">School</div>
+          <div class="school-badge-sub">School Portal Login</div>
+        </div>
+        <a id="not-your-school-link" href="/login"
+           style="display:none;margin-left:auto;font-size:.72rem;color:var(--text-muted);white-space:nowrap;text-decoration:none;"
+           title="Switch school or log in to ExamPro">
+          <i class="fas fa-exchange-alt" style="margin-right:3px;"></i>Switch
+        </a>
+      </div>
+
+      <h2 class="auth-card-title" id="login-heading">Welcome back 👋</h2>
+      <p class="auth-card-sub" id="login-subheading">Sign in to your <strong>ExamPro</strong> account</p>
+
+      <div id="alertBox"></div>
+
+      <form id="loginForm" style="display:flex;flex-direction:column;gap:0;">
+        <div class="form-group">
+          <label class="form-label" style="display:block;margin-bottom:6px;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);">Email Address</label>
+          <input type="email" class="form-control" id="email" placeholder="you@example.com" autocomplete="email" required>
+        </div>
+        <div class="form-group">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <label class="form-label" style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0;">Password</label>
+            <a id="forgotLink" href="/forgot-password" style="font-size:.78rem;font-weight:600;color:var(--primary);">Forgot password?</a>
+          </div>
+          <div class="input-wrap">
+            <input type="password" class="form-control" id="password" placeholder="Enter your password" autocomplete="current-password" required>
+            <button type="button" class="eye-btn" onclick="togglePwd()" title="Show/hide password">
+              <i class="fas fa-eye" id="eye-icon"></i>
+            </button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <input type="checkbox" id="rememberMe" style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer;">
+          <label for="rememberMe" style="font-size:.84rem;color:var(--text-muted);cursor:pointer;margin:0;">Remember me for 30 days</label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" style="margin-top:18px;padding:13px;font-size:.95rem;" id="loginBtn">
+          <i class="fas fa-sign-in-alt" style="margin-right:8px;"></i><span id="loginBtnText">Sign In to Account</span>
+        </button>
+      </form>
+
+      <div class="auth-divider"><span>Don't have an account?</span></div>
+      <a id="registerLink" href="/register" class="btn btn-outline btn-full" style="text-align:center;padding:12px;">
+        <i class="fas fa-user-plus" style="margin-right:8px;"></i><span id="registerLinkText">Create Free Account</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Email Verification Modal -->
+<div class="modal-overlay" id="otpModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title">📧 Verify Your Email</div>
+      <button class="modal-close" onclick="Modal.close('otpModal')">✕</button>
+    </div>
+    <p style="color:var(--text-muted);margin-bottom:20px;font-size:.9rem;">
+      Enter the 6-digit code sent to <strong id="otpEmail" style="color:var(--text);"></strong>
+    </p>
+    <div id="otpAlert"></div>
+    <div class="form-group">
+      <input type="text" class="form-control" id="otpInput" placeholder="0  0  0  0  0  0" maxlength="6"
+             style="text-align:center;font-size:1.6rem;letter-spacing:10px;font-family:var(--font-head);">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="verifyOTP()" id="verifyBtn">Verify Email</button>
+    <button class="btn btn-outline btn-full" style="margin-top:10px;" onclick="resendOTP()">Resend Code</button>
+  </div>
+</div>
+
+<!-- Login 2FA Modal -->
+<div class="modal-overlay" id="loginOtpModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title">🔐 Two-Factor Verification</div>
+      <button class="modal-close" onclick="Modal.close('loginOtpModal')">✕</button>
+    </div>
+    <p style="color:var(--text-muted);margin-bottom:16px;font-size:.9rem;">
+      Code sent to <strong id="loginOtpEmail" style="color:var(--text);"></strong>
+    </p>
+    <div id="loginOtpAlert"></div>
+    <div class="form-group">
+      <label style="display:block;margin-bottom:6px;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);">Enter Code</label>
+      <input class="form-control" id="loginOtpInput" placeholder="6-digit code" maxlength="6"
+             style="font-size:1.6rem;letter-spacing:10px;text-align:center;font-family:var(--font-head);"/>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="verifyLoginOTP()" id="verifyLoginBtn">
+      <i class="fas fa-check" style="margin-right:7px;"></i>Verify & Sign In
+    </button>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// SCHOOL CONTEXT RESOLUTION
+// Priority: ?school= URL param  →  sessionStorage  →  none (ExamPro mode)
+// ─────────────────────────────────────────────────────────────────────────────
+var urlParams   = new URLSearchParams(window.location.search);
+var urlSchool   = urlParams.get('school');
+var sessionSchool = sessionStorage.getItem('school_context');
+// Use URL param if present; else fall back to session (handles logout redirect case)
+var schoolParam = urlSchool || sessionSchool || null;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BRANDING ENGINE — transforms both panels to match the school
+// ─────────────────────────────────────────────────────────────────────────────
+function applySchoolBranding(site) {
+  if (!site || !site.school_name) return;
+
+  var name    = site.school_name;
+  var logo    = site.logo || null;
+  var primary = (site.primary_color || '#5b7dff').replace(/[^#a-fA-F0-9]/g, '') || '5b7dff';
+  if (!primary.startsWith('#')) primary = '#' + primary;
+  var hex     = primary.replace('#', '');
+  var rr      = parseInt(hex.substring(0,2)||'5b', 16);
+  var gg      = parseInt(hex.substring(2,4)||'7d', 16);
+  var bb      = parseInt(hex.substring(4,6)||'ff', 16);
+  var sub     = site.subdomain || schoolParam || '';
+
+  // ── LEFT PANEL TRANSFORMS ────────────────────────────────────────────
+  var panel = document.getElementById('auth-brand-panel');
+  // Tint background using school primary color
+  panel.style.background =
+    'linear-gradient(145deg, rgba(' + rr + ',' + gg + ',' + bb + ',0.28) 0%, #0f0e2a 55%, #1a0e2e 100%)';
+  panel.style.setProperty('--school-primary', primary);
+
+  // Logo icon — school logo if available, else colored initial
+  var iconEl = document.getElementById('brand-logo-icon');
+  if (logo) {
+    iconEl.innerHTML = '<img src="' + logo + '" alt="' + name + '" style="width:100%;height:100%;object-fit:cover;">';
+    iconEl.style.background = 'transparent';
+    iconEl.style.border = '2px solid rgba(255,255,255,.25)';
+  } else {
+    iconEl.textContent = name[0].toUpperCase();
+    iconEl.style.background = primary;
+    iconEl.style.border = '2px solid rgba(255,255,255,.2)';
+  }
+  // Logo name — school name (white, not gradient)
+  var nameEl = document.getElementById('brand-logo-name');
+  nameEl.textContent = name;
+  nameEl.className = 'brand-logo-name school';
+  document.getElementById('brand-tagline').textContent = sub ? sub + '.exampro.ng' : 'School Portal';
+
+  // School identity card
+  var card = document.getElementById('school-id-card');
+  card.classList.add('show');
+  card.style.borderColor = 'rgba(' + rr + ',' + gg + ',' + bb + ',0.4)';
+  var cardLogo = document.getElementById('school-id-card-logo');
+  if (logo) {
+    cardLogo.innerHTML = '<img src="' + logo + '" alt="' + name + '">';
+  } else {
+    cardLogo.innerHTML = '<span style="font-size:1.4rem;">🏫</span>';
+  }
+  document.getElementById('school-id-card-name').textContent = name;
+  document.getElementById('school-id-card-url').textContent = sub ? sub + '.exampro.ng' : 'School Portal';
+
+  // Headline
+  document.getElementById('brand-headline').innerHTML =
+    'Welcome to<br><span id="brand-headline-accent" style="-webkit-text-fill-color:unset;background:none;color:' + primary + ';">' + name + '</span>';
+  document.getElementById('brand-desc').textContent =
+    'Sign in to access your courses, CBT tests, and learning materials at ' + name + '.';
+
+  // Feature icons tinted with school primary
+  var featHtml =
+    '<div class="brand-feat-item"><div class="feat-icon" style="background:rgba(' + rr + ',' + gg + ',' + bb + ',0.2);color:' + primary + ';"><i class="fas fa-play-circle"></i></div><span>Video courses &amp; live classes</span></div>' +
+    '<div class="brand-feat-item"><div class="feat-icon" style="background:rgba(' + rr + ',' + gg + ',' + bb + ',0.2);color:' + primary + ';"><i class="fas fa-brain"></i></div><span>CBT practice &amp; past questions</span></div>' +
+    '<div class="brand-feat-item"><div class="feat-icon" style="background:rgba(' + rr + ',' + gg + ',' + bb + ',0.2);color:' + primary + ';"><i class="fas fa-medal"></i></div><span>Earn certificates on completion</span></div>';
+  document.getElementById('brand-feat').innerHTML = featHtml;
+  document.getElementById('brand-foot').textContent = '© 2025 ' + name + ' · Powered by ExamPro';
+
+  // ── RIGHT PANEL TRANSFORMS ───────────────────────────────────────────
+  // School badge
+  var badge = document.getElementById('school-badge');
+  badge.classList.add('show');
+  badge.style.borderColor = 'rgba(' + rr + ',' + gg + ',' + bb + ',0.35)';
+  badge.style.background  = 'rgba(' + rr + ',' + gg + ',' + bb + ',0.07)';
+  var badgeLogo = document.getElementById('school-badge-logo');
+  if (logo) {
+    badgeLogo.innerHTML = '<img src="' + logo + '" alt="' + name + '" style="width:100%;height:100%;object-fit:cover;border-radius:7px;">';
+  } else {
+    badgeLogo.innerHTML = '<span style="font-size:1.1rem;">🏫</span>';
+    badgeLogo.style.background = 'rgba(' + rr + ',' + gg + ',' + bb + ',0.15)';
+  }
+  document.getElementById('school-badge-name').textContent = name;
+
+  // Show "Switch" link only when school came from session (not explicit URL param)
+  if (!urlSchool) {
+    var switchLink = document.getElementById('not-your-school-link');
+    if (switchLink) switchLink.style.display = 'inline';
+  }
+
+  // Heading & sub
+  document.getElementById('login-heading').textContent = 'Login to ' + name + ' 👋';
+  document.getElementById('login-subheading').innerHTML =
+    'Enter your credentials for <strong style="color:' + primary + ';">' + name + '</strong>';
+
+  // Submit button text
+  document.getElementById('loginBtnText').textContent = 'Sign in to ' + name;
+
+  // Register link
+  document.getElementById('registerLink').href = '/register?school=' + sub;
+  document.getElementById('registerLinkText').textContent = 'Create Account at ' + name;
+
+  // Forgot password link
+  document.getElementById('forgotLink').href = '/forgot-password?school=' + sub;
+
+  // Page title + tab
+  document.title = 'Login — ' + name;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BOOT — resolve school then fetch branding
+// ─────────────────────────────────────────────────────────────────────────────
+if (schoolParam) {
+  // Persist so logout can navigate back here
+  sessionStorage.setItem('school_context', schoolParam);
+
+  // Update register/forgot links immediately (before API responds) to prevent dead links
+  document.getElementById('registerLink').href = '/register?school=' + schoolParam;
+  document.getElementById('forgotLink').href   = '/forgot-password?school=' + schoolParam;
+
+  // Fetch school info and apply branding
+  http.get('/institutions/public/site-by-id-subdomain/' + schoolParam)
+    .then(function(site) {
+      if (site && site.school_name) {
+        applySchoolBranding(site);
+      } else {
+        // School param invalid — clear session and treat as ExamPro login
+        sessionStorage.removeItem('school_context');
+        document.getElementById('login-heading').textContent = 'Welcome back 👋';
+        document.getElementById('login-subheading').innerHTML = 'Sign in to your <strong>ExamPro</strong> account';
+      }
+    })
+    .catch(function() {});
+} else {
+  // No school context — pure ExamPro login
+  sessionStorage.removeItem('school_context');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUTO-REDIRECT if already logged in
+// ─────────────────────────────────────────────────────────────────────────────
+(function() {
+  if (!Auth.isLoggedIn()) return;
+  var user = Auth.getUser();
+  if (!user) return;
+  if (!schoolParam) {
+    window.location.href = Auth.getDashboardUrl();
+    return;
+  }
+  // Logged in AND school param — make sure they belong to this school
+  http.get('/institutions/public/site-by-id-subdomain/' + schoolParam)
+    .then(function(site) {
+      if (!site || !site.id) return;
+      if (user.site_id === site.id || user.role_id === 2 || user.role_id === 4) {
+        window.location.href = Auth.getDashboardUrl();
+      }
+    }).catch(function(){});
+})();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+var pendingEmail = '';
+
+function togglePwd() {
+  var p = document.getElementById('password');
+  var icon = document.getElementById('eye-icon');
+  p.type = p.type === 'password' ? 'text' : 'password';
+  icon.className = p.type === 'text' ? 'fas fa-eye-slash' : 'fas fa-eye';
+}
+
+function showAlert(msg, type) {
+  document.getElementById('alertBox').innerHTML =
+    '<div class="alert alert-' + (type || 'error') + '" style="margin-bottom:14px;">' + msg + '</div>';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOGIN SUBMIT
+// ─────────────────────────────────────────────────────────────────────────────
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  var btn   = document.getElementById('loginBtn');
+  var email = document.getElementById('email').value.trim();
+  var pass  = document.getElementById('password').value;
+  if (!email || !pass) { showAlert('Please enter your email and password.'); return; }
+  document.getElementById('alertBox').innerHTML = '';
+  setLoading(btn, true);
+
+  var data = await http.post('/auth/login', { email: email, password: pass, school: schoolParam || null });
+  setLoading(btn, false);
+
+  if (data && data.ok) {
+    localStorage.setItem('ep_token', data.token);
+    Auth.saveUser(data.user);
+    // Keep school context alive so that logout routes back here
+    if (schoolParam) sessionStorage.setItem('school_context', schoolParam);
+    Toast.success('Login successful! Redirecting...');
+    setTimeout(function() {
+      var redirect = urlParams.get('redirect');
+      window.location.href = redirect || Auth.getDashboardUrl();
+    }, 900);
+  } else if (data && data.needsLoginOtp) {
+    pendingEmail = data.email || email;
+    document.getElementById('loginOtpEmail').textContent = pendingEmail;
+    Modal.open('loginOtpModal');
+  } else if (data && data.needsVerification) {
+    pendingEmail = data.email || email;
+    document.getElementById('otpEmail').textContent = pendingEmail;
+    Modal.open('otpModal');
+  } else {
+    showAlert((data && data.message) || 'Login failed. Check your credentials and try again.');
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OTP — email verification after registration
+// ─────────────────────────────────────────────────────────────────────────────
+async function verifyOTP() {
+  var btn = document.getElementById('verifyBtn');
+  setLoading(btn, true);
+  var data = await http.post('/auth/verify-otp', {
+    email: pendingEmail,
+    otp: document.getElementById('otpInput').value,
+    school: schoolParam || null
+  });
+  setLoading(btn, false);
+  if (data && data.ok) {
+    Modal.close('otpModal');
+    Toast.success('Email verified! You can now login.');
+  } else {
+    document.getElementById('otpAlert').innerHTML =
+      '<div class="alert alert-error">' + ((data && data.message) || 'Invalid code') + '</div>';
+  }
+}
+
+async function resendOTP() {
+  var data = await http.post('/auth/resend-otp', { email: pendingEmail, school: schoolParam || null });
+  if (data && data.ok) Toast.success('New code sent!');
+  else Toast.error((data && data.message) || 'Failed to resend code');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOGIN OTP — 2FA
+// ─────────────────────────────────────────────────────────────────────────────
+async function verifyLoginOTP() {
+  var btn = document.getElementById('verifyLoginBtn');
+  setLoading(btn, true);
+  var data = await http.post('/auth/verify-login-otp', {
+    email: pendingEmail,
+    otp: document.getElementById('loginOtpInput').value
+  });
+  setLoading(btn, false);
+  if (data && data.token) {
+    localStorage.setItem('ep_token', data.token);
+    Auth.saveUser(data.user);
+    if (schoolParam) sessionStorage.setItem('school_context', schoolParam);
+    window.location.href = Auth.getDashboardUrl();
+  } else {
+    document.getElementById('loginOtpAlert').innerHTML =
+      '<div class="alert alert-error">' + ((data && data.message) || 'Invalid code') + '</div>';
+  }
+}
+</script>
+</body>
+</html>

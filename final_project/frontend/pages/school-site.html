@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>School Site</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --p: #2563eb;
+  --a: #10b981;
+  --bg: #0f172a;
+  --font: 'DM Sans', system-ui, sans-serif;
+}
+
+body { font-family: var(--font); background: var(--bg); color: #fff; min-height: 100vh; overflow-x: hidden; }
+
+/* ── NAV ── */
+.site-nav {
+  height: 68px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px;
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(15,23,42,0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  transition: box-shadow .3s;
+}
+.site-nav.scrolled { box-shadow: 0 4px 30px rgba(0,0,0,0.3); }
+.nav-logo { font-weight: 900; font-size: 1.2rem; letter-spacing: -.02em; }
+.nav-links { display: flex; align-items: center; gap: 28px; }
+.nav-links a { color: rgba(255,255,255,0.65); text-decoration: none; font-size: .875rem; font-weight: 500; transition: color .15s; }
+.nav-links a:hover { color: #fff; }
+.nav-cta { display: flex; align-items: center; gap: 10px; }
+.btn-nav { padding: 8px 20px; border-radius: 8px; font-size: .84rem; font-weight: 600; text-decoration: none; cursor: pointer; border: none; transition: all .18s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-nav-outline { border: 1.5px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.8); background: transparent; }
+.btn-nav-outline:hover { border-color: rgba(255,255,255,0.45); color: #fff; background: rgba(255,255,255,0.04); }
+.btn-nav-primary { color: #fff; font-weight: 700; }
+.nav-hamburger { display: none; background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer; padding: 4px 8px; }
+
+/* ── HERO ── */
+.site-hero {
+  min-height: 92vh; display: flex; align-items: center; justify-content: center;
+  text-align: center; padding: 100px 40px 60px;
+  position: relative; overflow: hidden;
+}
+.hero-bg-orb {
+  position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; opacity: .5;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 16px; border-radius: 99px;
+  font-size: .78rem; font-weight: 700; letter-spacing: .03em;
+  margin-bottom: 22px; border: 1px solid; backdrop-filter: blur(10px);
+}
+.hero-eyebrow i { font-size: .75rem; }
+.hero-h1 { font-size: clamp(2.2rem,5.5vw,3.8rem); font-weight: 900; line-height: 1.1; letter-spacing: -.03em; margin-bottom: 18px; }
+.hero-h1 span { -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero-p { font-size: 1.05rem; color: rgba(255,255,255,0.65); max-width: 520px; margin: 0 auto 36px; line-height: 1.75; }
+.hero-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.btn-hero-primary {
+  padding: 14px 36px; border-radius: 12px; font-weight: 800; font-size: .95rem;
+  text-decoration: none; color: #fff; display: inline-flex; align-items: center; gap: 8px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  transition: transform .18s, box-shadow .18s;
+}
+.btn-hero-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(0,0,0,0.4); }
+.btn-hero-outline {
+  padding: 14px 36px; border-radius: 12px; font-weight: 600; font-size: .95rem;
+  text-decoration: none; color: rgba(255,255,255,0.85);
+  border: 2px solid rgba(255,255,255,0.15);
+  display: inline-flex; align-items: center; gap: 8px;
+  backdrop-filter: blur(8px);
+  transition: all .18s;
+}
+.btn-hero-outline:hover { border-color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.05); color: #fff; }
+
+/* ── STATS BAND ── */
+.stats-band {
+  padding: 52px 40px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.stats-inner { display: grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap: 28px; text-align: center; max-width: 800px; margin: 0 auto; }
+.stat-num { font-size: 2.4rem; font-weight: 900; letter-spacing: -.03em; line-height: 1; margin-bottom: 4px; }
+.stat-lbl { font-size: .82rem; color: rgba(255,255,255,0.5); font-weight: 500; }
+
+/* ── SECTION ── */
+.site-section { padding: 72px 40px; max-width: 1120px; margin: 0 auto; }
+.section-head { text-align: center; margin-bottom: 44px; }
+.section-eyebrow {
+  display: inline-block; font-size: .72rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .1em; padding: 5px 14px; border-radius: 99px; margin-bottom: 12px;
+  border: 1px solid;
+}
+.section-head h2 { font-size: clamp(1.6rem,3vw,2.2rem); font-weight: 900; letter-spacing: -.02em; margin-bottom: 10px; }
+.section-head p { font-size: .95rem; color: rgba(255,255,255,0.5); max-width: 480px; margin: 0 auto; }
+
+/* ── COURSE CARDS ── */
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 22px; }
+.site-card {
+  border-radius: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+  transition: transform .2s, box-shadow .2s, border-color .2s;
+}
+.site-card:hover { transform: translateY(-5px); box-shadow: 0 18px 48px rgba(0,0,0,0.35); border-color: rgba(255,255,255,0.14); }
+.card-thumb {
+  height: 140px; display: flex; align-items: center; justify-content: center;
+  font-size: 2.6rem; position: relative; overflow: hidden;
+}
+.card-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.card-body { padding: 18px 18px 16px; }
+.card-badge {
+  display: inline-block; font-size: .65rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
+  padding: 3px 8px; border-radius: 4px; margin-bottom: 8px;
+}
+.card-title { font-weight: 700; font-size: .92rem; margin-bottom: 5px; line-height: 1.35; }
+.card-meta { font-size: .76rem; color: rgba(255,255,255,0.45); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+.card-meta i { font-size: .7rem; }
+.card-footer { display: flex; justify-content: space-between; align-items: center; }
+.card-price { font-weight: 900; font-size: 1.05rem; }
+.btn-card { padding: 7px 16px; border-radius: 8px; font-size: .8rem; font-weight: 700; text-decoration: none; color: #fff; border: none; cursor: pointer; transition: opacity .15s; display: inline-flex; align-items: center; gap: 5px; }
+.btn-card:hover { opacity: .88; }
+
+/* ── FEATURES ── */
+.features-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap: 20px; }
+.feature-card {
+  padding: 24px; border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  backdrop-filter: blur(10px);
+  transition: transform .2s, border-color .2s;
+}
+.feature-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.13); }
+.feature-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin-bottom: 14px; }
+.feature-title { font-weight: 700; font-size: .92rem; margin-bottom: 6px; }
+.feature-desc { font-size: .8rem; color: rgba(255,255,255,0.5); line-height: 1.6; }
+
+/* ── TESTIMONIALS ── */
+.testi-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 20px; }
+.testi-card {
+  padding: 22px; border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  backdrop-filter: blur(10px);
+}
+.testi-stars { color: #F59E0B; font-size: .85rem; margin-bottom: 10px; letter-spacing: 2px; }
+.testi-text { font-size: .86rem; color: rgba(255,255,255,0.7); line-height: 1.65; margin-bottom: 14px; }
+.testi-author { display: flex; align-items: center; gap: 10px; }
+.testi-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .85rem; color: #fff; flex-shrink: 0; }
+.testi-name { font-weight: 700; font-size: .82rem; }
+.testi-role { font-size: .72rem; color: rgba(255,255,255,0.45); }
+
+/* ── CTA BAND ── */
+.cta-band {
+  margin: 0 40px 80px; border-radius: 20px;
+  padding: 60px 40px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.cta-band h2 { font-size: clamp(1.5rem,3vw,2rem); font-weight: 900; margin-bottom: 10px; }
+.cta-band p { font-size: .95rem; opacity: .75; margin-bottom: 28px; }
+
+/* ── FOOTER ── */
+.site-footer {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 32px 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 14px;
+}
+.footer-logo { font-weight: 800; font-size: 1.05rem; }
+.footer-links { display: flex; gap: 20px; }
+.footer-links a { font-size: .82rem; color: rgba(255,255,255,0.45); text-decoration: none; transition: color .15s; }
+.footer-links a:hover { color: rgba(255,255,255,0.75); }
+.footer-powered { font-size: .78rem; color: rgba(255,255,255,0.3); }
+
+/* ── EDIT BAR (admin) ── */
+.edit-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(91,79,207,0.97); backdrop-filter: blur(12px);
+  padding: 12px 28px; display: flex; align-items: center; justify-content: space-between;
+  z-index: 999; border-top: 1px solid rgba(255,255,255,0.15);
+}
+
+/* ── MOBILE NAV ── */
+.mobile-menu {
+  display: none; position: fixed; inset: 0; z-index: 300;
+  background: rgba(10,10,20,0.97); backdrop-filter: blur(20px);
+  flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+}
+.mobile-menu.open { display: flex; }
+.mobile-menu a { font-size: 1.2rem; font-weight: 700; color: rgba(255,255,255,0.8); text-decoration: none; padding: 12px 32px; border-radius: 10px; transition: background .15s; width: 250px; text-align: center; }
+.mobile-menu a:hover { background: rgba(255,255,255,0.07); color: #fff; }
+.mobile-close { position: absolute; top: 20px; right: 24px; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+
+@media(max-width:768px){
+  .site-nav { padding: 0 20px; }
+  .nav-links, .nav-cta { display: none; }
+  .nav-hamburger { display: flex; }
+  .site-hero { padding: 80px 24px 40px; }
+  .site-section { padding: 52px 20px; }
+  .cta-band { margin: 0 20px 60px; padding: 40px 24px; }
+  .site-footer { padding: 24px 20px; flex-direction: column; text-align: center; }
+}
+
+/* Loading */
+.site-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 16px; }
+.site-loading .spin { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--p); border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" onclick="document.getElementById('mobileMenu').classList.remove('open')"><i class="fas fa-times"></i></button>
+  <a href="#courses" onclick="document.getElementById('mobileMenu').classList.remove('open')"><i class="fas fa-play-circle"></i> Courses</a>
+  <a href="#pq" onclick="document.getElementById('mobileMenu').classList.remove('open')"><i class="fas fa-file-alt"></i> Past Questions</a>
+  <a href="#about" onclick="document.getElementById('mobileMenu').classList.remove('open')"><i class="fas fa-info-circle"></i> About</a>
+  <div id="mobile-auth-links" style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:10px;width:250px;"></div>
+</div>
+
+<div id="site-root">
+  <div class="site-loading"><div class="spin"></div><div style="color:rgba(255,255,255,.4);font-size:.88rem;">Loading school site...</div></div>
+</div>
+
+<script>
+// Pull subdomain from URL path: /site/:subdomain
+const subdomain = window.location.pathname.split('/')[2];
+
+// Minimal auth check (no app.js dependency for public pages)
+function getSiteToken() { return sessionStorage.getItem('ep_token') || localStorage.getItem('ep_token'); }
+function getSiteUser() { try { const u = sessionStorage.getItem('ep_user') || localStorage.getItem('ep_user'); return JSON.parse(u); } catch(e) { return null; } }
+function isLoggedIn() { return !!getSiteToken() && !!getSiteUser(); }
+function getDashUrl() {
+  const u = getSiteUser();
+  if (!u) return '/login';
+  if (u.role_id === 4) return '/super-admin';
+  if (u.role_id === 2) return '/admin';
+  if (u.role_id === 3) return '/instructor';
+  return '/dashboard';
+}
+
+async function apiGet(url) {
+  try {
+    const token = getSiteToken();
+    const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+    const r = await fetch('/api' + url, { headers });
+    return await r.json();
+  } catch(e) { return null; }
+}
+
+async function loadSite() {
+  const data = await apiGet('/institutions/public/site/' + subdomain);
+  if (!data || data.message) {
+    document.getElementById('site-root').innerHTML = `
+      <div style="text-align:center;padding:100px 24px;">
+        <i class="fas fa-exclamation-triangle" style="font-size:3rem;color:rgba(239,68,68,.5);margin-bottom:18px;display:block;"></i>
+        <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:10px;">Site Not Found</h2>
+        <p style="color:rgba(255,255,255,.5);margin-bottom:24px;">This school site doesn't exist or is not active yet.</p>
+        <a href="/home" style="background:#7C3AED;color:#fff;padding:11px 28px;border-radius:9px;text-decoration:none;font-weight:700;">← Back to ExamPro</a>
+      </div>`;
+    return;
+  }
+
+  // ── Try page builder published output first ─────────────────────────────
+  try {
+    const renderResp = await fetch('/api/render/page?subdomain=' + subdomain + '&page=home');
+    if (renderResp.ok) {
+      const html = await renderResp.text();
+      if (html && html.length > 500 && !html.includes('data-placeholder="true"')) {
+        document.documentElement.style.setProperty('--p', data.primary_color || '#7C3AED');
+        document.documentElement.style.setProperty('--a', data.accent_color  || '#06D6A0');
+        document.body.style.background = data.bg_color || '#0f172a';
+        document.title = (data.school_name || 'School') + ' — Powered by ExamPro';
+        document.getElementById('site-root').innerHTML = html;
+        setupAdminBar(data);
+        loadStats(subdomain);
+        loadCourses(subdomain);
+        loadPQ(subdomain);
+        return;
+      }
+    }
+  } catch(_) { /* fallthrough to default */ }
+
+  renderSite(data);
+
+  setupAdminBar(data);
+}
+
+function setupAdminBar(data) {
+  const user = getSiteUser();
+  if (user && user.role_id === 2) {
+    const bar = document.createElement('div');
+    bar.className = 'edit-bar';
+    bar.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;color:#fff;">
+        <i class="fas fa-eye" style="opacity:.7;"></i>
+        <span style="font-weight:700;font-size:.9rem;">Viewing your school site</span>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <a href="/admin" style="background:rgba(255,255,255,0.15);color:#fff;padding:7px 16px;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;gap:6px;">
+          <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+        <a href="#" onclick="goToPageBuilder()" style="background:#fff;color:#5B4FCF;padding:7px 16px;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:700;display:flex;align-items:center;gap:6px;">
+          <i class="fas fa-pencil-alt"></i> Edit Site
+        </a>
+      </div>`;
+    document.body.appendChild(bar);
+    document.body.style.paddingBottom = '60px';
+  }
+}
+
+function goToPageBuilder() { window.location.href = '/admin?tab=page-builder'; }
+
+function renderSite(d) {
+  const p    = d.primary_color  || '#7C3AED';
+  const a    = d.accent_color   || '#06D6A0';
+  const bg   = d.bg_color       || '#0f172a';
+  const font = d.font_family    || 'DM Sans';
+
+  // Apply CSS variables
+  document.documentElement.style.setProperty('--p', p);
+  document.documentElement.style.setProperty('--a', a);
+  document.documentElement.style.setProperty('--bg', bg);
+  document.body.style.background = bg;
+  document.body.style.fontFamily = font + ',system-ui,sans-serif';
+  document.title = d.school_name + ' — Powered by ExamPro';
+
+  // ── Set AI Widget context with this school's info ──
+  window.__AI_CONTEXT = {
+    assistantName: d.school_name + ' AI',
+    assistantSub: 'Ask about courses & more',
+    welcomeMsg: '👋 Hi! I\'m the ' + d.school_name + ' AI assistant. Ask me about our courses, past questions, enrollment, or anything else!',
+    quickBtns: ['What courses are available?', 'How do I enroll?', 'What past questions do you have?', 'How do I get a certificate?'],
+    primaryColor: d.primary_color || '#7C3AED',
+    accentColor:  d.accent_color  || '#06D6A0',
+    systemPrompt: 'You are a helpful AI assistant for ' + d.school_name + ', an online school powered by ExamPro LMS. ' +
+      'The school offers online courses and past exam questions. Students can enroll, learn through video lessons, ' +
+      'take quizzes, and earn certificates. ' +
+      (d.description ? 'About this school: ' + d.description + '. ' : '') +
+      'Be friendly, concise, and encourage visitors to register or login if relevant. ' +
+      'The school site is at /site/' + d.subdomain + '. ' +
+      'Registration link: /register?school=' + d.subdomain + '. ' +
+      'Login link: /login?school=' + d.subdomain + '.'
+  };
+  // Apply colors to AI widget
+  if (window.__AI_CONTEXT.primaryColor) document.documentElement.style.setProperty('--ai-p', window.__AI_CONTEXT.primaryColor);
+  if (window.__AI_CONTEXT.accentColor)  document.documentElement.style.setProperty('--ai-a', window.__AI_CONTEXT.accentColor);
+  // Update widget header name if already rendered
+  const aiNameEl = document.getElementById('ai-head-name');
+  const aiSubEl  = document.getElementById('ai-head-sub');
+  const aiWelEl  = document.getElementById('ai-welcome');
+  if (aiNameEl) aiNameEl.textContent = window.__AI_CONTEXT.assistantName;
+  if (aiSubEl)  aiSubEl.textContent  = window.__AI_CONTEXT.assistantSub;
+  if (aiWelEl)  aiWelEl.textContent  = window.__AI_CONTEXT.welcomeMsg;
+  // Update quick buttons
+  const qb = document.getElementById('ai-quick-btns');
+  if (qb) qb.innerHTML = window.__AI_CONTEXT.quickBtns.map(function(q){
+    return '<button class="ai-qbtn" onclick="sendAIMsg('+JSON.stringify(q)+')">'+q+'</button>';
+  }).join('');
+
+  const user = getSiteUser();
+  const loggedIn = isLoggedIn();
+  const belongsHere = loggedIn && user && (user.site_id === d.id || (user.role_id === 2 && d.user_id === user.id));
+  const isDark = true; // school sites are dark by default
+
+  const gradStyle = `background:linear-gradient(135deg,${p},${a});`;
+  const pAlpha = (opacity) => p + Math.round(opacity * 255).toString(16).padStart(2,'0');
+
+  // Auth buttons
+  const authBtns = belongsHere
+    ? `<a href="${getDashUrl()}" class="btn-nav btn-nav-primary" style="${gradStyle}"><i class="fas fa-tachometer-alt"></i> My Dashboard</a>`
+    : `<a href="/login?school=${d.subdomain}" class="btn-nav btn-nav-outline">Login</a>
+       <a href="/register?school=${d.subdomain}" class="btn-nav btn-nav-primary" style="${gradStyle}"><i class="fas fa-user-plus"></i> Register</a>`;
+
+  const mobileAuthBtns = belongsHere
+    ? `<a href="${getDashUrl()}" style="background:${p};color:#fff;padding:10px 32px;border-radius:9px;text-decoration:none;font-weight:700;text-align:center;"><i class="fas fa-tachometer-alt"></i> My Dashboard</a>`
+    : `<a href="/login?school=${d.subdomain}" style="border:1.5px solid rgba(255,255,255,.25);color:#fff;padding:10px 32px;border-radius:9px;text-decoration:none;font-weight:600;text-align:center;">Login</a>
+       <a href="/register?school=${d.subdomain}" style="background:${p};color:#fff;padding:10px 32px;border-radius:9px;text-decoration:none;font-weight:700;text-align:center;"><i class="fas fa-user-plus"></i> Register Free</a>`;
+
+  // Hero CTA
+  const heroCTA = belongsHere
+    ? `<a href="${getDashUrl()}" class="btn-hero-primary" style="${gradStyle}"><i class="fas fa-tachometer-alt"></i> Go to Dashboard</a>`
+    : `<a href="/register?school=${d.subdomain}" class="btn-hero-primary" style="${gradStyle}"><i class="fas fa-rocket"></i> Get Started Free</a>`;
+
+  document.getElementById('site-root').innerHTML = `
+    <!-- NAV -->
+    <nav class="site-nav" id="main-nav">
+      <div class="nav-logo" style="background:${gradStyle};-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${d.school_name}</div>
+      <div class="nav-links">
+        <a href="#courses"><i class="fas fa-play-circle" style="margin-right:4px;font-size:.8rem;"></i>Courses</a>
+        <a href="#pq"><i class="fas fa-file-alt" style="margin-right:4px;font-size:.8rem;"></i>Past Questions</a>
+        <a href="#about"><i class="fas fa-info-circle" style="margin-right:4px;font-size:.8rem;"></i>About</a>
+      </div>
+      <div class="nav-cta">${authBtns}</div>
+      <button class="nav-hamburger" onclick="document.getElementById('mobileMenu').classList.add('open')"><i class="fas fa-bars"></i></button>
+    </nav>
+
+    <!-- HERO -->
+    <div class="site-hero" id="hero">
+      <div class="hero-bg-orb" style="width:600px;height:600px;background:${p};opacity:.12;top:-100px;left:-100px;"></div>
+      <div class="hero-bg-orb" style="width:400px;height:400px;background:${a};opacity:.08;bottom:-50px;right:-80px;"></div>
+      <div style="position:relative;z-index:1;max-width:660px;">
+        <div class="hero-eyebrow" style="background:${p}18;border-color:${p}44;color:${p};">
+          <i class="fas fa-graduation-cap"></i> ${d.school_name}
+        </div>
+        <h1 class="hero-h1">
+          ${(d.hero_title || 'Quality Education for<br/>Every Student').replace(/<br\/?>/g,'<br/>')}
+        </h1>
+        <p class="hero-p">${d.hero_subtitle || 'Courses, past questions, and live classes — everything you need to pass your exams.'}</p>
+        <div class="hero-btns">
+          ${heroCTA}
+          <a href="#courses" class="btn-hero-outline"><i class="fas fa-book-open"></i> Browse Courses</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS BAND -->
+    <div class="stats-band" style="background:${p}0d;border-top-color:${p}18;border-bottom-color:${p}18;">
+      <div class="stats-inner">
+        <div>
+          <div class="stat-num" style="color:${p};" id="stat-students">—</div>
+          <div class="stat-lbl"><i class="fas fa-users" style="margin-right:5px;font-size:.75rem;"></i>Students</div>
+        </div>
+        <div>
+          <div class="stat-num" style="color:${a};" id="stat-courses-count">—</div>
+          <div class="stat-lbl"><i class="fas fa-play-circle" style="margin-right:5px;font-size:.75rem;"></i>Courses</div>
+        </div>
+        <div>
+          <div class="stat-num" style="color:${p};" id="stat-instructors">—</div>
+          <div class="stat-lbl"><i class="fas fa-chalkboard-teacher" style="margin-right:5px;font-size:.75rem;"></i>Instructors</div>
+        </div>
+        <div>
+          <div class="stat-num" style="color:${a};">98%</div>
+          <div class="stat-lbl"><i class="fas fa-chart-line" style="margin-right:5px;font-size:.75rem;"></i>Pass Rate</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COURSES -->
+    <div class="site-section" id="courses">
+      <div class="section-head">
+        <div class="section-eyebrow" style="background:${p}15;border-color:${p}35;color:${p};">
+          <i class="fas fa-play-circle" style="margin-right:6px;"></i>Our Courses
+        </div>
+        <h2>${d.courses_title || 'Learn from Expert Instructors'}</h2>
+        <p>Carefully crafted courses to help you achieve your academic goals</p>
+      </div>
+      <!-- Course Filters -->
+      <div id="course-filters" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px;padding:16px 20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;">
+        <div style="position:relative;flex:2;min-width:180px;">
+          <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.3);font-size:.82rem;"></i>
+          <input id="course-search" type="text" placeholder="Search courses..." oninput="filterCourses()" style="width:100%;padding:9px 12px 9px 34px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-size:.84rem;box-sizing:border-box;outline:none;" />
+        </div>
+        <select id="course-level" onchange="filterCourses()" style="padding:9px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-size:.84rem;min-width:140px;">
+          <option value="">All Levels</option>
+          <option value="beginner">Beginner</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="advanced">Advanced</option>
+        </select>
+        <input id="course-category" type="text" placeholder="Category..." oninput="filterCourses()" style="padding:9px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-size:.84rem;min-width:140px;border-color:rgba(255,255,255,.1);outline:none;" />
+        <select id="course-sort" onchange="filterCourses()" style="padding:9px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-size:.84rem;min-width:140px;">
+          <option value="newest">Newest First</option>
+          <option value="price_asc">Price: Low→High</option>
+          <option value="price_desc">Price: High→Low</option>
+          <option value="popular">Most Popular</option>
+          <option value="free">Free Only</option>
+        </select>
+        <button onclick="clearCourseFilters()" style="padding:9px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.5);font-size:.8rem;cursor:pointer;white-space:nowrap;">✕ Clear</button>
+      </div>
+      <div id="course-results-count" style="font-size:.78rem;color:rgba(255,255,255,.35);margin-bottom:14px;"></div>
+      <div class="cards-grid" id="courses-grid">
+        ${skeletonCards(4, p)}
+      </div>
+      <div style="text-align:center;margin-top:32px;display:none;" id="all-courses-btn">
+        <a href="#" onclick="showAllCourses()" style="border:1.5px solid ${p}44;color:rgba(255,255,255,.7);padding:11px 28px;border-radius:9px;text-decoration:none;font-size:.88rem;font-weight:600;transition:all .2s;" onmouseover="this.style.borderColor='${p}';this.style.color='#fff';" onmouseout="this.style.borderColor='${p}44';this.style.color='rgba(255,255,255,.7)';">
+          <i class="fas fa-arrow-right" style="margin-right:6px;"></i>View All Courses
+        </a>
+      </div>
+    </div>
+
+    <!-- WHY US / FEATURES -->
+    <div style="background:${p}07;border-top:1px solid ${p}12;border-bottom:1px solid ${p}12;padding:72px 40px;">
+      <div style="max-width:1120px;margin:0 auto;">
+        <div class="section-head">
+          <div class="section-eyebrow" style="background:${a}15;border-color:${a}35;color:${a};">
+            <i class="fas fa-star" style="margin-right:6px;"></i>Why Choose Us
+          </div>
+          <h2>Everything You Need to Succeed</h2>
+          <p>A complete learning platform built for Nigerian students</p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon" style="background:${p}18;color:${p};"><i class="fas fa-video"></i></div>
+            <div class="feature-title">HD Video Lessons</div>
+            <div class="feature-desc">High-quality video lectures from expert instructors, available 24/7 on any device.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon" style="background:${a}18;color:${a};"><i class="fas fa-file-pdf"></i></div>
+            <div class="feature-title">Past Question Bank</div>
+            <div class="feature-desc">Access thousands of past exam questions with detailed solutions and explanations.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon" style="background:${p}18;color:${p};"><i class="fas fa-certificate"></i></div>
+            <div class="feature-title">Certificates</div>
+            <div class="feature-desc">Earn verified certificates upon course completion to boost your academic profile.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon" style="background:${a}18;color:${a};"><i class="fas fa-broadcast-tower"></i></div>
+            <div class="feature-title">Live Classes</div>
+            <div class="feature-desc">Attend live lectures, ask questions in real-time, and never miss a lesson.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAST QUESTIONS -->
+    <div class="site-section" id="pq">
+      <div class="section-head">
+        <div class="section-eyebrow" style="background:${a}15;border-color:${a}35;color:${a};">
+          <i class="fas fa-file-alt" style="margin-right:6px;"></i>Past Questions
+        </div>
+        <h2>${d.pq_title || 'Practice with Real Exam Papers'}</h2>
+        <p>WAEC, NECO, JAMB, and institutional past questions</p>
+      </div>
+      <!-- PQ Filters -->
+      <div id="pq-filters" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px;padding:16px 20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;">
+        <div style="position:relative;flex:2;min-width:180px;">
+          <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.3);font-size:.82rem;"></i>
+          <input id="pq-search" type="text" placeholder="Search past questions..." oninput="filterPQ()" style="width:100%;padding:9px 12px 9px 34px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-size:.84rem;box-sizing:border-box;outline:none;" />
+        </div>
+        <select id="pq-exam-type" onchange="filterPQ()" style="padding:9px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-size:.84rem;min-width:140px;">
+          <option value="">All Exam Types</option>
+          <option value="WAEC">WAEC</option>
+          <option value="NECO">NECO</option>
+          <option value="JAMB">JAMB</option>
+          <option value="POST-UTME">Post-UTME</option>
+          <option value="GCE">GCE</option>
+        </select>
+        <select id="pq-year" onchange="filterPQ()" style="padding:9px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-size:.84rem;min-width:120px;">
+          <option value="">All Years</option>
+        </select>
+        <input id="pq-subject" type="text" placeholder="Subject..." oninput="filterPQ()" style="padding:9px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-size:.84rem;min-width:140px;outline:none;" />
+        <select id="pq-sort" onchange="filterPQ()" style="padding:9px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-size:.84rem;min-width:140px;">
+          <option value="newest">Newest First</option>
+          <option value="year_desc">Year: Newest</option>
+          <option value="year_asc">Year: Oldest</option>
+          <option value="price_asc">Price: Low→High</option>
+          <option value="free">Free Only</option>
+        </select>
+        <button onclick="clearPQFilters()" style="padding:9px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.5);font-size:.8rem;cursor:pointer;white-space:nowrap;">✕ Clear</button>
+      </div>
+      <div id="pq-results-count" style="font-size:.78rem;color:rgba(255,255,255,.35);margin-bottom:14px;"></div>
+      <div class="cards-grid" id="pq-grid">
+        ${skeletonCards(3, a)}
+      </div>
+      <div style="text-align:center;margin-top:28px;display:none;" id="all-pq-btn">
+        <a href="#" onclick="showAllPQ()" style="border:1.5px solid ${a}44;color:rgba(255,255,255,.7);padding:11px 28px;border-radius:9px;text-decoration:none;font-size:.88rem;font-weight:600;">
+          <i class="fas fa-arrow-right" style="margin-right:6px;"></i>View All Past Questions
+        </a>
+      </div>
+    </div>
+
+    <!-- ABOUT -->
+    <div class="site-section" id="about">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;">
+        <div>
+          <div class="section-eyebrow" style="background:${p}15;border-color:${p}35;color:${p};margin-bottom:14px;">
+            <i class="fas fa-school" style="margin-right:6px;"></i>About ${d.school_name}
+          </div>
+          <h2 style="font-size:clamp(1.6rem,2.8vw,2rem);font-weight:900;margin-bottom:14px;letter-spacing:-.02em;">${d.about_title || 'Committed to Academic Excellence'}</h2>
+          <p style="color:rgba(255,255,255,.6);line-height:1.75;margin-bottom:20px;">${d.about_text || 'We provide quality education and exam preparation resources to help students achieve their academic dreams.'}</p>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;">
+            <a href="/register?school=${d.subdomain}" class="btn-card" style="${gradStyle}padding:11px 24px;border-radius:10px;font-size:.875rem;">
+              <i class="fas fa-user-plus"></i> Join Now
+            </a>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          ${[
+            {icon:'fa-users', label:'Active Students', val:'#stat-ab-students', color: p},
+            {icon:'fa-play-circle', label:'Total Courses', val:'#stat-ab-courses', color: a},
+            {icon:'fa-chalkboard-teacher', label:'Instructors', val:'#stat-ab-inst', color: p},
+            {icon:'fa-award', label:'Certificates Issued', val:'#stat-ab-certs', color: a}
+          ].map(s => `
+            <div style="background:${s.color}0d;border:1px solid ${s.color}20;border-radius:14px;padding:22px;text-align:center;">
+              <div style="width:44px;height:44px;border-radius:11px;background:${s.color}18;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;color:${s.color};font-size:1.2rem;"><i class="fas ${s.icon}"></i></div>
+              <div style="font-size:1.7rem;font-weight:900;color:${s.color};" id="${s.val.slice(1)}">—</div>
+              <div style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:3px;">${s.label}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA BAND -->
+    <div class="cta-band" style="background:linear-gradient(135deg,${p}22,${a}12);border:1px solid ${p}25;">
+      <div style="position:absolute;inset:0;background:linear-gradient(135deg,${p}18,transparent);border-radius:20px;pointer-events:none;"></div>
+      <div style="position:relative;z-index:1;">
+        <i class="fas fa-rocket" style="font-size:2.5rem;color:${p};margin-bottom:16px;display:block;"></i>
+        <h2>Ready to Start Learning?</h2>
+        <p>Join hundreds of students already learning at ${d.school_name}</p>
+        ${belongsHere
+          ? `<a href="${getDashUrl()}" class="btn-hero-primary" style="${gradStyle}display:inline-flex;"><i class="fas fa-tachometer-alt"></i> Go to Dashboard</a>`
+          : `<a href="/register?school=${d.subdomain}" class="btn-hero-primary" style="${gradStyle}display:inline-flex;"><i class="fas fa-user-plus"></i> Create Free Account</a>`
+        }
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="site-footer" style="background:${bg}cc;">
+      <div>
+        <div class="footer-logo" style="background:${gradStyle};-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:5px;">${d.school_name}</div>
+        <div class="footer-powered">Powered by <a href="/home" style="color:${p};text-decoration:none;">ExamPro</a></div>
+      </div>
+      <div class="footer-links">
+        <a href="#courses"><i class="fas fa-play-circle"></i> Courses</a>
+        <a href="#pq"><i class="fas fa-file-alt"></i> Past Questions</a>
+        <a href="/login?school=${d.subdomain}"><i class="fas fa-sign-in-alt"></i> Login</a>
+        <a href="/register?school=${d.subdomain}"><i class="fas fa-user-plus"></i> Register</a>
+      </div>
+      <div style="font-size:.76rem;color:rgba(255,255,255,.25);">&copy; ${new Date().getFullYear()} ${d.school_name}</div>
+    </footer>`;
+
+  // Update mobile auth
+  document.getElementById('mobile-auth-links').innerHTML = mobileAuthBtns;
+
+  // Sticky nav shadow on scroll
+  window.addEventListener('scroll', () => {
+    document.getElementById('main-nav')?.classList.toggle('scrolled', window.scrollY > 20);
+  });
+
+  // Load dynamic data
+  loadCourses(d, p, a, belongsHere);
+  loadPQ(d, p, a, belongsHere);
+  loadStats(d);
+}
+
+function skeletonCards(n, color) {
+  return Array(n).fill(0).map(() => `
+    <div style="border-radius:16px;background:${color}08;border:1px solid ${color}12;overflow:hidden;animation:pulse 1.6s ease-in-out infinite;">
+      <div style="height:140px;background:${color}10;"></div>
+      <div style="padding:18px;">
+        <div style="height:12px;background:rgba(255,255,255,.07);border-radius:6px;margin-bottom:8px;width:80%;"></div>
+        <div style="height:10px;background:rgba(255,255,255,.04);border-radius:6px;width:55%;"></div>
+      </div>
+    </div>`).join('');
+}
+
+// ── COURSE DATA & FILTERING ──────────────────────────────────────
+let allCoursesData = [];
+let showingAllCourses = false;
+let siteColors = { p: '#7C3AED', a: '#06D6A0' };
+let siteBelongs = false;
+let siteSubdomain = subdomain;
+
+async function loadCourses(d, p, a, belongsHere) {
+  siteColors = { p, a };
+  siteBelongs = belongsHere;
+  const data = await apiGet('/institutions/public/site/' + subdomain + '/courses');
+  allCoursesData = data || [];
+  // Populate year filter from data (courses don't have years, skip)
+  renderCourses(allCoursesData.slice(0, 12));
+  // Update stats
+  const el = document.getElementById('stat-courses-count');
+  if (el) el.textContent = allCoursesData.length + '+';
+  const el2 = document.getElementById('stat-ab-courses');
+  if (el2) el2.textContent = allCoursesData.length;
+}
+
+function filterCourses() {
+  const search = (document.getElementById('course-search')?.value || '').toLowerCase();
+  const level = document.getElementById('course-level')?.value || '';
+  const category = (document.getElementById('course-category')?.value || '').toLowerCase();
+  const sort = document.getElementById('course-sort')?.value || 'newest';
+
+  let filtered = allCoursesData.filter(c => {
+    const matchSearch = !search || c.title.toLowerCase().includes(search) || (c.description||'').toLowerCase().includes(search) || (c.instructor_name||'').toLowerCase().includes(search);
+    const matchLevel = !level || c.level === level;
+    const matchCategory = !category || (c.category||'').toLowerCase().includes(category);
+    const matchFree = sort !== 'free' || Number(c.price) === 0;
+    return matchSearch && matchLevel && matchCategory && matchFree;
+  });
+
+  if (sort === 'price_asc') filtered.sort((a,b) => Number(a.price) - Number(b.price));
+  else if (sort === 'price_desc') filtered.sort((a,b) => Number(b.price) - Number(a.price));
+  else if (sort === 'popular') filtered.sort((a,b) => (b.enrolled_count||0) - (a.enrolled_count||0));
+  else filtered.sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0));
+
+  const cnt = document.getElementById('course-results-count');
+  if (cnt) cnt.textContent = filtered.length !== allCoursesData.length ? filtered.length + ' of ' + allCoursesData.length + ' courses' : '';
+  renderCourses(showingAllCourses ? filtered : filtered.slice(0, 12));
+  const btn = document.getElementById('all-courses-btn');
+  if (btn) btn.style.display = (!showingAllCourses && filtered.length > 12) ? 'block' : 'none';
+}
+
+function clearCourseFilters() {
+  ['course-search','course-category'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  ['course-level','course-sort'].forEach(id => { const el = document.getElementById(id); if(el) el.value = el.id==='course-sort'?'newest':''; });
+  showingAllCourses = false;
+  filterCourses();
+}
+
+function showAllCourses() { showingAllCourses = true; filterCourses(); }
+
+function renderCourses(list) {
+  const { p, a } = siteColors;
+  const grid = document.getElementById('courses-grid');
+  if (!grid) return;
+  if (!list.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:rgba(255,255,255,.35);"><i class="fas fa-search" style="font-size:2rem;margin-bottom:12px;display:block;opacity:.3;"></i>No courses match your filters</div>';
+    return;
+  }
+  grid.innerHTML = list.map(c => `
+    <div class="site-card" onclick="window.location.href='/site/${subdomain}/course/${c.id}'" style="cursor:pointer;">
+      <div class="card-thumb" style="background:linear-gradient(135deg,${p}22,${a}14);">
+        ${c.thumbnail ? `<img src="${c.thumbnail}" alt="${c.title}">` : `<i class="fas fa-play-circle" style="font-size:2.4rem;color:${p};opacity:.6;"></i>`}
+      </div>
+      <div class="card-body">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+          <div class="card-badge" style="background:${p}15;color:${p};border:1px solid ${p}30;">${c.level || 'All Levels'}</div>
+          ${c.category ? `<div class="card-badge" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1);font-size:.65rem;">${c.category}</div>` : ''}
+        </div>
+        <div class="card-title">${c.title}</div>
+        <div class="card-meta">
+          <span><i class="fas fa-layer-group"></i> ${c.total_lessons || 0} lessons</span>
+          ${c.instructor_name ? `<span><i class="fas fa-user-tie"></i> ${c.instructor_name}</span>` : ''}
+          ${(c.enrolled_count||0) > 0 ? `<span><i class="fas fa-users"></i> ${c.enrolled_count}</span>` : ''}
+        </div>
+        <div class="card-footer">
+          <span class="card-price" style="color:${a};">${Number(c.price) > 0 ? '₦' + Number(c.price).toLocaleString() : '<span style="color:#06D6A0;">Free</span>'}</span>
+          <span class="btn-card" style="background:${p};">${siteBelongs ? '<i class="fas fa-eye"></i> View' : '<i class="fas fa-shopping-cart"></i> Enroll'}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// ── PQ DATA & FILTERING ───────────────────────────────────────────
+let allPQData = [];
+let showingAllPQ = false;
+
+async function loadPQ(d, p, a, belongsHere) {
+  const data = await apiGet('/institutions/public/site/' + subdomain + '/past-questions');
+  allPQData = data || [];
+
+  // Populate year filter from actual data
+  const years = [...new Set(allPQData.map(q => q.year).filter(Boolean))].sort((a,b) => b - a);
+  const yearSel = document.getElementById('pq-year');
+  if (yearSel) {
+    yearSel.innerHTML = '<option value="">All Years</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
+  }
+  renderPQ(allPQData.slice(0, 9));
+}
+
+function filterPQ() {
+  const search = (document.getElementById('pq-search')?.value || '').toLowerCase();
+  const examType = (document.getElementById('pq-exam-type')?.value || '').toLowerCase();
+  const year = document.getElementById('pq-year')?.value || '';
+  const subject = (document.getElementById('pq-subject')?.value || '').toLowerCase();
+  const sort = document.getElementById('pq-sort')?.value || 'newest';
+
+  let filtered = allPQData.filter(q => {
+    const matchSearch = !search || q.title.toLowerCase().includes(search) || (q.subject||'').toLowerCase().includes(search);
+    const matchType = !examType || (q.exam_type||'').toLowerCase().includes(examType);
+    const matchYear = !year || String(q.year) === String(year);
+    const matchSubject = !subject || (q.subject||'').toLowerCase().includes(subject);
+    const matchFree = sort !== 'free' || Number(q.price) === 0;
+    return matchSearch && matchType && matchYear && matchSubject && matchFree;
+  });
+
+  if (sort === 'year_desc') filtered.sort((a,b) => (b.year||0) - (a.year||0));
+  else if (sort === 'year_asc') filtered.sort((a,b) => (a.year||0) - (b.year||0));
+  else if (sort === 'price_asc') filtered.sort((a,b) => Number(a.price) - Number(b.price));
+  else filtered.sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0));
+
+  const cnt = document.getElementById('pq-results-count');
+  if (cnt) cnt.textContent = filtered.length !== allPQData.length ? filtered.length + ' of ' + allPQData.length + ' past questions' : '';
+  renderPQ(showingAllPQ ? filtered : filtered.slice(0, 9));
+  const btn = document.getElementById('all-pq-btn');
+  if (btn) btn.style.display = (!showingAllPQ && filtered.length > 9) ? 'block' : 'none';
+}
+
+function clearPQFilters() {
+  ['pq-search','pq-subject'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  ['pq-exam-type','pq-year','pq-sort'].forEach(id => { const el = document.getElementById(id); if(el) el.value = el.id==='pq-sort'?'newest':''; });
+  showingAllPQ = false;
+  filterPQ();
+}
+
+function showAllPQ() { showingAllPQ = true; filterPQ(); }
+
+function renderPQ(list) {
+  const { p, a } = siteColors;
+  const grid = document.getElementById('pq-grid');
+  if (!grid) return;
+  if (!list.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:rgba(255,255,255,.35);"><i class="fas fa-search" style="font-size:2rem;margin-bottom:12px;display:block;opacity:.3;"></i>No past questions match your filters</div>';
+    return;
+  }
+  grid.innerHTML = list.map(q => `
+    <div class="site-card" onclick="window.location.href='/site/${subdomain}/past-question/${q.id}'" style="cursor:pointer;">
+      <div class="card-thumb" style="background:linear-gradient(135deg,${a}22,${p}14);">
+        ${q.cover_image ? `<img src="${q.cover_image}" alt="${q.title}">` : `<i class="fas fa-file-pdf" style="font-size:2.4rem;color:${a};opacity:.6;"></i>`}
+      </div>
+      <div class="card-body">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+          <div class="card-badge" style="background:${a}15;color:${a};border:1px solid ${a}30;">${q.exam_type || q.institution_name || 'Exam'}</div>
+          ${q.year ? `<div class="card-badge" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1);font-size:.65rem;">${q.year}</div>` : ''}
+        </div>
+        <div class="card-title">${q.title}</div>
+        <div class="card-meta">
+          ${q.subject ? `<span><i class="fas fa-book"></i> ${q.subject}</span>` : ''}
+          ${q.total_questions ? `<span><i class="fas fa-question-circle"></i> ${q.total_questions} Qs</span>` : ''}
+        </div>
+        <div class="card-footer">
+          <span class="card-price" style="color:${a};">${Number(q.price) > 0 ? '₦' + Number(q.price).toLocaleString() : '<span style="color:#06D6A0;">Free</span>'}</span>
+          <span class="btn-card" style="background:${a};">${siteBelongs ? '<i class="fas fa-eye"></i> View' : '<i class="fas fa-shopping-cart"></i> Buy'}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+
+
+async function loadStats(d) {
+  const data = await apiGet('/institutions/public/site/' + subdomain + '/stats').catch(() => null);
+  if (!data) return;
+  ['stat-students','stat-instructors','stat-ab-students','stat-ab-inst'].forEach((id, i) => {
+    const val = i < 2 ? (i === 0 ? data.students : data.instructors) : (i === 2 ? data.students : data.instructors);
+    const el = document.getElementById(id);
+    if (el) el.textContent = (val || 0) + (id.includes('stat-students') || id.includes('stat-ab-students') ? '+' : '');
+  });
+  const certEl = document.getElementById('stat-ab-certs');
+  if (certEl) certEl.textContent = (data.certificates || 0) + '+';
+}
+
+loadSite();
+</script>
+<script>
+window.__AI_CONTEXT = window.__AI_CONTEXT || {
+  assistantName: 'School AI',
+  assistantSub: 'Ask me anything',
+  welcomeMsg: '👋 Hi! How can I help you today?',
+  quickBtns: ['What courses are available?','How do I enroll?','How do I get a certificate?'],
+  primaryColor: '#7C3AED',
+  accentColor: '#06D6A0',
+  systemPrompt: 'You are a helpful AI assistant for an online school. Be friendly and concise.'
+};
+</script>
+<!-- ═══════════════════════════════════════════════════════════════
+     AI ASSISTANT WIDGET
+     Powered by Claude API — context-aware per-page
+     ═══════════════════════════════════════════════════════════════ -->
+<style>
+#ai-fab{position:fixed;bottom:28px;right:28px;z-index:9999;width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.35rem;box-shadow:0 4px 24px rgba(0,0,0,.35);transition:transform .2s,box-shadow .2s;background:linear-gradient(135deg,var(--ai-p,#7C3AED),var(--ai-a,#06D6A0));}
+#ai-fab:hover{transform:scale(1.08);box-shadow:0 6px 32px rgba(0,0,0,.45);}
+#ai-fab .ai-badge{position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:#ef4444;border:2px solid #0f172a;display:none;}
+#ai-box{position:fixed;bottom:96px;right:28px;z-index:9999;width:360px;max-width:calc(100vw - 40px);border-radius:18px;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.5);display:none;flex-direction:column;max-height:520px;border:1px solid rgba(255,255,255,.08);background:#13172b;}
+#ai-box.open{display:flex;}
+.ai-head{padding:14px 16px;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--ai-p,#7C3AED),var(--ai-a,#06D6A0));}
+.ai-head-av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.ai-head-info{flex:1;}
+.ai-head-name{font-weight:700;font-size:.9rem;color:#fff;}
+.ai-head-sub{font-size:.72rem;color:rgba(255,255,255,.75);}
+.ai-head-close{background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;font-size:1.1rem;padding:4px;line-height:1;}
+.ai-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;}
+.ai-msgs::-webkit-scrollbar{width:4px;}
+.ai-msgs::-webkit-scrollbar-track{background:transparent;}
+.ai-msgs::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
+.ai-msg{max-width:85%;padding:10px 13px;border-radius:14px;font-size:.83rem;line-height:1.55;word-break:break-word;}
+.ai-msg.bot{background:rgba(255,255,255,.07);color:rgba(255,255,255,.88);border-radius:14px 14px 14px 4px;align-self:flex-start;}
+.ai-msg.user{background:linear-gradient(135deg,var(--ai-p,#7C3AED),var(--ai-a,#06D6A0));color:#fff;border-radius:14px 14px 4px 14px;align-self:flex-end;}
+.ai-msg.bot.typing{opacity:.6;}
+.ai-msg a{color:var(--ai-a,#06D6A0);text-decoration:underline;}
+.ai-quick{padding:0 14px 10px;display:flex;flex-wrap:wrap;gap:6px;}
+.ai-qbtn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.75);padding:5px 11px;border-radius:99px;font-size:.72rem;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.ai-qbtn:hover{background:rgba(255,255,255,.12);color:#fff;}
+.ai-foot{display:flex;gap:8px;padding:12px 14px;border-top:1px solid rgba(255,255,255,.07);}
+.ai-input{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:9px 12px;color:#fff;font-size:.83rem;outline:none;resize:none;min-height:38px;max-height:100px;font-family:inherit;}
+.ai-input::placeholder{color:rgba(255,255,255,.35);}
+.ai-input:focus{border-color:rgba(255,255,255,.25);}
+.ai-send{background:linear-gradient(135deg,var(--ai-p,#7C3AED),var(--ai-a,#06D6A0));border:none;border-radius:10px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:.9rem;flex-shrink:0;transition:opacity .15s;}
+.ai-send:hover{opacity:.85;}
+.ai-send:disabled{opacity:.4;cursor:default;}
+@media(max-width:480px){#ai-box{width:calc(100vw - 24px);right:12px;bottom:82px;}#ai-fab{bottom:16px;right:16px;}}
+</style>
+
+<button id="ai-fab" onclick="toggleAI()" title="Ask AI Assistant">
+  🤖<span class="ai-badge" id="ai-badge"></span>
+</button>
+<div id="ai-box">
+  <div class="ai-head">
+    <div class="ai-head-av">🤖</div>
+    <div class="ai-head-info">
+      <div class="ai-head-name" id="ai-head-name">AI Assistant</div>
+      <div class="ai-head-sub" id="ai-head-sub">Ask me anything</div>
+    </div>
+    <button class="ai-head-close" onclick="toggleAI()">✕</button>
+  </div>
+  <div class="ai-msgs" id="ai-msgs">
+    <div class="ai-msg bot" id="ai-welcome">👋 Hi! I'm your AI assistant. How can I help you today?</div>
+  </div>
+  <div class="ai-quick" id="ai-quick-btns"></div>
+  <div class="ai-foot">
+    <textarea class="ai-input" id="ai-input" placeholder="Type your question…" rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI();}"></textarea>
+    <button class="ai-send" id="ai-send-btn" onclick="sendAI()">➤</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ── Config (set by each page before this script runs) ──
+  // window.__AI_CONTEXT = { systemPrompt, welcomeMsg, quickBtns, primaryColor, accentColor, assistantName, assistantSub }
+  const ctx = window.__AI_CONTEXT || {};
+
+  // Apply colors
+  if (ctx.primaryColor) document.documentElement.style.setProperty('--ai-p', ctx.primaryColor);
+  if (ctx.accentColor)  document.documentElement.style.setProperty('--ai-a', ctx.accentColor);
+
+  // Names
+  const nameEl = document.getElementById('ai-head-name');
+  const subEl  = document.getElementById('ai-head-sub');
+  if (nameEl) nameEl.textContent  = ctx.assistantName || 'AI Assistant';
+  if (subEl)  subEl.textContent   = ctx.assistantSub  || 'Ask me anything';
+
+  // Welcome
+  const welEl = document.getElementById('ai-welcome');
+  if (welEl) welEl.textContent = ctx.welcomeMsg || '👋 Hi! How can I help you today?';
+
+  // Quick buttons
+  const qCont = document.getElementById('ai-quick-btns');
+  if (qCont && ctx.quickBtns && ctx.quickBtns.length) {
+    qCont.innerHTML = ctx.quickBtns.map(function(q){
+      return '<button class="ai-qbtn" onclick="sendAIMsg('+JSON.stringify(q)+')">'+q+'</button>';
+    }).join('');
+  }
+
+  let aiOpen = false;
+  let aiLoading = false;
+  let aiHistory = [];
+
+  window.toggleAI = function() {
+    aiOpen = !aiOpen;
+    const box = document.getElementById('ai-box');
+    if (aiOpen) { box.classList.add('open'); document.getElementById('ai-input').focus(); }
+    else box.classList.remove('open');
+  };
+
+  window.sendAIMsg = function(text) {
+    if (!text) return;
+    document.getElementById('ai-input').value = text;
+    sendAI();
+  };
+
+  function appendMsg(text, role) {
+    const msgs = document.getElementById('ai-msgs');
+    const div = document.createElement('div');
+    div.className = 'ai-msg ' + role;
+    div.textContent = text;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+    return div;
+  }
+
+  function setTyping(on) {
+    const btn = document.getElementById('ai-send-btn');
+    if (btn) btn.disabled = on;
+    aiLoading = on;
+  }
+
+  window.sendAI = async function() {
+    if (aiLoading) return;
+    const input = document.getElementById('ai-input');
+    const text = (input.value || '').trim();
+    if (!text) return;
+    input.value = '';
+    input.style.height = '';
+
+    appendMsg(text, 'user');
+    aiHistory.push({ role: 'user', content: text });
+
+    // Hide quick buttons after first real message
+    const qb = document.getElementById('ai-quick-btns');
+    if (qb) qb.style.display = 'none';
+
+    setTyping(true);
+    const typingDiv = appendMsg('Thinking…', 'bot typing');
+
+    try {
+      const systemPrompt = (ctx.systemPrompt || 'You are a helpful assistant for an online learning platform.') +
+        '\n\nIMPORTANT: Keep responses concise and friendly. Use plain text — no markdown symbols like ** or ##. Max 3 short paragraphs.';
+
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 400,
+          system: systemPrompt,
+          messages: aiHistory
+        })
+      });
+
+      const data = await res.json();
+      const reply = (data.content && data.content[0] && data.content[0].text) || 'Sorry, I could not get a response. Please try again.';
+      typingDiv.textContent = reply;
+      typingDiv.classList.remove('typing');
+      aiHistory.push({ role: 'assistant', content: reply });
+
+      // Keep history to last 10 turns (5 pairs) to avoid token blowup
+      if (aiHistory.length > 10) aiHistory = aiHistory.slice(aiHistory.length - 10);
+
+    } catch(e) {
+      typingDiv.textContent = 'Sorry, something went wrong. Please try again.';
+      typingDiv.classList.remove('typing');
+    }
+    setTyping(false);
+  };
+
+  // Auto-resize textarea
+  const inp = document.getElementById('ai-input');
+  if (inp) inp.addEventListener('input', function(){
+    this.style.height = '';
+    this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+  });
+})();
+</script>
+
+</body>
+</html>

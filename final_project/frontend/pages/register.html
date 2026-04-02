@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register - ExamPro</title>
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<script>
+  (function(){var t=localStorage.getItem('ep_theme')||'light';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<style>
+* { box-sizing: border-box; }
+.auth-wrap { min-height:100vh; display:grid; grid-template-columns:1fr 1fr; }
+
+.auth-brand {
+  background:linear-gradient(145deg,#1a1744 0%,#0f0e2a 60%,#1a0e2e 100%);
+  display:flex; flex-direction:column; padding:48px;
+  position:relative; overflow:hidden;
+}
+.auth-brand::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse 60% 50% at 30% 40%,rgba(124,58,237,0.35) 0%,transparent 65%),
+             radial-gradient(ellipse 40% 40% at 80% 80%,rgba(16,196,138,0.18) 0%,transparent 55%);
+  pointer-events:none;
+}
+.brand-logo {
+  font-family:var(--font-head,'Plus Jakarta Sans',sans-serif);
+  font-size:1.6rem; font-weight:900;
+  background:linear-gradient(135deg,#A78BFA,#10C48A);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  position:relative; z-index:1;
+}
+.brand-tagline { color:rgba(255,255,255,0.4); font-size:.76rem; margin-top:3px; position:relative; z-index:1; }
+.brand-main { flex:1; display:flex; flex-direction:column; justify-content:center; position:relative; z-index:1; }
+.brand-main h1 {
+  font-family:var(--font-head,'Plus Jakarta Sans',sans-serif);
+  font-size:clamp(1.7rem,2.8vw,2.4rem); font-weight:900; color:#fff;
+  line-height:1.15; letter-spacing:-.03em; margin-bottom:14px;
+}
+.brand-main h1 span {
+  background:linear-gradient(135deg,#A78BFA,#10C48A);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.brand-main p { color:rgba(255,255,255,0.5); font-size:.88rem; line-height:1.7; max-width:340px; margin-bottom:28px; }
+.brand-steps { display:flex; flex-direction:column; gap:10px; }
+.brand-step {
+  display:flex; align-items:flex-start; gap:12px;
+  padding:10px 14px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:10px;
+}
+.step-num {
+  width:26px; height:26px; border-radius:50%;
+  background:linear-gradient(135deg,#7C3AED,#10C48A);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.75rem; font-weight:800; color:#fff; flex-shrink:0;
+}
+.step-text { font-size:.83rem; color:rgba(255,255,255,0.7); }
+.step-text strong { color:#fff; display:block; margin-bottom:1px; font-size:.85rem; }
+.brand-foot { font-size:.73rem; color:rgba(255,255,255,0.22); position:relative; z-index:1; margin-top:24px; }
+
+.auth-form-col {
+  display:flex; align-items:flex-start; justify-content:center;
+  padding:36px 32px; background:var(--bg); overflow-y:auto;
+}
+.auth-card { width:100%; max-width:460px; padding-top:12px; }
+.auth-card-title {
+  font-family:var(--font-head,'Plus Jakarta Sans',sans-serif);
+  font-size:1.4rem; font-weight:800; color:var(--text);
+  margin-bottom:5px; letter-spacing:-.02em;
+}
+.auth-card-sub { font-size:.875rem; color:var(--text-muted); margin-bottom:24px; }
+
+/* Role pills */
+.role-select-2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:22px; }
+.role-select-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:22px; }
+@media(max-width:500px) {
+  .role-select-3 { grid-template-columns:1fr; }
+  .role-select-2 { grid-template-columns:1fr 1fr; }
+}
+.role-pill {
+  padding:14px 12px; border:2px solid var(--border); border-radius:12px;
+  cursor:pointer; transition:all .18s; text-align:center;
+  background:var(--bg-card);
+}
+.role-pill:hover { border-color:var(--primary); background:var(--primary-50); }
+.role-pill.selected { border-color:var(--primary); background:var(--primary-50); }
+.role-pill input[type=radio] { display:none; }
+.role-pill i { font-size:1.4rem; display:block; margin-bottom:7px; color:var(--text-muted); }
+.role-pill.selected i { color:var(--primary); }
+.role-pill .role-label { font-size:.82rem; font-weight:700; color:var(--text); }
+.role-pill .role-sub { font-size:.72rem; color:var(--text-muted); margin-top:2px; }
+
+/* Template badge */
+.chosen-tpl-badge {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 14px;
+  background:rgba(92,110,248,0.07); border:1px solid rgba(92,110,248,0.2);
+  border-radius:10px; margin-bottom:18px; font-size:.84rem;
+}
+
+.input-wrap { position:relative; }
+.input-wrap .eye-btn {
+  position:absolute; right:12px; top:50%; transform:translateY(-50%);
+  background:none; border:none; cursor:pointer;
+  color:var(--text-muted); font-size:.9rem; padding:4px;
+}
+.input-wrap .eye-btn:hover { color:var(--primary); }
+
+.section-label {
+  font-size:.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.6px;
+  color:var(--text-muted); margin:20px 0 10px; display:flex; align-items:center; gap:8px;
+}
+.section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* School fields (admin only) */
+#school-fields { display:none; }
+
+@media(max-width:768px) {
+  .auth-wrap { grid-template-columns:1fr; }
+  .auth-brand { display:none; }
+  .auth-form-col { padding:28px 18px; align-items:flex-start; }
+  .role-select { grid-template-columns:1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="auth-wrap">
+
+  <!-- LEFT: BRAND -->
+  <div class="auth-brand">
+    <div>
+      <div class="brand-logo">ExamPro</div>
+      <div class="brand-tagline">Start selling in minutes</div>
+    </div>
+    <div class="brand-main">
+      <h1>Launch Your<br><span>School Site Today</span></h1>
+      <p>Join hundreds of schools using ExamPro to manage courses, students, and revenue — all on one platform.</p>
+      <div class="brand-steps">
+        <div class="brand-step">
+          <div class="step-num">1</div>
+          <div class="step-text"><strong>Create Your Account</strong>Choose your role and fill in your details</div>
+        </div>
+        <div class="brand-step">
+          <div class="step-num">2</div>
+          <div class="step-text"><strong>Pick a Template</strong>Choose how your school site looks</div>
+        </div>
+        <div class="brand-step">
+          <div class="step-num">3</div>
+          <div class="step-text"><strong>Get Approved &amp; Go Live</strong>Admin reviews, then you start selling</div>
+        </div>
+      </div>
+    </div>
+    <div class="brand-foot">© 2025 ExamPro. All rights reserved.</div>
+  </div>
+
+  <!-- RIGHT: FORM -->
+  <div class="auth-form-col">
+    <div class="auth-card">
+
+      <h2 class="auth-card-title">Create your account</h2>
+      <p class="auth-card-sub">Already have one? <a id="login-link" href="/login" style="color:var(--primary);font-weight:700;">Sign in →</a></p>
+
+      <!-- Chosen template badge -->
+      <div class="chosen-tpl-badge" id="tpl-badge" style="display:none;">
+        <i class="fas fa-palette" style="color:var(--primary);font-size:1rem;"></i>
+        <div>
+          <div style="font-weight:700;color:var(--text);" id="tpl-badge-name">Template</div>
+          <div style="font-size:.72rem;color:var(--text-muted);">Selected template — will be applied after approval</div>
+        </div>
+        <a href="/home#templates" style="margin-left:auto;font-size:.75rem;color:var(--primary);white-space:nowrap;">Change</a>
+      </div>
+
+      <div id="alertBox"></div>
+
+      <!-- Role selection — rendered by JS based on context -->
+      <div class="section-label">I want to</div>
+      <div id="role-select-wrap">
+        <!-- Populated by initRoles() -->
+      </div>
+
+      <!-- Form -->
+      <form id="registerForm" style="display:flex;flex-direction:column;gap:0;">
+        <div class="section-label">Your Details</div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" style="display:block;margin-bottom:6px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);">Full Name *</label>
+            <input type="text" class="form-control" id="reg-name" placeholder="John Adeyemi" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="display:block;margin-bottom:6px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);">Email Address *</label>
+            <input type="email" class="form-control" id="reg-email" placeholder="you@example.com" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="display:block;margin-bottom:6px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);">Password *</label>
+          <div class="input-wrap">
+            <input type="password" class="form-control" id="reg-password" placeholder="Min 6 characters" required>
+            <button type="button" class="eye-btn" onclick="toggleRegPwd()" title="Show/hide">
+              <i class="fas fa-eye" id="reg-eye-icon"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="display:block;margin-bottom:6px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);">Confirm Password *</label>
+          <input type="password" class="form-control" id="reg-confirm" placeholder="Repeat password" required>
+        </div>
+
+        <!-- School fields (admin only) -->
+        <div id="school-fields">
+          <div class="section-label">Your School</div>
+          <div class="form-group">
+            <label class="form-label" style="display:block;margin-bottom:6px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);">School Name *</label>
+            <input type="text" class="form-control" id="reg-school" placeholder="e.g. Bright Scholars Academy">
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="display:block;margin-bottom:6px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);">Subdomain *</label>
+            <div style="display:flex;align-items:center;border:1px solid var(--border);border-radius:var(--radius-sm,8px);overflow:hidden;">
+              <input type="text" class="form-control" id="reg-subdomain" placeholder="brightscholars"
+                style="border:none;flex:1;border-radius:0;" oninput="sanitizeSubdomain(this)">
+              <span style="padding:0 12px;font-size:.82rem;color:var(--text-muted);background:var(--bg-card2);border-left:1px solid var(--border);height:100%;display:flex;align-items:center;white-space:nowrap;">.exampro.ng</span>
+            </div>
+            <p style="font-size:.72rem;color:var(--text-muted);margin-top:4px;">Only lowercase letters, numbers, hyphens. e.g. brightscholars</p>
+          </div>
+        </div>
+
+        <!-- Student school field -->
+        <div id="student-school-field" style="display:none;">
+          <div class="section-label">Your School</div>
+          <div class="form-group">
+            <label class="form-label" style="display:block;margin-bottom:6px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);">School / Institution (optional)</label>
+            <input type="text" class="form-control" id="reg-student-school" placeholder="School you attend (optional)">
+          </div>
+        </div>
+
+        <!-- Instructor fields -->
+        <div id="instructor-fields" style="display:none;">
+          <div class="section-label">Your Expertise</div>
+          <div class="form-group">
+            <label class="form-label" style="display:block;margin-bottom:6px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);">Specialization / Subject *</label>
+            <input type="text" class="form-control" id="reg-specialization" placeholder="e.g. Mathematics, English, Physics">
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="display:block;margin-bottom:6px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);">Short Bio (optional)</label>
+            <textarea class="form-control" id="reg-bio" rows="2" placeholder="Tell students a little about yourself..."></textarea>
+          </div>
+        </div>
+
+        <!-- Plan selection — only shown for school owners -->
+        <div id="plan-select-section" style="display:none;">
+          <div class="section-label" style="display:block;margin:18px 0 10px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);">Choose a Subscription Plan</div>
+          <div id="plan-pills" style="display:flex;flex-direction:column;gap:8px;margin-bottom:4px;">
+            <div style="text-align:center;color:var(--text-muted);font-size:.85rem;padding:12px;">Loading plans...</div>
+          </div>
+          <div id="plan-alert"></div>
+        </div>
+        <input type="hidden" id="selected-plan-id" value="">
+
+        <button type="submit" class="btn btn-primary btn-full" style="margin-top:20px;padding:13px;font-size:.95rem;" id="regBtn">
+          <i class="fas fa-user-plus" style="margin-right:8px;"></i>Create Account
+        </button>
+      </form>
+
+      <p style="text-align:center;font-size:.76rem;color:var(--text-muted);margin-top:16px;line-height:1.6;">
+        By registering you agree to our <a href="/terms" style="color:var(--primary);">Terms of Service</a> and <a href="/privacy" style="color:var(--primary);">Privacy Policy</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- OTP Verification Modal -->
+<div class="modal-overlay" id="otpModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title">📧 Verify Your Email</div>
+      <button class="modal-close" onclick="Modal.close('otpModal')">✕</button>
+    </div>
+    <p style="color:var(--text-muted);margin-bottom:20px;font-size:.9rem;">
+      Enter the 6-digit code sent to <strong id="otpEmail" style="color:var(--text);"></strong>
+    </p>
+    <div id="otpAlert"></div>
+    <div class="form-group">
+      <input type="text" class="form-control" id="otpInput" placeholder="0  0  0  0  0  0" maxlength="6"
+             style="text-align:center;font-size:1.6rem;letter-spacing:10px;font-family:var(--font-head);">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="verifyOTP()" id="verifyBtn">Verify & Continue</button>
+    <button class="btn btn-outline btn-full" style="margin-top:10px;" onclick="resendOTP()">Resend Code</button>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+const urlParams   = new URLSearchParams(window.location.search);
+const urlRole     = urlParams.get('role');
+const schoolParam = urlParams.get('school') || null;
+const schoolCtx   = schoolParam || sessionStorage.getItem('school_context') || null;
+
+// ── ROLE DEFINITIONS ──
+// /register            → Student | Instructor | School Owner  (3 pills)
+// /register?school=x   → Student | Instructor                 (2 pills, joining a school)
+const ROLES_PLATFORM = [
+  { value:'student',    icon:'fa-user-graduate',       label:'Student',      sub:'Take courses & exams' },
+  { value:'instructor', icon:'fa-chalkboard-teacher',  label:'Instructor',   sub:'Teach & create courses' },
+  { value:'admin',      icon:'fa-school',              label:'School Owner', sub:'Launch your own school' },
+];
+const ROLES_SCHOOL = [
+  { value:'student',    icon:'fa-user-graduate',       label:'Student',      sub:'Take courses & exams' },
+  { value:'instructor', icon:'fa-chalkboard-teacher',  label:'Instructor',   sub:'Teach at this school' },
+];
+
+const isSchoolCtx = !!schoolParam;
+const roles       = isSchoolCtx ? ROLES_SCHOOL : ROLES_PLATFORM;
+
+// Build role pills into #role-select-wrap
+function initRoles() {
+  const wrap = document.getElementById('role-select-wrap');
+  wrap.className = roles.length === 3 ? 'role-select-3' : 'role-select-2';
+  wrap.innerHTML = roles.map((r, i) => `
+    <label class="role-pill${i===0?' selected':''}" id="pill-${r.value}" onclick="setRole('${r.value}')">
+      <input type="radio" name="role" value="${r.value}"${i===0?' checked':''}>
+      <i class="fas ${r.icon}"></i>
+      <div class="role-label">${r.label}</div>
+      <div class="role-sub">${r.sub}</div>
+    </label>`).join('');
+}
+initRoles();
+
+// Template badge
+const chosenTpl = JSON.parse(sessionStorage.getItem('chosen_template') || 'null');
+if (chosenTpl && chosenTpl.id) {
+  document.getElementById('tpl-badge-name').textContent = chosenTpl.name || 'Template';
+  document.getElementById('tpl-badge').style.display = 'flex';
+}
+
+// Load school name when coming from a school URL
+if (isSchoolCtx) {
+  sessionStorage.setItem('school_context', schoolParam);
+  const loginLink = document.getElementById('login-link');
+  if (loginLink) loginLink.href = '/login?school=' + schoolParam;
+  http.get('/institutions/public/site-by-id-subdomain/' + schoolParam).then(function(site) {
+    if (site && site.school_name) {
+      document.querySelector('.auth-card-title').textContent = 'Join ' + site.school_name;
+      document.querySelector('.auth-card-sub').innerHTML =
+        'Create your account at <strong style="color:var(--primary);">' + site.school_name + '</strong> · <a href="/login?school=' + schoolParam + '" style="color:var(--primary);font-weight:700;">Sign in →</a>';
+      document.title = 'Register — ' + site.school_name;
+      const h1 = document.querySelector('.brand-main h1');
+      if (h1) h1.innerHTML = 'Join <span>' + site.school_name + '</span>';
+    }
+  }).catch(function(){});
+}
+
+// Determine default role
+let currentRole = urlRole || (chosenTpl ? 'admin' : roles[0].value);
+if (!roles.find(function(r){ return r.value === currentRole; })) currentRole = roles[0].value;
+setRole(currentRole);
+
+function setRole(role) {
+  currentRole = role;
+  document.querySelectorAll('.role-pill').forEach(function(p){ p.classList.remove('selected'); });
+  const pill = document.getElementById('pill-' + role);
+  if (pill) pill.classList.add('selected');
+
+  document.getElementById('school-fields').style.display        = role === 'admin'      ? 'block' : 'none';
+  document.getElementById('student-school-field').style.display = role === 'student'    ? 'block' : 'none';
+  document.getElementById('instructor-fields').style.display    = role === 'instructor' ? 'block' : 'none';
+  document.getElementById('plan-select-section').style.display  = role === 'admin'      ? 'block' : 'none';
+
+  if (role === 'admin') loadPlans();
+
+  const icons  = { admin:'fa-school', instructor:'fa-chalkboard-teacher', student:'fa-user-graduate' };
+  const labels = { admin:'Create School Account', instructor:'Register as Instructor', student:'Create Student Account' };
+  document.getElementById('regBtn').innerHTML =
+    '<i class="fas ' + (icons[role]||'fa-user-plus') + '" style="margin-right:8px;"></i>' + (labels[role]||'Create Account');
+}
+
+let plansLoaded = false;
+async function loadPlans() {
+  if (plansLoaded) return;
+  const container = document.getElementById('plan-pills');
+  try {
+    const data = await http.get('/plans');
+    const plans = Array.isArray(data) ? data : (Array.isArray(data?.plans) ? data.plans : []);
+    const active = plans.filter(function(p){ return p.is_active !== 0; });
+    if (!active.length) {
+      container.innerHTML = '<div style="color:var(--text-muted);font-size:.82rem;padding:10px;">No plans available — your account will be reviewed manually.</div>';
+      return;
+    }
+    plansLoaded = true;
+    container.innerHTML = active.map(function(p) {
+      const price = Number(p.price||0).toLocaleString();
+      const interval = p.interval || 'month';
+      const desc = p.description ? '<div style="font-size:.76rem;color:var(--text-muted);margin-top:2px;">' + p.description + '</div>' : '';
+      return '<label id="plan-label-' + p.id + '" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color .15s,background .15s;" onclick="selectPlan(' + p.id + ')">'
+        + '<div style="flex:1;">'
+        + '<div style="font-weight:700;font-size:.9rem;">'+p.name+' &mdash; &#8358;'+price+' / '+interval+'</div>'
+        + desc
+        + '</div>'
+        + '<span class="plan-radio-icon" style="font-size:1.1rem;color:var(--text-muted);">○</span>'
+        + '</label>';
+    }).join('');
+    // Auto-select first plan
+    if (active.length) selectPlan(active[0].id);
+  } catch(e) {
+    container.innerHTML = '<div style="color:var(--text-muted);font-size:.82rem;padding:10px;">Could not load plans. You can select one after registration.</div>';
+  }
+}
+
+function selectPlan(id) {
+  document.querySelectorAll('#plan-pills label').forEach(function(l) {
+    l.style.borderColor = 'var(--border)';
+    l.style.background  = '';
+    const icon = l.querySelector('.plan-radio-icon');
+    if (icon) { icon.textContent = '○'; icon.style.color = 'var(--text-muted)'; }
+  });
+  const chosen = document.getElementById('plan-label-' + id);
+  if (chosen) {
+    chosen.style.borderColor = 'var(--primary)';
+    chosen.style.background  = 'rgba(91,125,255,.06)';
+    const icon = chosen.querySelector('.plan-radio-icon');
+    if (icon) { icon.textContent = '●'; icon.style.color = 'var(--primary)'; }
+  }
+  document.getElementById('selected-plan-id').value = id;
+}
+
+function sanitizeSubdomain(inp) {
+  inp.value = inp.value.toLowerCase().replace(/[^a-z0-9-]/g,'').replace(/^-+/,'');
+}
+
+function toggleRegPwd() {
+  const p    = document.getElementById('reg-password');
+  const icon = document.getElementById('reg-eye-icon');
+  p.type = p.type === 'password' ? 'text' : 'password';
+  icon.className = p.type === 'text' ? 'fas fa-eye-slash' : 'fas fa-eye';
+}
+
+let pendingEmail = '';
+
+document.getElementById('registerForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn      = document.getElementById('regBtn');
+  const alertBox = document.getElementById('alertBox');
+  alertBox.innerHTML = '';
+
+  const name     = document.getElementById('reg-name').value.trim();
+  const email    = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const confirm  = document.getElementById('reg-confirm').value;
+
+  if (!name || !email || !password) {
+    alertBox.innerHTML = '<div class="alert alert-error" style="margin-bottom:14px;">Please fill in all required fields.</div>'; return;
+  }
+  if (password.length < 6) {
+    alertBox.innerHTML = '<div class="alert alert-error" style="margin-bottom:14px;">Password must be at least 6 characters.</div>'; return;
+  }
+  if (password !== confirm) {
+    alertBox.innerHTML = '<div class="alert alert-error" style="margin-bottom:14px;">Passwords do not match.</div>'; return;
+  }
+
+  const body = { name, email, password, role: currentRole };
+
+  if (currentRole === 'admin') {
+    body.school_name = document.getElementById('reg-school').value.trim();
+    body.subdomain   = document.getElementById('reg-subdomain').value.trim();
+    if (!body.school_name || !body.subdomain) {
+      alertBox.innerHTML = '<div class="alert alert-error" style="margin-bottom:14px;">School name and subdomain are required.</div>'; return;
+    }
+    const planId = document.getElementById('selected-plan-id').value;
+    if (!planId) {
+      alertBox.innerHTML = '<div class="alert alert-error" style="margin-bottom:14px;">Please select a subscription plan.</div>';
+      document.getElementById('plan-select-section').scrollIntoView({ behavior:'smooth' });
+      return;
+    }
+    body.plan_id = planId;
+    if (chosenTpl && chosenTpl.id) {
+      body.template_id             = chosenTpl.id;
+      body.template_payment_ref    = sessionStorage.getItem('tpl_payment_ref') || null;
+      body.template_payment_method = sessionStorage.getItem('tpl_payment_method') || null;
+    }
+  } else if (currentRole === 'instructor') {
+    body.specialization = document.getElementById('reg-specialization').value.trim();
+    body.bio            = document.getElementById('reg-bio').value.trim();
+    // Pass as 'school' — this is what authController.register reads
+    if (schoolCtx) { body.school = schoolCtx; Auth.setSchoolContext(schoolCtx); }
+  } else {
+    body.student_school = document.getElementById('reg-student-school').value.trim();
+    if (schoolCtx) { body.school = schoolCtx; Auth.setSchoolContext(schoolCtx); }
+  }
+
+  setLoading(btn, true);
+  const data = await http.post('/auth/register', body);
+  setLoading(btn, false);
+
+  if (data && data.ok) {
+    if (data.needsVerification || data.otp_sent) {
+      pendingEmail = email;
+      document.getElementById('otpEmail').textContent = email;
+      // Show pending message for instructors
+      if (data.isPending) {
+        document.getElementById('otpAlert').innerHTML =
+          '<div class="alert alert-warning" style="margin-bottom:8px;">⏳ <strong>Instructor account pending approval.</strong><br>Verify your email first, then wait for admin approval.</div>';
+      }
+      Modal.open('otpModal');
+    } else if (data.token) {
+      localStorage.setItem('ep_token', data.token);
+      localStorage.setItem('ep_user', JSON.stringify(data.user));
+      Toast.success('Account created! Welcome 🎉');
+      setTimeout(function(){ window.location.href = Auth.getDashboardUrl(); }, 1200);
+    } else {
+      // No token — direct to login preserving school context
+      const loginUrl = schoolCtx ? '/login?school=' + schoolCtx : '/login';
+      alertBox.innerHTML = '<div class="alert alert-success" style="margin-bottom:14px;">✅ Account created! <a href="' + loginUrl + '">Login now →</a></div>';
+    }
+  } else {
+    alertBox.innerHTML = '<div class="alert alert-error" style="margin-bottom:14px;">' + ((data && data.message) || 'Registration failed. Please try again.') + '</div>';
+  }
+});
+
+async function verifyOTP() {
+  const btn = document.getElementById('verifyBtn');
+  setLoading(btn, true);
+  // Pass school context so backend resolves site_id correctly
+  const data = await http.post('/auth/verify-otp', {
+    email: pendingEmail,
+    otp: document.getElementById('otpInput').value,
+    school: schoolCtx || null
+  });
+  setLoading(btn, false);
+  if (data && data.ok) {
+    Modal.close('otpModal');
+    if (data.isPending) {
+      // Instructor awaiting admin approval
+      const loginUrl = schoolCtx ? '/login?school=' + schoolCtx : '/login';
+      alertBox.innerHTML = '<div class="alert alert-success" style="margin-bottom:14px;">' +
+        '✅ Email verified! <strong>Your instructor account is awaiting admin approval.</strong><br>' +
+        '<small>You will receive an email once approved.</small><br><br>' +
+        '<a href="' + loginUrl + '" style="color:var(--primary);">Back to Login →</a>' +
+        '</div>';
+    } else if (data.token) {
+      localStorage.setItem('ep_token', data.token);
+      localStorage.setItem('ep_user', JSON.stringify(data.user || {}));
+      if (data.school) Auth.setSchoolContext(data.school);
+      Toast.success('Email verified! Redirecting... 🎉');
+      setTimeout(function(){ window.location.href = Auth.getDashboardUrl(); }, 1200);
+    } else {
+      Toast.success('Email verified! You can now login.');
+      const loginUrl = schoolCtx ? '/login?school=' + schoolCtx : '/login';
+      setTimeout(function(){ window.location.href = loginUrl; }, 1500);
+    }
+  } else {
+    document.getElementById('otpAlert').innerHTML =
+      '<div class="alert alert-error">' + ((data && data.message) || 'Invalid code') + '</div>';
+  }
+}
+
+async function resendOTP() {
+  const data = await http.post('/auth/resend-otp', { email: pendingEmail, school: schoolCtx || null });
+  if (data && data.ok) Toast.success('New code sent to ' + pendingEmail);
+  else Toast.error((data && data.message) || 'Failed to resend');
+}
+</script>
+</body>
+</html>

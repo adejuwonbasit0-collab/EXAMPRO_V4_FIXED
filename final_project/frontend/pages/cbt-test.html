@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>CBT Test - ExamPro</title>
+<link rel="stylesheet" href="/css/main.css"/>
+<style>
+/* ── MySchool-inspired CBT Layout ── */
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;}
+
+/* Top bar */
+.cbt-topbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:#1e293b;border-bottom:1px solid #334155;
+  height:56px;display:flex;align-items:center;padding:0 20px;gap:16px;
+}
+.cbt-title{font-weight:700;font-size:.95rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cbt-timer{
+  background:#0f172a;border:2px solid #334155;border-radius:8px;
+  padding:6px 16px;font-family:monospace;font-size:1.1rem;font-weight:700;
+  min-width:90px;text-align:center;transition:color .3s,border-color .3s;
+}
+.cbt-timer.warn{color:#f59e0b;border-color:#f59e0b;}
+.cbt-timer.danger{color:#ef4444;border-color:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.cbt-score-badge{background:rgba(91,125,255,.15);border:1px solid rgba(91,125,255,.3);padding:5px 14px;border-radius:99px;font-size:.8rem;font-weight:600;color:#818cf8;}
+
+/* Main layout */
+.cbt-body{display:flex;height:100vh;padding-top:56px;}
+
+/* Left: question numbers panel */
+.cbt-nav{
+  width:220px;flex-shrink:0;background:#1e293b;border-right:1px solid #334155;
+  overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;
+}
+.cbt-nav-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:4px;}
+.cbt-num-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;}
+.cbt-num{
+  aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  border-radius:6px;font-size:.78rem;font-weight:700;cursor:pointer;
+  border:1.5px solid #334155;background:#0f172a;color:#94a3b8;
+  transition:all .15s;
+}
+.cbt-num:hover{border-color:#5b7dff;color:#fff;}
+.cbt-num.answered{background:#1d4ed8;border-color:#1d4ed8;color:#fff;}
+.cbt-num.current{border-color:#5b7dff;box-shadow:0 0 0 2px rgba(91,125,255,.4);color:#fff;}
+.cbt-num.flagged{background:#7c3aed;border-color:#7c3aed;color:#fff;}
+.cbt-num.answered.flagged{background:#7c3aed;border-color:#7c3aed;}
+
+.nav-legend{display:flex;flex-direction:column;gap:6px;font-size:.72rem;color:#64748b;}
+.legend-row{display:flex;align-items:center;gap:6px;}
+.legend-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
+
+/* Right: question area */
+.cbt-main{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.cbt-question-area{flex:1;padding:32px;max-width:860px;margin:0 auto;width:100%;}
+
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.q-number{font-size:.78rem;color:#64748b;font-weight:600;}
+.q-flag-btn{
+  display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:7px;
+  border:1px solid #334155;background:none;color:#94a3b8;font-size:.78rem;cursor:pointer;
+  transition:all .15s;font-family:inherit;
+}
+.q-flag-btn.flagged{background:rgba(124,58,237,.15);border-color:#7c3aed;color:#a78bfa;}
+.q-flag-btn:hover{border-color:#7c3aed;color:#a78bfa;}
+
+.q-text{font-size:1.05rem;line-height:1.7;margin-bottom:28px;color:#f1f5f9;}
+.q-image{max-width:100%;border-radius:10px;margin-bottom:20px;border:1px solid #334155;}
+
+.q-options{display:flex;flex-direction:column;gap:10px;}
+.q-option{
+  display:flex;align-items:flex-start;gap:14px;padding:14px 18px;
+  border:2px solid #334155;border-radius:12px;cursor:pointer;
+  transition:all .15s;background:#1e293b;
+}
+.q-option:hover{border-color:#5b7dff;background:rgba(91,125,255,.07);}
+.q-option.selected{border-color:#1d4ed8;background:rgba(29,78,216,.15);}
+.q-option.correct{border-color:#10b981;background:rgba(16,185,129,.12);}
+.q-option.wrong{border-color:#ef4444;background:rgba(239,68,68,.1);}
+.q-option.show-correct{border-color:#10b981;background:rgba(16,185,129,.08);}
+.opt-key{
+  width:28px;height:28px;border-radius:50%;border:2px solid #475569;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:.8rem;flex-shrink:0;margin-top:1px;
+  transition:all .15s;
+}
+.q-option.selected .opt-key{background:#1d4ed8;border-color:#1d4ed8;color:#fff;}
+.q-option.correct .opt-key{background:#10b981;border-color:#10b981;color:#fff;}
+.q-option.wrong .opt-key{background:#ef4444;border-color:#ef4444;color:#fff;}
+.q-option.show-correct .opt-key{background:#10b981;border-color:#10b981;color:#fff;}
+.opt-text{line-height:1.6;font-size:.95rem;color:#e2e8f0;flex:1;}
+
+.q-explanation{
+  margin-top:16px;padding:14px 18px;background:rgba(16,185,129,.07);
+  border:1px solid rgba(16,185,129,.25);border-radius:10px;
+  font-size:.875rem;color:#6ee7b7;line-height:1.6;display:none;
+}
+.q-explanation.show{display:block;}
+
+/* Bottom nav */
+.cbt-bottom{
+  border-top:1px solid #334155;background:#1e293b;padding:16px 32px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+  max-width:860px;margin:0 auto;width:100%;
+}
+.cbt-btn{
+  padding:9px 20px;border-radius:9px;border:none;font-family:inherit;
+  font-size:.88rem;font-weight:600;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;gap:7px;
+}
+.cbt-btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn-prev{background:#1e293b;border:1.5px solid #334155;color:#94a3b8;}
+.btn-prev:hover:not(:disabled){border-color:#5b7dff;color:#5b7dff;}
+.btn-next{background:#1d4ed8;color:#fff;}
+.btn-next:hover:not(:disabled){background:#1e40af;}
+.btn-submit{background:linear-gradient(135deg,#10b981,#059669);color:#fff;}
+.btn-submit:hover:not(:disabled){opacity:.9;}
+
+/* Progress bar */
+.cbt-progress{height:4px;background:#334155;margin-bottom:0;}
+.cbt-progress-fill{height:100%;background:linear-gradient(90deg,#5b7dff,#1dd1a1);transition:width .4s ease;}
+
+/* Screen overlays */
+.screen{display:none;position:fixed;inset:0;z-index:200;background:#0f172a;overflow-y:auto;}
+.screen.active{display:flex;align-items:center;justify-content:center;padding:24px;}
+
+/* Start screen */
+.start-card{
+  background:#1e293b;border:1px solid #334155;border-radius:20px;
+  padding:40px;max-width:560px;width:100%;
+}
+.start-logo{font-size:3rem;margin-bottom:16px;text-align:center;}
+.start-title{font-size:1.4rem;font-weight:800;text-align:center;margin-bottom:6px;}
+.start-sub{color:#64748b;font-size:.875rem;text-align:center;margin-bottom:28px;}
+.start-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:28px;}
+.start-stat{background:#0f172a;border:1px solid #334155;border-radius:10px;padding:16px;text-align:center;}
+.start-stat-val{font-size:1.4rem;font-weight:800;color:#5b7dff;margin-bottom:4px;}
+.start-stat-lbl{font-size:.72rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px;}
+.best-score-bar{background:#0f172a;border:1px solid #334155;border-radius:10px;padding:14px;margin-bottom:24px;font-size:.85rem;}
+
+/* Result screen */
+.result-card{
+  background:#1e293b;border:1px solid #334155;border-radius:20px;
+  padding:40px;max-width:600px;width:100%;
+}
+.result-score-ring{
+  width:140px;height:140px;border-radius:50%;margin:0 auto 24px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:2.2rem;font-weight:800;position:relative;
+  border:6px solid #10b981;
+}
+.result-score-ring.fail{border-color:#ef4444;}
+.result-score-ring.pass{border-color:#10b981;}
+.result-score-pct{font-size:2rem;font-weight:800;line-height:1;}
+.result-score-lbl{font-size:.72rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px;}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0;}
+.result-stat{background:#0f172a;border-radius:10px;padding:14px;text-align:center;}
+.result-stat-val{font-size:1.3rem;font-weight:800;margin-bottom:4px;}
+.result-stat-lbl{font-size:.72rem;color:#64748b;}
+
+/* Mobile */
+@media(max-width:640px){
+  .cbt-nav{display:none;}
+  .cbt-question-area{padding:20px;}
+  .cbt-bottom{padding:14px 20px;}
+  .start-stats{grid-template-columns:1fr 1fr;}
+  .result-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- START SCREEN -->
+<div class="screen active" id="start-screen">
+  <div class="start-card">
+    <div class="start-logo">📝</div>
+    <div class="start-title" id="ss-title">Loading...</div>
+    <div class="start-sub" id="ss-sub">CBT Practice Test</div>
+    <div class="start-stats">
+      <div class="start-stat"><div class="start-stat-val" id="ss-total">—</div><div class="start-stat-lbl">Questions</div></div>
+      <div class="start-stat"><div class="start-stat-val" id="ss-time">—</div><div class="start-stat-lbl">Time Limit</div></div>
+      <div class="start-stat"><div class="start-stat-val" id="ss-attempts">—</div><div class="start-stat-lbl">Attempts</div></div>
+    </div>
+    <div class="best-score-bar" id="ss-best" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="color:#64748b;">🏆 Your Best Score</span>
+        <span style="font-weight:700;color:#10b981;" id="ss-best-val">—</span>
+      </div>
+    </div>
+    <div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:14px;font-size:.82rem;color:#fbbf24;margin-bottom:24px;line-height:1.8;">
+      📌 <strong>Instructions:</strong><br>
+      • Select one answer per question<br>
+      • Flag questions to review later<br>
+      • Timer counts down — submit before time runs out<br>
+      • You can retake this test as many times as you want
+    </div>
+    <button onclick="startTest()" class="cbt-btn btn-submit" style="width:100%;justify-content:center;padding:14px;font-size:1rem;">
+      🚀 Start Test
+    </button>
+    <button onclick="goBack()" class="cbt-btn btn-prev" style="width:100%;justify-content:center;padding:12px;margin-top:10px;font-size:.875rem;">
+      ← Go Back
+    </button>
+  </div>
+</div>
+
+<!-- RESULT SCREEN -->
+<div class="screen" id="result-screen">
+  <div class="result-card">
+    <div id="result-ring" class="result-score-ring pass">
+      <div class="result-score-pct" id="result-pct">0%</div>
+      <div class="result-score-lbl">Score</div>
+    </div>
+    <h2 style="text-align:center;font-size:1.3rem;margin-bottom:4px;" id="result-heading">Test Complete!</h2>
+    <p style="text-align:center;color:#64748b;font-size:.875rem;margin-bottom:20px;" id="result-sub"></p>
+    <div class="result-grid">
+      <div class="result-stat"><div class="result-stat-val" id="r-correct" style="color:#10b981;">—</div><div class="result-stat-lbl">Correct</div></div>
+      <div class="result-stat"><div class="result-stat-val" id="r-wrong" style="color:#ef4444;">—</div><div class="result-stat-lbl">Wrong</div></div>
+      <div class="result-stat"><div class="result-stat-val" id="r-unanswered" style="color:#f59e0b;">—</div><div class="result-stat-lbl">Unanswered</div></div>
+      <div class="result-stat"><div class="result-stat-val" id="r-time" style="color:#5b7dff;">—</div><div class="result-stat-lbl">Time Taken</div></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:24px;flex-wrap:wrap;">
+      <button onclick="reviewAnswers()" class="cbt-btn btn-prev" style="flex:1;justify-content:center;padding:12px;border-color:#5b7dff;color:#5b7dff;">
+        🔍 Review Answers
+      </button>
+      <button onclick="restartTest()" class="cbt-btn btn-submit" style="flex:1;justify-content:center;padding:12px;">
+        🔄 Retake Test
+      </button>
+    </div>
+    <button onclick="goBack()" class="cbt-btn btn-prev" style="width:100%;justify-content:center;padding:11px;margin-top:8px;font-size:.85rem;">
+      ← Back to Past Question
+    </button>
+  </div>
+</div>
+
+<!-- CBT TEST UI -->
+<div id="test-ui" style="display:none;height:100vh;display:none;flex-direction:column;">
+  <!-- Top bar -->
+  <div class="cbt-topbar">
+    <button onclick="confirmSubmit()" class="cbt-btn btn-prev" style="padding:6px 12px;font-size:.78rem;flex-shrink:0;">✕ Exit</button>
+    <div class="cbt-title" id="tb-title">CBT Test</div>
+    <div class="cbt-score-badge" id="tb-answered">0 / 0 answered</div>
+    <div class="cbt-timer" id="tb-timer">00:00</div>
+  </div>
+  <div class="cbt-progress"><div class="cbt-progress-fill" id="tb-progress" style="width:0%"></div></div>
+
+  <!-- Body -->
+  <div class="cbt-body">
+    <!-- Left panel -->
+    <div class="cbt-nav">
+      <div>
+        <div class="cbt-nav-title">Questions</div>
+        <div class="cbt-num-grid" id="num-grid"></div>
+      </div>
+      <div class="nav-legend">
+        <div class="legend-row"><div class="legend-dot" style="background:#1d4ed8;"></div> Answered</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#0f172a;border:1.5px solid #334155;"></div> Unanswered</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#7c3aed;"></div> Flagged</div>
+      </div>
+      <button onclick="confirmSubmit()" class="cbt-btn btn-submit" style="width:100%;justify-content:center;padding:11px;margin-top:auto;">
+        Submit Test
+      </button>
+    </div>
+
+    <!-- Main question area -->
+    <div class="cbt-main">
+      <div class="cbt-question-area">
+        <div class="q-header">
+          <span class="q-number" id="q-num-label">Question 1 of 40</span>
+          <button class="q-flag-btn" id="flag-btn" onclick="toggleFlag()">🚩 Flag</button>
+        </div>
+        <img id="q-image" class="q-image" style="display:none;" src="" alt="Question image"/>
+        <div class="q-text" id="q-text">Loading question...</div>
+        <div class="q-options" id="q-options"></div>
+        <div class="q-explanation" id="q-explanation"></div>
+      </div>
+      <div class="cbt-bottom">
+        <button class="cbt-btn btn-prev" id="prev-btn" onclick="goQ(-1)" disabled>‹ Previous</button>
+        <div style="display:flex;gap:8px;">
+          <button class="cbt-btn btn-prev" onclick="toggleFlag()" id="flag-btn2" style="font-size:.8rem;padding:8px 14px;">🚩 Flag</button>
+          <button class="cbt-btn btn-next" id="next-btn" onclick="goQ(1)">Next ›</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Submit Modal -->
+<div id="confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:28px;max-width:400px;width:100%;">
+    <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:10px;">Submit Test?</h3>
+    <p style="color:#64748b;font-size:.875rem;margin-bottom:8px;" id="confirm-stats"></p>
+    <p style="color:#f59e0b;font-size:.82rem;margin-bottom:20px;">⚠️ You cannot change answers after submitting.</p>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeConfirm()" class="cbt-btn btn-prev" style="flex:1;justify-content:center;padding:11px;">Cancel</button>
+      <button onclick="submitTest()" class="cbt-btn btn-submit" style="flex:1;justify-content:center;padding:11px;">Submit Now</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+// ── State ──────────────────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+const PQ_ID = params.get('pq_id');
+const SUBDOMAIN = params.get('site') || '';
+const REVIEW_MODE = params.get('review') === '1';
+
+if (!PQ_ID) window.location.href = '/dashboard';
+Auth.need();
+
+let pqData = null, questions = [], answers = {}, flagged = new Set();
+let currentQ = 0, timerInterval = null, timeLeft = 0, startTime = null;
+let testRunning = false, reviewMode = false;
+
+// ── Load ────────────────────────────────────────────────────
+async function load() {
+  const data = await http.get('/past-questions/' + PQ_ID + '/cbt-questions');
+  if (!data || data.message) {
+    document.getElementById('start-screen').innerHTML = `
+      <div style="text-align:center;padding:60px;max-width:400px;">
+        <div style="font-size:3rem;margin-bottom:16px;">🔒</div>
+        <h3 style="margin-bottom:8px;">Access Required</h3>
+        <p style="color:#64748b;margin-bottom:20px;">${data?.message || 'You need to purchase this past question to take the CBT test.'}</p>
+        <button onclick="goBack()" class="cbt-btn btn-submit" style="padding:12px 28px;">← Go Back</button>
+      </div>`;
+    return;
+  }
+  pqData = data.pq;
+  questions = data.questions;
+  const best = data.best_attempt;
+
+  // Populate start screen
+  document.getElementById('ss-title').textContent = pqData.title;
+  document.getElementById('ss-sub').textContent = 'CBT Practice Test · ' + (pqData.year || '') + ' · ' + (pqData.total_questions || questions.length) + ' Questions';
+  document.getElementById('ss-total').textContent = questions.length;
+
+  const tl = parseInt(pqData.time_limit_minutes) || 0;
+  document.getElementById('ss-time').textContent = tl > 0 ? tl + ' min' : 'Unlimited';
+  document.getElementById('ss-attempts').textContent = best ? 'Retaking' : '1st attempt';
+
+  if (best) {
+    const pct = Math.round((best.score / best.total_questions) * 100);
+    document.getElementById('ss-best').style.display = 'block';
+    document.getElementById('ss-best-val').textContent = best.score + '/' + best.total_questions + ' (' + pct + '%)';
+  }
+
+  if (!questions.length) {
+    document.getElementById('start-screen').querySelector('.start-card').innerHTML += `
+      <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:14px;font-size:.85rem;color:#f59e0b;margin-top:16px;">
+        ⚠️ This past question has no CBT questions added yet. Ask your school admin to add questions.
+      </div>`;
+    document.querySelector('[onclick="startTest()"]').disabled = true;
+  }
+}
+
+function startTest() {
+  if (!questions.length) return;
+  reviewMode = false;
+  answers = {};
+  flagged = new Set();
+  currentQ = 0;
+  testRunning = true;
+  startTime = Date.now();
+
+  const tl = parseInt(pqData.time_limit_minutes) || 0;
+  timeLeft = tl > 0 ? tl * 60 : 0;
+
+  // Show test UI
+  hideAllScreens();
+  const ui = document.getElementById('test-ui');
+  ui.style.display = 'flex';
+  ui.style.flexDirection = 'column';
+
+  document.getElementById('tb-title').textContent = pqData.title;
+
+  buildNumGrid();
+  renderQuestion();
+  if (timeLeft > 0) startTimer();
+  else document.getElementById('tb-timer').textContent = '∞';
+}
+
+function hideAllScreens() {
+  document.getElementById('start-screen').classList.remove('active');
+  document.getElementById('result-screen').classList.remove('active');
+  document.getElementById('test-ui').style.display = 'none';
+}
+
+// ── Timer ────────────────────────────────────────────────────
+function startTimer() {
+  clearInterval(timerInterval);
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) { clearInterval(timerInterval); autoSubmit(); }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById('tb-timer');
+  const m = Math.floor(Math.abs(timeLeft) / 60);
+  const s = Math.abs(timeLeft) % 60;
+  el.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  el.className = 'cbt-timer';
+  if (timeLeft <= 60 && timeLeft > 0) el.classList.add('danger');
+  else if (timeLeft <= 180 && timeLeft > 0) el.classList.add('warn');
+}
+
+function autoSubmit() {
+  Toast.show && Toast.show('⏰ Time is up! Submitting your test...', 'warning');
+  setTimeout(submitTest, 1500);
+}
+
+// ── Number Grid ──────────────────────────────────────────────
+function buildNumGrid() {
+  const grid = document.getElementById('num-grid');
+  grid.innerHTML = questions.map((q, i) => `
+    <div class="cbt-num ${i === currentQ ? 'current' : ''}" 
+         id="num-${i}" onclick="jumpToQ(${i})">${i+1}</div>
+  `).join('');
+}
+
+function updateNumGrid() {
+  questions.forEach((q, i) => {
+    const el = document.getElementById('num-' + i);
+    if (!el) return;
+    el.className = 'cbt-num';
+    if (answers[q.id] !== undefined) el.classList.add('answered');
+    if (flagged.has(i)) el.classList.add('flagged');
+    if (i === currentQ) el.classList.add('current');
+  });
+  // Update answered count
+  const answered = Object.keys(answers).length;
+  document.getElementById('tb-answered').textContent = answered + ' / ' + questions.length + ' answered';
+  // Progress
+  document.getElementById('tb-progress').style.width = Math.round((answered / questions.length) * 100) + '%';
+}
+
+// ── Render Question ──────────────────────────────────────────
+function renderQuestion() {
+  const q = questions[currentQ];
+  if (!q) return;
+
+  document.getElementById('q-num-label').textContent = 'Question ' + (currentQ + 1) + ' of ' + questions.length;
+
+  // Image
+  const imgEl = document.getElementById('q-image');
+  if (q.image_path) { imgEl.src = q.image_path; imgEl.style.display = 'block'; }
+  else imgEl.style.display = 'none';
+
+  document.getElementById('q-text').textContent = q.question_text;
+
+  const opts = [
+    { key: 'a', text: q.option_a },
+    { key: 'b', text: q.option_b },
+    { key: 'c', text: q.option_c },
+    { key: 'd', text: q.option_d }
+  ];
+
+  const selectedKey = answers[q.id];
+  const container = document.getElementById('q-options');
+
+  container.innerHTML = opts.map(o => {
+    let cls = 'q-option';
+    if (reviewMode) {
+      if (o.key === q.correct_answer) cls += ' show-correct';
+      if (selectedKey === o.key && o.key !== q.correct_answer) cls += ' wrong';
+      if (selectedKey === o.key && o.key === q.correct_answer) { cls = 'q-option correct'; }
+    } else if (selectedKey === o.key) cls += ' selected';
+
+    const keyCls = cls.includes('correct') ? 'opt-key' : cls.includes('wrong') ? 'opt-key' : 'opt-key';
+    return `<div class="${cls}" onclick="selectOpt('${q.id}','${o.key}')">
+      <div class="opt-key">${o.key.toUpperCase()}</div>
+      <div class="opt-text">${o.text || '—'}</div>
+    </div>`;
+  }).join('');
+
+  // Explanation in review mode
+  const expEl = document.getElementById('q-explanation');
+  if (reviewMode && q.explanation) {
+    expEl.textContent = '💡 ' + q.explanation;
+    expEl.classList.add('show');
+  } else {
+    expEl.classList.remove('show');
+    expEl.textContent = '';
+  }
+
+  // Flag button state
+  const isFlagged = flagged.has(currentQ);
+  document.getElementById('flag-btn').className = 'q-flag-btn' + (isFlagged ? ' flagged' : '');
+  document.getElementById('flag-btn').textContent = isFlagged ? '🚩 Flagged' : '🚩 Flag';
+  document.getElementById('flag-btn2').textContent = isFlagged ? '🚩 Unflag' : '🚩 Flag';
+
+  // Prev/Next buttons
+  document.getElementById('prev-btn').disabled = currentQ === 0;
+  const isLast = currentQ === questions.length - 1;
+  const nextBtn = document.getElementById('next-btn');
+  if (isLast && !reviewMode) { nextBtn.textContent = 'Submit ›'; nextBtn.className = 'cbt-btn btn-submit'; nextBtn.onclick = confirmSubmit; }
+  else { nextBtn.textContent = 'Next ›'; nextBtn.className = 'cbt-btn btn-next'; nextBtn.onclick = () => goQ(1); }
+
+  // Disable options in review mode
+  if (reviewMode) {
+    container.querySelectorAll('.q-option').forEach(el => el.style.pointerEvents = 'none');
+  }
+
+  updateNumGrid();
+}
+
+function selectOpt(qId, key) {
+  if (reviewMode || !testRunning) return;
+  answers[qId] = key;
+  renderQuestion();
+}
+
+function goQ(dir) {
+  const next = currentQ + dir;
+  if (next < 0 || next >= questions.length) return;
+  currentQ = next;
+  renderQuestion();
+}
+
+function jumpToQ(idx) {
+  currentQ = idx;
+  renderQuestion();
+  // On mobile scroll to top
+  document.querySelector('.cbt-main').scrollTo(0, 0);
+}
+
+function toggleFlag() {
+  if (flagged.has(currentQ)) flagged.delete(currentQ);
+  else flagged.add(currentQ);
+  renderQuestion();
+}
+
+// ── Submit ───────────────────────────────────────────────────
+function confirmSubmit() {
+  const answered = Object.keys(answers).length;
+  const unanswered = questions.length - answered;
+  document.getElementById('confirm-stats').textContent =
+    `Answered: ${answered} / ${questions.length}${unanswered > 0 ? ` · ${unanswered} unanswered` : ' (all answered ✅)'}`;
+  document.getElementById('confirm-modal').style.display = 'flex';
+}
+
+function closeConfirm() { document.getElementById('confirm-modal').style.display = 'none'; }
+
+async function submitTest() {
+  closeConfirm();
+  clearInterval(timerInterval);
+  testRunning = false;
+
+  const tl = parseInt(pqData.time_limit_minutes) || 0;
+  const timeTaken = tl > 0 ? (tl * 60 - timeLeft) : Math.round((Date.now() - startTime) / 1000);
+
+  const btn = document.getElementById('next-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
+
+  const data = await http.post('/past-questions/' + PQ_ID + '/submit-quiz', {
+    answers: JSON.stringify(answers),
+    time_taken_seconds: timeTaken
+  });
+
+  if (!data) { Toast.err && Toast.err('Submission failed. Check connection.'); testRunning = true; return; }
+
+  showResult(data, timeTaken);
+}
+
+function showResult(data, timeTaken) {
+  const pct = Math.round((data.score / data.total) * 100);
+  const passed = pct >= 50;
+
+  document.getElementById('result-pct').textContent = pct + '%';
+  document.getElementById('result-ring').className = 'result-score-ring ' + (passed ? 'pass' : 'fail');
+  document.getElementById('result-heading').textContent = passed ? '🎉 Great Job!' : '📚 Keep Practicing';
+  document.getElementById('result-sub').textContent = passed
+    ? 'You passed with ' + pct + '% — Well done!'
+    : 'You scored ' + pct + '% — Try again to improve!';
+
+  document.getElementById('r-correct').textContent = data.score;
+  document.getElementById('r-wrong').textContent = (data.total - data.score - (questions.length - Object.keys(answers).length));
+  document.getElementById('r-unanswered').textContent = questions.length - Object.keys(answers).length;
+
+  const m = Math.floor(timeTaken / 60), s = timeTaken % 60;
+  document.getElementById('r-time').textContent = m + 'm ' + s + 's';
+
+  hideAllScreens();
+  document.getElementById('result-screen').classList.add('active');
+
+  // Store correct answers for review
+  questions.forEach(q => { if (!q.correct_answer_loaded) { /* already have correct_answer from CBT endpoint? No - we need to fetch */ } });
+}
+
+async function reviewAnswers() {
+  // Fetch correct answers
+  const data = await http.get('/past-questions/' + PQ_ID + '/cbt-questions');
+  if (data?.questions) {
+    questions = data.questions;
+    // Fetch correct answers (they're not included in CBT questions for security)
+    // Use a review endpoint
+    const review = await http.get('/past-questions/' + PQ_ID + '/cbt-review');
+    if (review?.questions) questions = review.questions;
+  }
+  reviewMode = true;
+  currentQ = 0;
+  hideAllScreens();
+  const ui = document.getElementById('test-ui');
+  ui.style.display = 'flex';
+  ui.style.flexDirection = 'column';
+  document.getElementById('tb-timer').textContent = '✓ Review';
+  document.getElementById('next-btn').onclick = () => goQ(1);
+  document.getElementById('next-btn').textContent = 'Next ›';
+  document.getElementById('next-btn').className = 'cbt-btn btn-next';
+  buildNumGrid();
+  renderQuestion();
+}
+
+function restartTest() { startTest(); }
+
+function goBack() {
+  if (SUBDOMAIN) window.location.href = '/site/' + SUBDOMAIN + '/past-question/' + PQ_ID;
+  else window.location.href = '/past-question-detail.html?id=' + PQ_ID;
+}
+
+// ── Init ─────────────────────────────────────────────────────
+load();
+</script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notifications - ExamPro</title>
+<link rel="stylesheet" href="/css/main.css">
+<style>
+.notif-card { display:flex; gap:16px; align-items:flex-start; padding:20px; background:var(--bg-card); border:1px solid var(--border); border-radius:14px; margin-bottom:12px; transition:all 0.2s; }
+.notif-card.unread { border-left:4px solid var(--primary); background:rgba(91,125,255,0.04); }
+.notif-icon { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
+.notif-icon.success { background:rgba(39,174,96,0.15); }
+.notif-icon.error { background:rgba(231,76,60,0.15); }
+.notif-icon.warning { background:rgba(243,156,18,0.15); }
+.notif-icon.info { background:rgba(91,125,255,0.15); }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">EXAMPRO</a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/past-questions">Past Questions</a>
+      <a href="/courses">Courses</a>
+    </div>
+    <div class="nav-cta" id="navCta">
+      <a href="/login" class="btn btn-outline btn-sm">Login</a>
+      <a href="/register" class="btn btn-primary btn-sm">Get Started</a>
+    </div>
+    <label class="theme-switch"><input type="checkbox" id="themeToggle"><span>🌙</span></label>
+    <div class="hamburger" onclick="toggleMobileMenu()">☰</div>
+  </div>
+</nav>
+
+<div class="container" style="padding:100px 20px 60px; max-width:800px; margin:auto;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;">
+    <div>
+      <h2 style="margin-bottom:4px;">Notifications</h2>
+      <p style="color:var(--text-muted);margin:0;" id="unreadCount"></p>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="markAllRead()">✓ Mark All Read</button>
+  </div>
+
+  <!-- Filter tabs -->
+  <div style="display:flex;gap:8px;margin-bottom:24px;overflow-x:auto;padding-bottom:4px;">
+    <button class="tab-btn active" onclick="filterNotifs('all', this)">All</button>
+    <button class="tab-btn" onclick="filterNotifs('unread', this)">Unread</button>
+    <button class="tab-btn" onclick="filterNotifs('success', this)">✅ Payments</button>
+    <button class="tab-btn" onclick="filterNotifs('info', this)">ℹ️ Info</button>
+    <button class="tab-btn" onclick="filterNotifs('warning', this)">⚠️ Warnings</button>
+  </div>
+
+  <div id="notifList">
+    <div style="text-align:center;padding:60px;color:var(--text-muted);">
+      <div style="font-size:3rem;margin-bottom:12px;">🔔</div>
+      <p>Loading notifications...</p>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+if (!protectRoute()) throw new Error('Login required');
+
+// Update navbar
+const user = Auth.getUser();
+if (user) {
+  document.getElementById('navCta').innerHTML = `
+    <a href="${Auth.isAdmin() || Auth.isInstructor() ? '/admin/' : '/dashboard'}" class="btn btn-outline btn-sm">Dashboard</a>
+    <button class="btn btn-primary btn-sm" onclick="Auth.logout()">Logout</button>
+  `;
+}
+
+let allNotifications = [];
+
+async function loadNotifications() {
+  const data = await http.get('/notifications');
+  allNotifications = data?.notifications || [];
+  const unread = data?.unread || 0;
+  document.getElementById('unreadCount').textContent = unread > 0 ? `${unread} unread notification${unread > 1 ? 's' : ''}` : 'All caught up!';
+  renderNotifications(allNotifications);
+}
+
+function renderNotifications(notifs) {
+  const container = document.getElementById('notifList');
+  if (!notifs.length) {
+    container.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text-muted);">
+      <div style="font-size:3rem;margin-bottom:12px;">🔔</div>
+      <p>No notifications here</p>
+    </div>`;
+    return;
+  }
+  const iconMap = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  container.innerHTML = notifs.map(n => `
+    <div class="notif-card ${n.is_read ? '' : 'unread'}">
+      <div class="notif-icon ${n.type}">${iconMap[n.type] || 'ℹ️'}</div>
+      <div style="flex:1;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+          <strong style="font-size:0.95rem;">${n.title}</strong>
+          <span style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap;">${fmt.timeAgo(n.created_at)}</span>
+        </div>
+        <p style="margin:6px 0 0;font-size:0.9rem;color:var(--text-muted);">${n.message}</p>
+        <span style="font-size:0.75rem;color:var(--text-muted);">${fmt.date(n.created_at)}</span>
+      </div>
+      ${!n.is_read ? `<button onclick="markRead(${n.id})" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;color:var(--text-muted);font-size:0.75rem;white-space:nowrap;">Mark read</button>` : ''}
+    </div>
+  `).join('');
+}
+
+function filterNotifs(type, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (type === 'all') renderNotifications(allNotifications);
+  else if (type === 'unread') renderNotifications(allNotifications.filter(n => !n.is_read));
+  else renderNotifications(allNotifications.filter(n => n.type === type));
+}
+
+async function markRead(id) {
+  await http.patch(`/notifications/${id}/read`);
+  loadNotifications();
+}
+
+async function markAllRead() {
+  await http.patch('/notifications/read-all');
+  Toast.success('All marked as read');
+  loadNotifications();
+}
+
+loadNotifications();
+</script>
+</body>
+</html>
